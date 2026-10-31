@@ -1,0 +1,77 @@
+"use client";
+
+import Link from "next/link";
+import { ArrowRightIcon } from "lucide-react";
+import { cn } from "cn";
+
+import { EmergencyButton } from "@/components/landing/emergency-button";
+import { useLanguage } from "@/components/language-provider";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+
+export function HeroSection({ totalPanels }: { totalPanels: number }) {
+  const { locale, t } = useLanguage();
+
+  const formattedCount =
+    locale === "bn"
+      ? totalPanels.toLocaleString("bn-BD")
+      : totalPanels.toString();
+
+  return (
+    <section className="hero-surface">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-16 lg:grid-cols-[1.4fr_1fr] lg:py-24">
+        <div>
+          <Badge variant="secondary" className="mb-4">
+            {t.hero.badge}
+          </Badge>
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+            {t.hero.titleLine1}
+            <br />
+            <span className="text-primary">{t.hero.titleLine2}</span>
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
+            {t.hero.description}
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="#panels" className={cn(buttonVariants({ size: "lg" }))}>
+              {t.hero.browseServices}
+              <ArrowRightIcon />
+            </Link>
+            <Link
+              href="#how"
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+            >
+              {t.hero.howItWorks}
+            </Link>
+            <EmergencyButton />
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {t.hero.emergencyNotice}
+          </p>
+        </div>
+
+        <div className="rounded-3xl border bg-card p-8 shadow-xl">
+          <div className="text-4xl" aria-hidden>
+            🌾
+          </div>
+          <div className="mt-2 text-5xl font-extrabold">{formattedCount}</div>
+          <p className="text-muted-foreground">{t.hero.categoriesCountLabel}</p>
+          <div className="my-5 h-px bg-border" />
+          <div className="flex justify-between gap-4 text-sm">
+            <span className="text-muted-foreground">
+              {t.hero.serviceRequestsLabel}
+            </span>
+            <strong>{t.hero.serviceRequestsValue}</strong>
+          </div>
+          <div className="mt-2 flex justify-between gap-4 text-sm">
+            <span className="text-muted-foreground">
+              {t.hero.commissionLabel}
+            </span>
+            <strong>{t.hero.commissionValue}</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

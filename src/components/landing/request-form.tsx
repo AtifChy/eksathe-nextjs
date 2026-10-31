@@ -7,6 +7,7 @@ import {
   createRequest,
   type RequestFormState,
 } from "@/app/actions/create-request";
+import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ function FieldError({ messages }: { messages?: string[] }) {
 }
 
 export function RequestForm({ panelId }: { panelId: number }) {
+  const { t } = useLanguage();
   const [state, formAction, pending] = useActionState(
     createRequest,
     initialState,
@@ -30,13 +32,12 @@ export function RequestForm({ panelId }: { panelId: number }) {
     return (
       <div className="rounded-xl border border-primary/20 bg-secondary p-6 text-center">
         <CheckCircle2Icon className="mx-auto size-9 text-primary" />
-        <h3 className="mt-3 text-lg font-semibold">অনুরোধ জমা হয়েছে</h3>
+        <h3 className="mt-3 text-lg font-semibold">{t.requestForm.successTitle}</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          আপনার রেফারেন্স নম্বর: <strong>#{state.reference}</strong>
+          {t.requestForm.successReference} <strong>#{state.reference}</strong>
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
-          এটি কেবল অনুরোধ গ্রহণের নিশ্চিতকরণ; সেবা বা পেমেন্ট নিশ্চিত হওয়ার
-          অর্থ নয়।
+          {t.requestForm.successNotice}
         </p>
       </div>
     );
@@ -53,10 +54,11 @@ export function RequestForm({ panelId }: { panelId: number }) {
       ) : null}
 
       <div className="space-y-1.5">
-        <Label htmlFor={`customer_name_${panelId}`}>আপনার নাম *</Label>
+        <Label htmlFor={`customer_name_${panelId}`}>{t.requestForm.fullName}</Label>
         <Input
           id={`customer_name_${panelId}`}
           name="customer_name"
+          placeholder={t.requestForm.fullNamePlaceholder}
           required
           maxLength={150}
           autoComplete="name"
@@ -66,7 +68,7 @@ export function RequestForm({ panelId }: { panelId: number }) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor={`phone_${panelId}`}>মোবাইল নম্বর *</Label>
+        <Label htmlFor={`phone_${panelId}`}>{t.requestForm.phone}</Label>
         <Input
           id={`phone_${panelId}`}
           name="phone"
@@ -74,17 +76,18 @@ export function RequestForm({ panelId }: { panelId: number }) {
           maxLength={30}
           inputMode="tel"
           autoComplete="tel"
-          placeholder="01XXXXXXXXX"
+          placeholder={t.requestForm.phonePlaceholder}
           aria-invalid={Boolean(state.errors?.phone)}
         />
         <FieldError messages={state.errors?.phone} />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor={`district_${panelId}`}>জেলা/এলাকা *</Label>
+        <Label htmlFor={`district_${panelId}`}>{t.requestForm.district}</Label>
         <Input
           id={`district_${panelId}`}
           name="district"
+          placeholder={t.requestForm.districtPlaceholder}
           required
           maxLength={100}
           aria-invalid={Boolean(state.errors?.district)}
@@ -93,10 +96,11 @@ export function RequestForm({ panelId }: { panelId: number }) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor={`budget_${panelId}`}>সম্ভাব্য বাজেট (৳)</Label>
+        <Label htmlFor={`budget_${panelId}`}>{t.requestForm.budget}</Label>
         <Input
           id={`budget_${panelId}`}
           name="budget"
+          placeholder={t.requestForm.budgetPlaceholder}
           type="number"
           min={0}
           step="0.01"
@@ -107,11 +111,12 @@ export function RequestForm({ panelId }: { panelId: number }) {
 
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor={`details_${panelId}`}>
-          আপনার প্রয়োজন বিস্তারিত লিখুন *
+          {t.requestForm.details}
         </Label>
         <Textarea
           id={`details_${panelId}`}
           name="details"
+          placeholder={t.requestForm.detailsPlaceholder}
           rows={4}
           required
           minLength={10}
@@ -123,10 +128,10 @@ export function RequestForm({ panelId }: { panelId: number }) {
 
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <Button type="submit" size="lg" disabled={pending}>
-          {pending ? "জমা হচ্ছে..." : "অনুরোধ জমা দিন"}
+          {pending ? t.requestForm.submitting : t.requestForm.submit}
         </Button>
         <span className="text-xs text-muted-foreground">
-          অনুরোধ জমা দিলেই কোনো পেমেন্ট সম্পন্ন হয় না।
+          {t.requestForm.disclaimer}
         </span>
       </div>
     </form>

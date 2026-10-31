@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PhoneIcon } from "lucide-react";
 
+import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +15,7 @@ import {
 
 export function EmergencyButton() {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <>
@@ -24,20 +26,19 @@ export function EmergencyButton() {
         onClick={() => setOpen(true)}
       >
         <PhoneIcon />
-        জরুরি সহায়তা 100
+        {t.emergency.buttonLabel}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>জরুরি সহায়তা</DialogTitle>
+            <DialogTitle>{t.emergency.modalTitle}</DialogTitle>
             <DialogDescription>
-              এই বাটনটি স্বয়ংক্রিয়ভাবে কল করে না।
+              {t.emergency.modalSubtitle}
             </DialogDescription>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            জরুরি সহায়তার জন্য আপনার এলাকার যাচাইকৃত সরকারি জরুরি নম্বরে সরাসরি
-            যোগাযোগ করুন।
+            {t.emergency.modalDescription}
           </p>
         </DialogContent>
       </Dialog>
