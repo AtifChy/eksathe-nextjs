@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EKsathe Bangladesh — Next.js
 
-## Getting Started
+Next.js port of the raw PHP agriculture, market and labour platform.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, Turbopack, Cache Components)
+- React 19 + TypeScript
+- Tailwind CSS v4 + shadcn/ui (Base UI)
+- PostgreSQL 17 via Docker Compose
+- Prisma ORM 7 with the `@prisma/adapter-pg` driver adapter
+- Better Auth (email + password, Prisma adapter)
+
+## Local setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Generate a secret and put it in `.env`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Start the database, apply migrations and seed the 30 service panels:
 
-## Learn More
+```bash
+bun run db:up
+bun run db:migrate
+bun run db:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then start the app:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bun run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open <http://localhost:3000>.
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Script | What it does |
+| --- | --- |
+| `bun run dev` | Start the dev server |
+| `bun run build` | Production build |
+| `bun run start` | Run the production build |
+| `bun run lint` | ESLint |
+| `bun run typecheck` | `tsc --noEmit` |
+| `bun run setup` | Start DB, migrate, seed |
+| `bun run db:up` | Start Postgres in Docker |
+| `bun run db:down` | Stop Postgres (keeps data) |
+| `bun run db:logs` | Follow Postgres logs |
+| `bun run db:psql` | Open `psql` in the container |
+| `bun run db:migrate` | Create and apply a dev migration |
+| `bun run db:deploy` | Apply migrations (production) |
+| `bun run db:seed` | Seed the 30 panels (idempotent upserts) |
+| `bun run db:studio` | Open Prisma Studio |
+| `bun run db:status` | Show migration status |
+| `bun run db:reset` | **Destructive:** wipe the volume, migrate and seed |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Database
+
+The compose file exposes Postgres on `localhost:5432` with the dev credentials in `.env.example`. If that port is taken, change the mapping in `docker-compose.yml` and update `DATABASE_URL`.
+
+`bun run db:reset` deletes the Docker volume and all data.
