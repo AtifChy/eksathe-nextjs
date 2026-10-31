@@ -16,7 +16,7 @@ export function DashboardTabs() {
   ];
 
   return (
-    <div className="flex gap-2 border-b pb-0 mb-6">
+    <div className="flex items-center gap-2 mb-3">
       {tabs.map((tab) => {
         const isActive = pathname === tab.href || (tab.href !== "/dashboard" && pathname.startsWith(tab.href));
         return (
@@ -24,10 +24,10 @@ export function DashboardTabs() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "relative -mb-px inline-flex items-center rounded-t-lg px-5 py-2.5 text-sm font-semibold transition-colors",
+              "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150",
               isActive
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-card text-muted-foreground border border-b-card hover:bg-muted hover:text-foreground",
+                ? "bg-[#0b5036] text-white shadow-xs"
+                : "border border-input/60 bg-card text-foreground/80 hover:bg-muted/60 hover:text-foreground",
             )}
           >
             {tab.label}

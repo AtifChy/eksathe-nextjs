@@ -8,6 +8,7 @@ export const bn: Dictionary = {
     currency: "৳",
   },
   header: {
+    dashboard: "ড্যাশবোর্ড",
     services: "সেবাসমূহ",
     howItWorks: "কীভাবে কাজ করে",
     commissionCalculator: "কমিশন ক্যালকুলেটর",
@@ -160,7 +161,7 @@ export const bn: Dictionary = {
       { id: 4,  slug: "agriculture-labor",   icon: "🌾", labelEn: "Agriculture & Labor",   labelBn: "কৃষি ও শ্রমিক" },
       { id: 5,  slug: "construction",        icon: "🏗️", labelEn: "Construction",           labelBn: "নির্মাণ" },
       { id: 6,  slug: "transport-bus",       icon: "🚌", labelEn: "Transport & Bus Tickets",labelBn: "পরিবহন ও বাস টিকিট" },
-      { id: 7,  slug: "tourism",             icon: "🧳", labelEn: "Tourism",                labelBn: "টুরিজম" },
+      { id: 7,  slug: "tourism",             icon: "🧳", labelEn: "Tourism",                labelBn: "ট্যুরিজম" },
       { id: 8,  slug: "healthcare",          icon: "🏥", labelEn: "Healthcare",             labelBn: "স্বাস্থ্যসেবা" },
       { id: 9,  slug: "events",              icon: "🎉", labelEn: "Events",                 labelBn: "ইভেন্ট" },
       { id: 10, slug: "isp-utility",         icon: "🌐", labelEn: "ISP & Utility",          labelBn: "ISP ও ইউটিলিটি" },

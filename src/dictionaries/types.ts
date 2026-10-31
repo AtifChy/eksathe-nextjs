@@ -17,6 +17,7 @@ export interface Dictionary {
     currency: string;
   };
   header: {
+    dashboard: string;
     services: string;
     howItWorks: string;
     commissionCalculator: string;

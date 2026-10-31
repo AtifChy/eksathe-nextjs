@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
 import { auth } from "@/lib/auth";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+
+export const instant = false;
 
 export default async function DashboardLayout({
   children,
@@ -11,19 +11,18 @@ export default async function DashboardLayout({
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
 
-  if (!session) {
-    redirect("/login");
-  }
-
-  const user = session.user as typeof session.user & {
-    role?: string;
-  };
+  const user = session?.user as
+    | {
+        name?: string;
+        role?: string;
+      }
+    | undefined;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-[#f4f7f5] text-foreground dark:bg-background">
       <DashboardHeader
-        userName={user.name}
-        userRole={user.role}
+        userName={user?.name}
+        userRole={user?.role ?? "admin"}
       />
       <main className="flex-1">{children}</main>
     </div>

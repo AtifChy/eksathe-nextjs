@@ -11,9 +11,5 @@ async function getCurrentYear() {
 export async function SiteFooter() {
   const year = await getCurrentYear();
 
-  return (
-    <footer className="border-t bg-card py-6">
-      <FooterContent year={year} />
-    </footer>
-  );
+  return <FooterContent year={year} />;
 }

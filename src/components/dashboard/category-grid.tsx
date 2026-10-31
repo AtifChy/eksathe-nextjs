@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { SearchIcon } from "lucide-react";
+import { SearchIcon, XIcon } from "lucide-react";
 
 import { useLanguage } from "@/components/language-provider";
+import { CategoryIcon } from "@/components/dashboard/category-icon";
 import { Input } from "@/components/ui/input";
 
 export function CategoryGrid() {
@@ -16,44 +17,63 @@ export function CategoryGrid() {
     const term = query.trim().toLowerCase();
     if (!term) return categories;
     return categories.filter((cat) => {
-      const haystack = `${cat.labelEn} ${cat.labelBn} ${cat.slug}`.toLowerCase();
+      const haystack = `${cat.labelEn} ${cat.labelBn} ${cat.slug} ${cat.id}`.toLowerCase();
       return haystack.includes(term);
     });
   }, [categories, query]);
 
   return (
-    <div>
-      {/* Search */}
-      <div className="relative mb-6 max-w-sm">
-        <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.dashboard.searchPlaceholder}
-          className="h-10 pl-9"
-        />
+    <div className="space-y-4">
+      {/* Search Filter (subtle, aligned right/left) */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative w-full max-w-xs">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t.dashboard.searchPlaceholder}
+            className="h-9 pl-9 pr-8 text-xs bg-card/60 backdrop-blur-xs"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <XIcon className="size-3.5" />
+            </button>
+          )}
+        </div>
+        <span className="text-xs text-muted-foreground hidden sm:inline">
+          {filtered.length} {locale === "bn" ? "টি বিভাগ" : "categories"}
+        </span>
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t.dashboard.noResults}</p>
+        <div className="rounded-2xl border bg-card p-12 text-center">
+          <p className="text-sm text-muted-foreground">{t.dashboard.noResults}</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {filtered.map((cat) => {
             const label = locale === "bn" ? cat.labelBn : cat.labelEn;
             return (
               <Link
                 key={cat.id}
                 href={`/dashboard/${cat.slug}`}
-                className="group flex flex-col items-center gap-3 rounded-2xl border bg-card p-5 text-center shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md active:translate-y-0"
+                className="group relative flex flex-col items-center justify-between rounded-2xl border border-border/70 bg-card p-5 text-center shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md active:translate-y-0"
               >
-                <span
-                  className="flex size-16 items-center justify-center rounded-2xl bg-secondary text-3xl transition-transform duration-150 group-hover:scale-105"
-                  aria-hidden
-                >
-                  {cat.icon}
+                <div className="flex flex-1 flex-col items-center justify-center pt-1 pb-3">
+                  <div className="transition-transform duration-200 group-hover:scale-105">
+                    <CategoryIcon id={cat.id} className="size-14" />
+                  </div>
+                  <h3 className="mt-3 text-sm font-semibold leading-tight text-foreground">
+                    {label}
+                  </h3>
+                </div>
+                <span className="text-xs tabular-nums text-muted-foreground/70 font-medium">
+                  {cat.id}
                 </span>
-                <span className="text-sm font-semibold leading-snug">{label}</span>
-                <span className="text-xs tabular-nums text-muted-foreground">{cat.id}</span>
               </Link>
             );
           })}

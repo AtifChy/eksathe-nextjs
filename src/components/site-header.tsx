@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "cn";
 
 import { LanguageToggle } from "@/components/language-toggle";
@@ -10,8 +11,14 @@ import { buttonVariants } from "@/components/ui/button";
 
 export function SiteHeader() {
   const { t } = useLanguage();
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
 
   const links = [
+    { href: "/dashboard", label: t.header.dashboard },
     { href: "/#panels", label: t.header.services },
     { href: "/#how", label: t.header.howItWorks },
     { href: "/#commission", label: t.header.commissionCalculator },
