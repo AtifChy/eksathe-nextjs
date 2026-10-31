@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  BellIcon,
-  ChevronDownIcon,
-  NewspaperIcon,
-  PhoneCallIcon,
-  UserIcon,
-} from "lucide-react";
+import { BellIcon, ChevronDownIcon, NewspaperIcon, PhoneCallIcon, UserIcon } from "lucide-react";
 
 import { useLanguage } from "@/components/language-provider";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -44,10 +38,7 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
             href="/"
             className="flex shrink-0 items-center gap-1.5 font-bold tracking-tight text-[#0b5036] hover:opacity-90"
           >
-            <span className="text-base sm:text-lg">BD</span>
-            <span className="text-sm font-bold sm:text-base">
-              {t.common.brandName}
-            </span>
+            <span className="text-sm font-bold sm:text-base">{t.common.brandName}</span>
           </Link>
 
           {/* Action buttons matching the image */}
@@ -145,9 +136,7 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
             <DialogTitle>{t.emergency.modalTitle}</DialogTitle>
             <DialogDescription>{t.emergency.modalSubtitle}</DialogDescription>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t.emergency.modalDescription}
-          </p>
+          <p className="text-sm text-muted-foreground">{t.emergency.modalDescription}</p>
         </DialogContent>
       </Dialog>
 
@@ -156,12 +145,11 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{activeNotice}</DialogTitle>
-            <DialogDescription>
-              {t.dashboard.demoNotice}
-            </DialogDescription>
+            <DialogDescription>{t.dashboard.demoNotice}</DialogDescription>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            {activeNotice} module is part of the prototype workspace. Interactive features and real-time feeds will connect to this hub.
+            {activeNotice} module is part of the prototype workspace. Interactive features and
+            real-time feeds will connect to this hub.
           </p>
         </DialogContent>
       </Dialog>
