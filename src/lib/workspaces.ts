@@ -150,8 +150,10 @@ export async function getCustomerWorkspace(userId: string) {
     })),
     notifications: notifications.map((notification) => ({
       id: notification.id,
-      title: notification.title,
-      message: notification.message,
+      titleBn: notification.titleBn ?? notification.title,
+      titleEn: notification.titleEn ?? notification.title,
+      messageBn: notification.messageBn ?? notification.message,
+      messageEn: notification.messageEn ?? notification.message,
       href: notification.href,
       readAt: iso(notification.readAt),
       createdAt: iso(notification.createdAt),
@@ -267,7 +269,15 @@ export async function getProviderWorkspace(userId: string) {
       })),
       commission: order.commission ? { status: order.commission.status, amount: order.commission.amount.toString() } : null,
     })),
-    notifications: notifications.map((notification) => ({ id: notification.id, title: notification.title, message: notification.message, href: notification.href, createdAt: iso(notification.createdAt) })),
+    notifications: notifications.map((notification) => ({
+      id: notification.id,
+      titleBn: notification.titleBn ?? notification.title,
+      titleEn: notification.titleEn ?? notification.title,
+      messageBn: notification.messageBn ?? notification.message,
+      messageEn: notification.messageEn ?? notification.message,
+      href: notification.href,
+      createdAt: iso(notification.createdAt),
+    })),
     projectMilestones: projectMilestones.map((milestone) => ({ id: milestone.id, title: milestone.title, description: milestone.description, amount: decimal(milestone.amount), dueAt: iso(milestone.dueAt), status: milestone.status, projectId: milestone.project.id, projectTitle: milestone.project.title, district: milestone.project.district })),
   };
 }

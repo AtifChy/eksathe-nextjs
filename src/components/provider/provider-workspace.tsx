@@ -132,7 +132,7 @@ export function ProviderWorkspace({ workspace, actorId }: { workspace: ProviderW
       {workspace.notifications.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-bold">{locale === "bn" ? "বিজ্ঞপ্তি" : "Notifications"}</h2>
-          {workspace.notifications.slice(0, 5).map((notification) => <p key={notification.id} className="rounded-lg border border-border/70 bg-card px-4 py-3 text-sm">{notification.message}</p>)}
+          {workspace.notifications.slice(0, 5).map((notification) => <div key={notification.id} className="rounded-lg border border-border/70 bg-card px-4 py-3 text-sm"><p className="font-medium">{locale === "bn" ? notification.titleBn : notification.titleEn}</p><p className="mt-1 text-muted-foreground">{locale === "bn" ? notification.messageBn : notification.messageEn}</p></div>)}
         </section>
       )}
     </WorkspaceNavigation>

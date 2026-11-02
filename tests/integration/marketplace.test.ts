@@ -88,6 +88,12 @@ describe("PostgreSQL marketplace transactions", () => {
   it("completes a request, quote, order, confirmed payment, review, and commission receipt", async () => {
     const listingId = await createListing("5");
     const requestId = await createRequestAndQuote(listingId, buyerId);
+    const requestNotification = await prisma.notification.findFirstOrThrow({
+      where: { userId: buyerId, titleEn: "New quote received" },
+      select: { titleBn: true, messageBn: true },
+    });
+    expect(requestNotification.titleBn).toBe("নতুন দরপ্রস্তাব এসেছে");
+    expect(requestNotification.messageBn).toContain("নতুন মূল্য");
     const order = await marketplace.acceptQuote(buyerId, requestId);
     orderIds.push(order.id);
     expect((await prisma.marketplaceListing.findUniqueOrThrow({ where: { id: listingId }, select: { stock: true } })).stock.toString()).toBe("4");

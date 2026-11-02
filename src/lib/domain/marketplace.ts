@@ -65,8 +65,42 @@ async function logActivity(
   await tx.activityLog.create({ data: { userId, action, entityType, entityId } });
 }
 
-async function notify(tx: Tx, userId: string, title: string, message: string, href: string) {
-  await tx.notification.create({ data: { userId, title, message, href } });
+const notificationCopy = {
+  newServiceRequest: { titleBn: "নতুন সেবা অনুরোধ", titleEn: "New service request", messageBn: "একজন গ্রাহক আপনাকে নতুন সেবা অনুরোধ পাঠিয়েছেন।", messageEn: "A customer sent you a new request." },
+  newQuote: { titleBn: "নতুন দরপ্রস্তাব এসেছে", titleEn: "New quote received", messageBn: "একজন সেবাদাতা নতুন মূল্য ও সেবার শর্ত পাঠিয়েছেন।", messageEn: "A provider sent updated price and service terms." },
+  quoteAccepted: { titleBn: "দরপ্রস্তাব গৃহীত হয়েছে", titleEn: "Quote accepted", messageBn: "গ্রাহক আপনার দরপ্রস্তাব গ্রহণ করেছেন। কাজ শুরু করতে পারেন।", messageEn: "The customer accepted your quote. You can begin fulfilment." },
+  workStarted: { titleBn: "কাজ শুরু হয়েছে", titleEn: "Work started", messageBn: "সেবাদাতা অর্ডারটি চলমান হিসেবে চিহ্নিত করেছেন।", messageEn: "Your provider marked the order as in progress." },
+  workReady: { titleBn: "কাজ পর্যালোচনার জন্য প্রস্তুত", titleEn: "Work ready for review", messageBn: "সেবা বা পণ্য পৌঁছানো সম্পন্ন হলে নিশ্চিত করুন।", messageEn: "Please confirm the service or delivery is complete." },
+  orderCompleted: { titleBn: "অর্ডার সম্পন্ন হয়েছে", titleEn: "Order completed", messageBn: "গ্রাহক কাজ সম্পন্ন হওয়া নিশ্চিত করেছেন। প্ল্যাটফর্ম কমিশন বকেয়া হয়েছে।", messageEn: "The customer confirmed completion. Platform commission is now due." },
+  cancellationRequested: { titleBn: "বাতিলের অনুরোধ এসেছে", titleEn: "Cancellation requested", messageBn: "অন্য পক্ষ অর্ডার বাতিলের অনুরোধ করেছেন। আপনার কর্মক্ষেত্রে দেখুন।", messageEn: "The other party asked to cancel. Review the request in your workspace." },
+  orderCancelled: { titleBn: "অর্ডার বাতিল হয়েছে", titleEn: "Order cancelled", messageBn: "উভয় পক্ষের সম্মতিতে অর্ডার বাতিল হয়েছে।", messageEn: "Both parties agreed to cancel this order." },
+  paymentRecorded: { titleBn: "পেমেন্ট নথিভুক্ত হয়েছে", titleEn: "Payment recorded", messageBn: "অন্য পক্ষ একটি পেমেন্ট নথিভুক্ত করেছেন। নিশ্চিত করুন।", messageEn: "The other party recorded a payment and needs your confirmation." },
+  paymentConfirmed: { titleBn: "পেমেন্ট নিশ্চিত হয়েছে", titleEn: "Payment confirmation received", messageBn: "অন্য পক্ষ পেমেন্টের তথ্য নিশ্চিত করেছেন।", messageEn: "The other party confirmed a payment record." },
+  capabilityApproved: { titleBn: "সেবাদাতার আবেদন অনুমোদিত", titleEn: "Provider capability approved", messageBn: "আপনার সেবা কার্যক্রমের আবেদন অনুমোদিত হয়েছে।", messageEn: "Your service capability application was approved." },
+  capabilityDeclined: { titleBn: "সেবাদাতার আবেদন প্রত্যাখ্যাত", titleEn: "Provider capability declined", messageBn: "আপনার সেবা কার্যক্রমের আবেদন অনুমোদিত হয়নি।", messageEn: "Your service capability application was declined." },
+  listingApproved: { titleBn: "তালিকা অনুমোদিত", titleEn: "Listing approved", messageBn: "অপারেশনস দল আপনার তালিকা পর্যালোচনা করে অনুমোদন করেছে।", messageEn: "Your marketplace listing was approved by the operations team." },
+  listingDeclined: { titleBn: "তালিকা প্রত্যাখ্যাত", titleEn: "Listing declined", messageBn: "অপারেশনস দল আপনার তালিকা পর্যালোচনা করেছে; এটি প্রকাশ করা হয়নি।", messageEn: "Your marketplace listing was reviewed and not approved." },
+  commissionRecorded: { titleBn: "কমিশন আদায় নথিভুক্ত হয়েছে", titleEn: "Commission receipt recorded", messageBn: "প্ল্যাটফর্ম কমিশন পাওয়ার বিষয়টি নিশ্চিত করেছে।", messageEn: "The platform confirmed receipt of its commission." },
+  refundRecorded: { titleBn: "ফেরত নথিভুক্ত হয়েছে", titleEn: "Refund recorded", messageBn: "অর্থ বিভাগ এই পেমেন্টের ফেরত নথিভুক্ত করেছে।", messageEn: "Finance recorded a refund for this payment." },
+  issueResolved: { titleBn: "সমস্যার সিদ্ধান্ত নথিভুক্ত হয়েছে", titleEn: "Admin resolved the issue", messageBn: "একজন প্রশাসক অর্ডারের বিষয়ে সিদ্ধান্ত নথিভুক্ত করেছেন।", messageEn: "An administrator recorded a decision for the order." },
+} as const;
+
+type NotificationType = keyof typeof notificationCopy;
+
+async function notify(tx: Tx, userId: string, type: NotificationType, href: string) {
+  const copy = notificationCopy[type];
+  await tx.notification.create({
+    data: {
+      userId,
+      title: copy.titleEn,
+      message: copy.messageEn,
+      titleBn: copy.titleBn,
+      titleEn: copy.titleEn,
+      messageBn: copy.messageBn,
+      messageEn: copy.messageEn,
+      href,
+    },
+  });
 }
 
 function isFiniteStock(kind: ListingKind) {
@@ -274,7 +308,7 @@ export async function createMarketplaceRequest(actorId: string, input: CreateReq
       },
       select: { id: true, provider: { select: { userId: true } } },
     });
-    await notify(tx, request.provider.userId, "New service request", "A customer sent you a new request.", "/provider#requests");
+    await notify(tx, request.provider.userId, "newServiceRequest", "/provider#requests");
     await logActivity(tx, actorId, "request.created", "request", request.id);
     return { id: request.id };
   });
@@ -344,7 +378,7 @@ export async function submitQuote(actorId: string, input: CreateQuoteInput) {
           select: { id: true },
         });
     await tx.marketplaceRequest.update({ where: { id: request.id }, data: { status: "QUOTED" } });
-    await notify(tx, request.buyer.id, "New quote received", "A provider sent updated price and service terms.", "/account#requests");
+    await notify(tx, request.buyer.id, "newQuote", "/account#requests");
     await logActivity(tx, actorId, "quote.submitted", "quote", quote.id);
     return { id: quote.id };
   });
@@ -425,7 +459,7 @@ export async function acceptQuote(actorId: string, requestId: string) {
       if (request.projectId) {
         await tx.constructionProject.updateMany({ where: { id: request.projectId, status: "PLANNING" }, data: { status: "ACTIVE" } });
       }
-      await notify(tx, request.provider.userId, "Quote accepted", "The customer accepted your quote. You can begin fulfilment.", "/provider#orders");
+      await notify(tx, request.provider.userId, "quoteAccepted", "/provider#orders");
       await logActivity(tx, actorId, "quote.accepted", "order", order.id);
       return { id: order.id };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
@@ -452,11 +486,11 @@ export async function progressOrder(actorId: string, orderId: string, action: "s
     if (action === "start") {
       if (!isProvider || order.status !== "CONFIRMED") fail("invalidState");
       await tx.order.update({ where: { id: order.id }, data: { status: "IN_PROGRESS" } });
-      await notify(tx, order.buyer.id, "Work started", "Your provider marked the order as in progress.", "/account#orders");
+      await notify(tx, order.buyer.id, "workStarted", "/account#orders");
     } else if (action === "submit") {
       if (!isProvider || order.status !== "IN_PROGRESS") fail("invalidState");
       await tx.order.update({ where: { id: order.id }, data: { status: "AWAITING_CONFIRMATION" } });
-      await notify(tx, order.buyer.id, "Work ready for review", "Please confirm the service or delivery is complete.", "/account#orders");
+      await notify(tx, order.buyer.id, "workReady", "/account#orders");
     } else {
       if (!isBuyer || order.status !== "AWAITING_CONFIRMATION") fail("invalidState");
       await tx.order.update({ where: { id: order.id }, data: { status: "COMPLETED" } });
@@ -468,7 +502,7 @@ export async function progressOrder(actorId: string, orderId: string, action: "s
         create: { orderId: order.id, amount: commissionDue, status: commissionDue.isZero() ? "WAIVED" : "DUE" },
         update: {},
       });
-      await notify(tx, order.provider.userId, "Order completed", "The customer confirmed completion. Platform commission is now due.", "/provider#orders");
+      await notify(tx, order.provider.userId, "orderCompleted", "/provider#orders");
     }
     await logActivity(tx, actorId, `order.${action}`, "order", order.id);
   });
@@ -491,7 +525,7 @@ export async function requestOrderCancellation(actorId: string, orderId: string,
     } else {
       await tx.order.update({ where: { id: order.id }, data: { cancelRequestedById: actorId, cancelRequestedAt: new Date(), cancellationReason: reason } });
       const recipientId = isBuyer ? order.provider.userId : order.buyerId;
-      await notify(tx, recipientId, "Cancellation requested", "The other party asked to cancel. Review the request in your workspace.", isBuyer ? "/provider#orders" : "/account#orders");
+      await notify(tx, recipientId, "cancellationRequested", isBuyer ? "/provider#orders" : "/account#orders");
     }
     await logActivity(tx, actorId, "order.cancellation_requested", "order", order.id);
   });
@@ -512,7 +546,7 @@ async function finalizeCancellation(tx: Tx, orderId: string, actorId: string, re
   }
   await tx.booking.deleteMany({ where: { orderId: order.id } });
   const recipientId = actorId === order.buyerId ? order.provider.userId : order.buyerId;
-  await notify(tx, recipientId, "Order cancelled", "Both parties agreed to cancel this order.", actorId === order.buyerId ? "/provider#orders" : "/account#orders");
+  await notify(tx, recipientId, "orderCancelled", actorId === order.buyerId ? "/provider#orders" : "/account#orders");
   await logActivity(tx, actorId, "order.cancelled", "order", order.id);
 }
 
@@ -560,7 +594,7 @@ export async function recordPayment(actorId: string, input: PaymentInput) {
       });
       await logActivity(tx, actorId, "payment.recorded", "payment", payment.id);
       const recipientId = isBuyer ? order.provider.userId : order.buyerId;
-      await notify(tx, recipientId, "Payment recorded", "The other party recorded a payment and needs your confirmation.", isBuyer ? "/provider#orders" : "/account#orders");
+      await notify(tx, recipientId, "paymentRecorded", isBuyer ? "/provider#orders" : "/account#orders");
       return { id: payment.id };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
@@ -593,7 +627,7 @@ export async function confirmPayment(actorId: string, orderId: string, paymentId
       data: isBuyer ? { buyerConfirmedAt: new Date() } : { providerConfirmedAt: new Date() },
     });
     const recipientId = isBuyer ? payment.order.provider.userId : payment.order.buyerId;
-    await notify(tx, recipientId, "Payment confirmation received", "The other party confirmed a payment record.", isBuyer ? "/provider#orders" : "/account#orders");
+    await notify(tx, recipientId, "paymentConfirmed", isBuyer ? "/provider#orders" : "/account#orders");
     await logActivity(tx, actorId, "payment.confirmed", "payment", payment.id);
   });
 }
@@ -647,7 +681,7 @@ export async function moderateProviderCapability(actorId: string, capabilityId: 
       },
     });
     const provider = await tx.providerProfile.findUniqueOrThrow({ where: { id: capability.providerId }, select: { userId: true } });
-    await notify(tx, provider.userId, decision === "APPROVED" ? "Provider capability approved" : "Provider capability declined", `Your ${capability.sectorSlug} service application was ${decision.toLowerCase()}.`, "/provider");
+    await notify(tx, provider.userId, decision === "APPROVED" ? "capabilityApproved" : "capabilityDeclined", "/provider");
     await logActivity(tx, actorId, `provider.capability_${decision.toLowerCase()}`, "provider_capability", String(capability.id));
   });
 }
@@ -664,7 +698,7 @@ export async function moderateListing(actorId: string, listingId: string, decisi
       },
     });
     if (updated.count !== 1) fail("invalidState");
-    await notify(tx, listing.provider.userId, decision === "APPROVED" ? "Listing approved" : "Listing declined", "Your marketplace listing was reviewed by the operations team.", "/provider#listings");
+    await notify(tx, listing.provider.userId, decision === "APPROVED" ? "listingApproved" : "listingDeclined", "/provider#listings");
     await logActivity(tx, actorId, `listing.${decision.toLowerCase()}`, "listing", listing.id);
   });
 }
@@ -678,7 +712,7 @@ export async function markCommissionCollected(actorId: string, commissionId: str
       where: { id: commission.id },
       data: { status: "COLLECTED", collectedById: actorId, collectedAt: new Date(), reference: reference || null },
     });
-    await notify(tx, commission.order.provider.userId, "Commission receipt recorded", "The platform confirmed receipt of its commission.", "/provider#commissions");
+    await notify(tx, commission.order.provider.userId, "commissionRecorded", "/provider#commissions");
     await logActivity(tx, actorId, "commission.collected", "commission", commission.id);
   });
 }
@@ -732,8 +766,8 @@ export async function recordRefund(actorId: string, paymentId: string, amountVal
         data: { amount: remainingCommission, status: remainingCommission.isZero() ? "WAIVED" : "DUE" },
       });
     }
-    await notify(tx, payment.order.buyerId, "Refund recorded", "Finance recorded a refund for your payment.", "/account#orders");
-    await notify(tx, payment.order.provider.userId, "Refund recorded", "Finance recorded a refund for an order payment.", "/provider#orders");
+    await notify(tx, payment.order.buyerId, "refundRecorded", "/account#orders");
+    await notify(tx, payment.order.provider.userId, "refundRecorded", "/provider#orders");
     await logActivity(tx, actorId, "payment.refunded", "payment", payment.id);
   });
 }
@@ -777,8 +811,8 @@ export async function resolveDispute(actorId: string, orderId: string, decision:
         update: {},
       });
     }
-    await notify(tx, order.buyerId, "Admin resolved the issue", "An administrator recorded a decision for the order.", "/account#orders");
-    await notify(tx, order.provider.userId, "Admin resolved the issue", "An administrator recorded a decision for the order.", "/provider#orders");
+    await notify(tx, order.buyerId, "issueResolved", "/account#orders");
+    await notify(tx, order.provider.userId, "issueResolved", "/provider#orders");
     await logActivity(tx, actorId, `order.dispute_${decision.toLowerCase()}`, "order", order.id);
   });
 }

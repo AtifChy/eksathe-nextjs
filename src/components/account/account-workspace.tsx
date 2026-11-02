@@ -108,7 +108,7 @@ export function AccountWorkspace({ workspace, user }: {
         <h2 className="text-xl font-bold">{t.dashboard.notifications}</h2>
         {workspace.notifications.length === 0 ? <Empty text={t.workflow.noRecords} /> : workspace.notifications.map((notification) => (
           <div key={notification.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-4 py-3">
-            <div><p className="font-medium">{notification.title}</p><p className="mt-1 text-sm text-muted-foreground">{notification.message}</p></div>
+            <div><p className="font-medium">{locale === "bn" ? notification.titleBn : notification.titleEn}</p><p className="mt-1 text-sm text-muted-foreground">{locale === "bn" ? notification.messageBn : notification.messageEn}</p></div>
             {notification.href && <Link href={notification.href} className="text-sm font-medium text-primary hover:underline">{locale === "bn" ? "দেখুন" : "Open"}</Link>}
             {!notification.readAt && <MarkReadForm notificationId={notification.id} />}
           </div>

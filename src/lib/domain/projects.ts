@@ -114,7 +114,16 @@ export async function updateProjectMilestone(actorId: string, milestoneId: strin
       if (!isEngagedProvider || !["PENDING", "IN_PROGRESS"].includes(milestone.status)) throw new WorkflowError("notAllowed");
       await tx.projectMilestone.update({ where: { id: milestone.id }, data: { status: "REVIEW" } });
       await tx.notification.create({
-        data: { userId: milestone.project.ownerId, title: "Milestone ready for review", message: "A provider submitted a project milestone for approval.", href: `/account/projects/${milestone.project.id}` },
+        data: {
+          userId: milestone.project.ownerId,
+          title: "Milestone ready for review",
+          message: "A provider submitted a project milestone for approval.",
+          titleBn: "প্রকল্পের ধাপ পর্যালোচনার জন্য প্রস্তুত",
+          titleEn: "Milestone ready for review",
+          messageBn: "একজন সেবাদাতা প্রকল্পের একটি ধাপ অনুমোদনের জন্য পাঠিয়েছেন।",
+          messageEn: "A provider submitted a project milestone for approval.",
+          href: `/account/projects/${milestone.project.id}`,
+        },
       });
     } else {
       if (!isOwner || milestone.status !== "REVIEW") throw new WorkflowError("notAllowed");
@@ -126,7 +135,16 @@ export async function updateProjectMilestone(actorId: string, milestoneId: strin
       });
       for (const provider of providerIds) {
         await tx.notification.create({
-          data: { userId: provider.provider.userId, title: "Milestone approved", message: "The customer approved a project milestone.", href: "/provider#orders" },
+          data: {
+            userId: provider.provider.userId,
+            title: "Milestone approved",
+            message: "The customer approved a project milestone.",
+            titleBn: "প্রকল্পের ধাপ অনুমোদিত",
+            titleEn: "Milestone approved",
+            messageBn: "গ্রাহক প্রকল্পের একটি ধাপ অনুমোদন করেছেন।",
+            messageEn: "The customer approved a project milestone.",
+            href: "/provider#orders",
+          },
         });
       }
     }
