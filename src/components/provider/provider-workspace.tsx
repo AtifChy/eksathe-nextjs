@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { updateListingStockAction } from "@/app/actions/marketplace";
+import { archiveListingAction, updateListingStockAction } from "@/app/actions/marketplace";
 import { ProviderApplicationForm } from "@/components/provider/provider-application-form";
 import { ListingForm } from "@/components/provider/listing-form";
+import { ListingEditForm } from "@/components/provider/listing-edit-form";
+import { StorefrontForm } from "@/components/provider/storefront-form";
 import { QuoteForm } from "@/components/provider/quote-form";
 import { WorkspaceNavigation } from "@/components/workspaces/workspace-navigation";
 import { ActionFeedback } from "@/components/workflows/action-feedback";
@@ -26,6 +28,7 @@ export function ProviderWorkspace({ workspace, actorId }: { workspace: ProviderW
   return (
     <WorkspaceNavigation label={locale === "bn" ? "সেবাদাতা নেভিগেশন" : "Provider navigation"} items={[
       ...(workspace.profile.status === "APPROVED" && capabilities.length > 0 ? [{ id: "listings", label: locale === "bn" ? "তালিকা" : "Listings" }] : []),
+      ...(workspace.profile.status === "APPROVED" ? [{ id: "storefront", label: locale === "bn" ? "স্টোরফ্রন্ট" : "Storefront" }] : []),
       { id: "requests", label: locale === "bn" ? "অনুরোধ" : "Requests" },
       { id: "orders", label: locale === "bn" ? "অর্ডার" : "Orders" },
       ...(workspace.projectMilestones.length > 0 ? [{ id: "project-milestones", label: t.workflow.milestones }] : []),
@@ -57,7 +60,7 @@ export function ProviderWorkspace({ workspace, actorId }: { workspace: ProviderW
             </CardHeader>
             <CardContent>
               <details>
-                <summary className="mb-4 cursor-pointer text-sm font-semibold text-primary">{locale === "bn" ? "নতুন তালিকা যোগ করুন" : "Add a listing"}</summary>
+              <summary className="mb-4 cursor-pointer text-sm font-semibold text-primary">{locale === "bn" ? "নতুন তালিকা যোগ করুন" : "Add a listing"}</summary>
                 <ListingForm capabilities={capabilities} />
               </details>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -119,6 +122,21 @@ export function ProviderWorkspace({ workspace, actorId }: { workspace: ProviderW
         ))}
       </section>
 
+      {workspace.profile.status === "APPROVED" && (
+        <section id="storefront" className="scroll-mt-24">
+          <Card>
+            <CardHeader><CardTitle>{locale === "bn" ? "আপনার স্টোরফ্রন্ট" : "Your storefront"}</CardTitle><CardDescription>{locale === "bn" ? "গ্রাহকরা এই নাম, পরিচিতি ও ছবিগুলো পাবেন।" : "Customers see these details, your profile photo, and cover photo."}</CardDescription></CardHeader>
+            <CardContent>
+              <div className="mb-4 flex flex-wrap gap-3">
+                {capabilities.some((capability) => capability.sectorSlug === "agriculture-labor") && <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/agriculture/providers/${workspace.profile.id}`}>{locale === "bn" ? "সর্বজনীন কৃষি স্টোরফ্রন্ট দেখুন" : "Preview agriculture storefront"}</Link>}
+                {capabilities.some((capability) => capability.sectorSlug === "construction") && <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/dashboard/construction/providers/${workspace.profile.id}`}>{locale === "bn" ? "সর্বজনীন নির্মাণ প্রোফাইল দেখুন" : "Preview construction profile"}</Link>}
+              </div>
+              <StorefrontForm profile={workspace.profile} />
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
       <Card id="application">
         <CardHeader><CardTitle>{t.workflow.providerApplication}</CardTitle><CardDescription>{locale === "bn" ? "আরও সেবা বিভাগে কাজ করতে অতিরিক্ত সক্ষমতার জন্য আবেদন করুন।" : "Apply for additional sector capabilities from the same business profile."}</CardDescription></CardHeader>
         <CardContent>
@@ -142,20 +160,36 @@ export function ProviderWorkspace({ workspace, actorId }: { workspace: ProviderW
 function ListingStockCard({ listing, locale }: { listing: ProviderWorkspaceData["listings"][number]; locale: "bn" | "en" }) {
   const [state, action, pending] = useActionState(updateListingStockAction, initialWorkflowState);
   const { t } = useLanguage();
+  const tracksStock = listing.kind === "PRODUCE" || listing.kind === "CONSTRUCTION_MATERIAL";
   return (
     <div className="rounded-xl border border-border/70 p-4">
       <div className="flex items-start justify-between gap-3">
-        <div><p className="font-semibold">{locale === "bn" ? listing.titleBn : listing.titleEn}</p><p className="mt-1 text-xs text-muted-foreground">{listing.stock} {listing.unit} · {listing.unitPrice} BDT/{listing.unit}</p></div>
+        <div><p className="font-semibold">{locale === "bn" ? listing.titleBn : listing.titleEn}</p><p className="mt-1 text-xs text-muted-foreground">{tracksStock ? `${listing.stock} ${listing.unit}` : (locale === "bn" ? "তারিখ অনুযায়ী বুকিং উপলভ্যতা যাচাই হবে" : "Availability is checked against booking dates")} · {listing.unitPrice} BDT/{listing.unit}</p></div>
         <StatusBadge status={listing.moderationStatus} />
       </div>
-      <form action={action} className="mt-4 flex flex-wrap items-end gap-3">
-        <input type="hidden" name="listingId" value={listing.id} />
-        <div className="flex flex-col gap-2"><Label htmlFor={`stock-${listing.id}`}>{t.workflow.stock}</Label><Input id={`stock-${listing.id}`} name="stock" type="number" min="0" step="0.001" defaultValue={listing.stock} className="w-40" /></div>
-        <Button size="sm" variant="outline" type="submit" disabled={pending}>{pending ? t.common.loading : (locale === "bn" ? "সংরক্ষণ" : "Save")}</Button>
-      </form>
+      {listing.archivedAt ? <p className="mt-3 text-sm text-muted-foreground">{locale === "bn" ? "এই তালিকা সংরক্ষণাগারে রাখা হয়েছে।" : "This listing is archived."}</p> : (
+        <>
+          {tracksStock && <form action={action} className="mt-4 flex flex-wrap items-end gap-3">
+            <input type="hidden" name="listingId" value={listing.id} />
+            <div className="flex flex-col gap-2"><Label htmlFor={`stock-${listing.id}`}>{t.workflow.stock}</Label><Input id={`stock-${listing.id}`} name="stock" type="number" min="0" step="0.001" defaultValue={listing.stock} className="w-40" /></div>
+            <Button size="sm" variant="outline" type="submit" disabled={pending}>{pending ? t.common.loading : (locale === "bn" ? "পরিমাণ সংরক্ষণ" : "Save quantity")}</Button>
+          </form>}
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm font-semibold text-primary">{locale === "bn" ? "তালিকা সম্পাদনা" : "Edit listing"}</summary>
+            <div className="mt-3"><ListingEditForm listing={listing} locale={locale} /></div>
+          </details>
+          <ListingArchiveControl listingId={listing.id} locale={locale} />
+        </>
+      )}
       <ActionFeedback state={state} />
     </div>
   );
+}
+
+function ListingArchiveControl({ listingId, locale }: { listingId: string; locale: "bn" | "en" }) {
+  const [state, action, pending] = useActionState(archiveListingAction, initialWorkflowState);
+  const { t } = useLanguage();
+  return <div className="mt-3 flex flex-wrap items-center gap-3"><form action={action}><input type="hidden" name="listingId" value={listingId} /><Button size="sm" variant="ghost" type="submit" disabled={pending}>{pending ? t.common.loading : (locale === "bn" ? "তালিকা আর্কাইভ করুন" : "Archive listing")}</Button></form><ActionFeedback state={state} /></div>;
 }
 
 function EmptyState({ text }: { text: string }) {

@@ -7,6 +7,8 @@ import type {
   CreateRequestInput,
   PaymentInput,
   ProviderApplicationInput,
+  StorefrontInput,
+  UpdateListingInput,
 } from "@/lib/validations/workflows";
 import { prisma } from "@/lib/prisma";
 import { validateStoredObject } from "@/lib/storage/s3";
@@ -182,6 +184,37 @@ export async function applyForProvider(actorId: string, input: ProviderApplicati
   });
 }
 
+export async function updateProviderStorefront(actorId: string, input: StorefrontInput) {
+  const profile = await prisma.providerProfile.findUnique({ where: { userId: actorId }, select: { id: true, status: true } });
+  if (!profile || profile.status !== "APPROVED") fail("notAllowed");
+  for (const imageType of ["profileImage", "coverImage"] as const) {
+    const key = input[`${imageType}Key`];
+    const contentType = input[`${imageType}ContentType`];
+    const sizeBytes = input[`${imageType}SizeBytes`];
+    if (key && contentType && sizeBytes) {
+      const expectedPath = `marketplace/${profile.id}/${imageType === "profileImage" ? "profile" : "cover"}/`;
+      if (!key.startsWith(expectedPath)) fail("notAllowed");
+      await validateStoredObject(key, contentType, 5_000_000, Number(sizeBytes));
+    }
+  }
+  await prisma.$transaction(async (tx) => {
+    await tx.providerProfile.update({
+      where: { id: profile.id },
+      data: {
+        nameBn: input.nameBn,
+        nameEn: input.nameEn,
+        bioBn: input.bioBn,
+        bioEn: input.bioEn,
+        district: input.district,
+        upazila: input.upazila || null,
+        ...(input.profileImageKey ? { profileImageKey: input.profileImageKey } : {}),
+        ...(input.coverImageKey ? { coverImageKey: input.coverImageKey } : {}),
+      },
+    });
+    await logActivity(tx, actorId, "provider.storefront_updated", "provider", profile.id);
+  });
+}
+
 export async function createProviderListing(actorId: string, input: CreateListingInput) {
   if (input.imageKey) {
     const profile = await prisma.providerProfile.findUnique({ where: { userId: actorId }, select: { id: true } });
@@ -221,15 +254,64 @@ export async function createProviderListing(actorId: string, input: CreateListin
   });
 }
 
+export async function updateProviderListing(actorId: string, input: UpdateListingInput) {
+  const profile = await prisma.providerProfile.findUnique({ where: { userId: actorId }, select: { id: true, status: true } });
+  if (!profile || profile.status !== "APPROVED") fail("notAllowed");
+  if (input.imageKey) {
+    if (!input.imageContentType || !input.imageSizeBytes || !input.imageKey.startsWith(`marketplace/${profile.id}/`)) fail("notAllowed");
+    await validateStoredObject(input.imageKey, input.imageContentType, 5_000_000, Number(input.imageSizeBytes));
+  }
+  return prisma.$transaction(async (tx) => {
+    const listing = await tx.marketplaceListing.findFirst({ where: { id: input.listingId, providerId: profile.id, archivedAt: null }, select: { id: true, sectorSlug: true, kind: true } });
+    if (!listing) fail("notFound");
+    if (listing.sectorSlug !== input.sectorSlug || listing.kind !== input.kind) fail("notAllowed");
+    await assertApprovedCapability(tx, profile.id, listing.sectorSlug, listing.kind);
+    const updated = await tx.marketplaceListing.update({
+      where: { id: listing.id },
+      data: {
+        titleBn: input.titleBn,
+        titleEn: input.titleEn,
+        descriptionBn: input.descriptionBn,
+        descriptionEn: input.descriptionEn,
+        category: input.category,
+        district: input.district,
+        unit: input.unit,
+        unitPrice: new Prisma.Decimal(input.unitPrice),
+        stock: new Prisma.Decimal(input.stock),
+        availableFrom: input.availableFrom ? dateAtUtcStart(input.availableFrom) : null,
+        ...(input.imageKey ? { imageKey: input.imageKey } : {}),
+        moderationStatus: "PENDING",
+        isPublished: false,
+      },
+      select: { id: true, sectorSlug: true },
+    });
+    await logActivity(tx, actorId, "listing.edited_for_review", "listing", updated.id);
+    return updated;
+  });
+}
+
+export async function archiveProviderListing(actorId: string, listingId: string) {
+  return prisma.$transaction(async (tx) => {
+    const profile = await tx.providerProfile.findUnique({ where: { userId: actorId }, select: { id: true, status: true } });
+    if (!profile || profile.status !== "APPROVED") fail("notAllowed");
+    const listing = await tx.marketplaceListing.findFirst({ where: { id: listingId, providerId: profile.id, archivedAt: null }, select: { id: true, sectorSlug: true, kind: true } });
+    if (!listing) fail("notFound");
+    await assertApprovedCapability(tx, profile.id, listing.sectorSlug, listing.kind);
+    await tx.marketplaceListing.update({ where: { id: listing.id }, data: { archivedAt: new Date(), isPublished: false } });
+    await logActivity(tx, actorId, "listing.archived", "listing", listing.id);
+  });
+}
+
 export async function updateProviderListingStock(actorId: string, listingId: string, stock: string) {
   return prisma.$transaction(async (tx) => {
     const profile = await tx.providerProfile.findUnique({ where: { userId: actorId }, select: { id: true, status: true } });
     if (!profile || profile.status !== "APPROVED") fail("notAllowed");
     const listing = await tx.marketplaceListing.findFirst({
-      where: { id: listingId, providerId: profile.id },
+      where: { id: listingId, providerId: profile.id, archivedAt: null },
       select: { id: true, sectorSlug: true, kind: true },
     });
     if (!listing) fail("notFound");
+    if (!isFiniteStock(listing.kind)) fail("invalidState");
     await assertApprovedCapability(tx, profile.id, listing.sectorSlug, listing.kind);
     await tx.marketplaceListing.update({ where: { id: listing.id }, data: { stock: new Prisma.Decimal(stock) } });
     await logActivity(tx, actorId, "listing.stock_updated", "listing", listing.id);
@@ -242,6 +324,7 @@ export async function createMarketplaceRequest(actorId: string, input: CreateReq
       where: {
         id: input.listingId,
         isPublished: true,
+        archivedAt: null,
         moderationStatus: "APPROVED",
         provider: {
           status: "APPROVED",
@@ -691,7 +774,7 @@ export async function moderateListing(actorId: string, listingId: string, decisi
     const listing = await tx.marketplaceListing.findUnique({ where: { id: listingId }, select: { id: true, sectorSlug: true, kind: true, provider: { select: { id: true, userId: true, status: true, capabilities: { select: { sectorSlug: true, kind: true, status: true } } } } } });
     if (!listing) fail("notFound");
     const updated = await tx.marketplaceListing.updateMany({
-      where: { id: listing.id, moderationStatus: "PENDING" },
+      where: { id: listing.id, moderationStatus: "PENDING", archivedAt: null },
       data: {
         moderationStatus: decision,
         isPublished: decision === "APPROVED" && listing.provider.status === "APPROVED" && listing.provider.capabilities.some((capability) => capability.sectorSlug === listing.sectorSlug && capability.kind === listing.kind && capability.status === "APPROVED"),

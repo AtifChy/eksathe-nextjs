@@ -50,6 +50,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "An approved provider capability is required." }, { status: 403 });
     }
     key = `marketplace/${profile.id}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
+  } else if (parsed.data.purpose === "provider-storefront-image") {
+    const profile = await prisma.providerProfile.findUnique({ where: { userId: user.id }, select: { id: true, status: true } });
+    if (!profile || profile.status !== "APPROVED") return NextResponse.json({ error: "An approved provider profile is required." }, { status: 403 });
+    key = `marketplace/${profile.id}/${parsed.data.imageType}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
   } else if (parsed.data.purpose === "crop-disease-photo") {
     key = `agriculture-requests/${user.id}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
   } else {

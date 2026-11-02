@@ -4,6 +4,7 @@ import { agricultureListings, constructionListings } from "@/lib/sectors";
 const text = (max: number) => z.string().trim().max(max);
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
 const quantity = z.string().trim().regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/).refine((value) => Number(value) > 0);
+const stockAmount = z.string().trim().regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/);
 const money = z.string().trim().regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/);
 const optionalDate = z.iso.date().optional();
 
@@ -27,7 +28,7 @@ export const profileSchema = z.strictObject({
   phone: z.string().trim().regex(/^[0-9+ ()-]{7,30}$/),
 });
 
-export const createListingSchema = z.strictObject({
+const listingFields = {
   sectorSlug: z.enum(["agriculture-labor", "construction"]),
   kind: z.enum(["PRODUCE", "WORKER", "MACHINERY", "CONSTRUCTION_MATERIAL", "CONSTRUCTION_SERVICE"]),
   titleBn: requiredText(120),
@@ -38,15 +39,47 @@ export const createListingSchema = z.strictObject({
   district: requiredText(80),
   unit: requiredText(30),
   unitPrice: money.refine((value) => Number(value) > 0),
-  stock: quantity,
+  stock: stockAmount,
   availableFrom: optionalDate,
   imageKey: text(240).optional(),
   imageContentType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
   imageSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
-}).superRefine((value, context) => {
+};
+
+function validateListing(value: z.infer<z.ZodObject<typeof listingFields>>, context: z.RefinementCtx) {
+  if (["PRODUCE", "CONSTRUCTION_MATERIAL"].includes(value.kind) && Number(value.stock) <= 0) {
+    context.addIssue({ code: "custom", path: ["stock"], message: "Goods must have stock greater than zero." });
+  }
   const imageFields = [value.imageKey, value.imageContentType, value.imageSizeBytes].filter(Boolean).length;
   if (imageFields !== 0 && imageFields !== 3) context.addIssue({ code: "custom", path: ["imageKey"], message: "Upload all image details together." });
   if (value.imageSizeBytes && Number(value.imageSizeBytes) > 5_000_000) context.addIssue({ code: "custom", path: ["imageSizeBytes"], message: "Image is too large." });
+}
+
+export const createListingSchema = z.strictObject(listingFields).superRefine(validateListing);
+export const updateListingSchema = z.strictObject({ ...listingFields, listingId: requiredText(64) }).superRefine(validateListing);
+export const archiveListingSchema = z.strictObject({ listingId: requiredText(64) });
+
+const storefrontFields = {
+  nameBn: requiredText(100),
+  nameEn: requiredText(100),
+  bioBn: text(1200),
+  bioEn: text(1200),
+  district: requiredText(80),
+  upazila: text(80),
+  profileImageKey: text(240).optional(),
+  profileImageContentType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
+  profileImageSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
+  coverImageKey: text(240).optional(),
+  coverImageContentType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
+  coverImageSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
+};
+export const storefrontSchema = z.strictObject(storefrontFields).superRefine((value, context) => {
+  for (const prefix of ["profileImage", "coverImage"] as const) {
+    const values = [value[`${prefix}Key`], value[`${prefix}ContentType`], value[`${prefix}SizeBytes`]];
+    const count = values.filter(Boolean).length;
+    if (count !== 0 && count !== 3) context.addIssue({ code: "custom", path: [`${prefix}Key`], message: "Upload all image details together." });
+    if (value[`${prefix}SizeBytes`] && Number(value[`${prefix}SizeBytes`]) > 5_000_000) context.addIssue({ code: "custom", path: [`${prefix}SizeBytes`], message: "Image is too large." });
+  }
 });
 
 export const createRequestSchema = z.strictObject({
@@ -73,6 +106,12 @@ export const uploadPresignSchema = z.discriminatedUnion("purpose", [
     purpose: z.literal("listing-image"),
     sectorSlug: z.enum(["agriculture-labor", "construction"]),
     kind: z.enum(["PRODUCE", "WORKER", "MACHINERY", "CONSTRUCTION_MATERIAL", "CONSTRUCTION_SERVICE"]),
+    contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    sizeBytes: z.number().int().positive().max(5_000_000),
+  }),
+  z.strictObject({
+    purpose: z.literal("provider-storefront-image"),
+    imageType: z.enum(["profile", "cover"]),
     contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
     sizeBytes: z.number().int().positive().max(5_000_000),
   }),
@@ -220,6 +259,8 @@ export const stockUpdateSchema = z.strictObject({
 
 export type ProviderApplicationInput = z.infer<typeof providerApplicationSchema>;
 export type CreateListingInput = z.infer<typeof createListingSchema>;
+export type UpdateListingInput = z.infer<typeof updateListingSchema>;
+export type StorefrontInput = z.infer<typeof storefrontSchema>;
 export type CreateRequestInput = z.infer<typeof createRequestSchema>;
 export type CreateQuoteInput = z.infer<typeof createQuoteSchema>;
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;

@@ -118,6 +118,7 @@ export const en: Dictionary = {
     listingImageHelp: "JPG, PNG or WebP, up to 5 MB.",
     listingSaved: "The listing was saved for publication.",
     stockUpdated: "Available quantity updated.",
+    profileSaved: "Your storefront has been updated.",
     incomingRequests: "Incoming requests",
     sendQuote: "Send a quote",
     quotePrice: "Offered unit price",

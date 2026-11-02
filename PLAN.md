@@ -137,3 +137,10 @@ Finance, insurance, disaster, and advisory requests provide intake and coordinat
 4. **Publishing and integration:** add staff publishing for sourced prices/news/advice/weather, public updates, commission estimate, settings-backed support information, and translations. Acceptance: only current published records appear, sources/dates are visible, expired alerts/drafts remain private, and the full flow works in Bangla and English.
 
 After each increment, update this plan and commit the completed change. Verify migrations/seeds, lint, typecheck, targeted integration/browser journeys, responsive layouts, and production build at completion.
+
+### Restoration progress
+
+- Routes/registry and request intake are implemented and committed.
+- Storefront/discovery is implemented: owner storefront editing and photos, moderated product edits, soft archive, URL filters and pagination, ratings/reviews, seller links, and schedule-based visibility for booking listings.
+- Storefront migration applied; lint/typecheck and 12 unit tests pass. All 7 PostgreSQL integration checks pass on a temporary migrated database. The marketplace was inspected in Codex's in-app browser in Bangla and English. The standalone Playwright runner needs its Chromium browser installed.
+- Staff publishing, sourced information pages, configured commission estimates, and final release checks remain in the final increment.

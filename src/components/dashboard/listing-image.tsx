@@ -18,6 +18,8 @@ function listingEmoji(listing: ListingVisual) {
   if (/vegetable|সবজি/.test(category)) return "🥬";
   if (/fruit|ফল/.test(category)) return "🍎";
   if (/milk|dairy|দুধ/.test(category)) return "🥛";
+  if (/fish|মাছ/.test(category)) return "🐟";
+  if (/spice|মসলা|মশলা/.test(category)) return "🌶️";
   return "🌱";
 }
 

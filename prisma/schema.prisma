@@ -360,6 +360,8 @@ model ProviderProfile {
   bioEn        String               @default("") @map("bio_en")
   district     String
   upazila      String?
+  profileImageKey String?             @map("profile_image_key")
+  coverImageKey String?               @map("cover_image_key")
   status       ProviderStatus       @default(PENDING)
   reviewedAt   DateTime?            @map("reviewed_at")
   reviewedById String?              @map("reviewed_by_id")
@@ -425,6 +427,7 @@ model MarketplaceListing {
   stock            Decimal                 @default(0) @db.Decimal(12, 3)
   availableFrom    DateTime?               @map("available_from")
   imageKey         String?                 @map("image_key")
+  archivedAt       DateTime?               @map("archived_at")
   moderationStatus ListingModerationStatus @default(PENDING) @map("moderation_status")
   isPublished      Boolean                 @default(false) @map("is_published")
   createdAt        DateTime                @default(now()) @map("created_at")
@@ -434,7 +437,7 @@ model MarketplaceListing {
   requests         MarketplaceRequest[]
   orders           Order[]
 
-  @@index([sectorSlug, kind, isPublished])
+  @@index([sectorSlug, kind, isPublished, archivedAt])
   @@index([district, isPublished])
   @@index([category, isPublished])
   @@map("marketplace_listings")

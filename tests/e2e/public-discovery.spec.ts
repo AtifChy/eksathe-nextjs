@@ -59,6 +59,29 @@ test("agriculture service routes show specific form fields and unknown slugs ret
   expect(response?.status()).toBe(404);
 });
 
+test("agriculture marketplace keeps filters in the direct and dashboard URL contexts", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/agriculture/market?q=rice&category=grains&district=Dhaka&minPrice=10&maxPrice=100&sort=price-asc");
+  await expect(page.getByRole("heading", { name: "কৃষিপণ্য খুঁজুন" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "পণ্য বা বিক্রেতা খুঁজুন" })).toHaveValue("rice");
+  await expect(page.getByLabel("বিভাগ")).toHaveValue("grains");
+  await expect(page.getByLabel("জেলা")).toHaveValue("Dhaka");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole("heading", { name: "কৃষিপণ্য খুঁজুন" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Find farm products" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Search products or sellers" })).toHaveValue("rice");
+  await page.getByRole("button", { name: "বাং", exact: true }).click();
+
+  await page.goto("/dashboard/agriculture/market?category=fish");
+  await expect(page.getByRole("heading", { name: "কৃষিপণ্য খুঁজুন" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "কৃষি সেবায় ফিরুন" })).toHaveAttribute("href", "/dashboard/agriculture");
+  await expect(page.locator("form")).toHaveAttribute("action", "/dashboard/agriculture/market");
+});
+
 test("construction exposes its MVP service areas", async ({ page }) => {
 
   await page.goto("/dashboard/construction");

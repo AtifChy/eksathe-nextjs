@@ -118,6 +118,7 @@ export const bn: Dictionary = {
     listingImageHelp: "৫ এমবির মধ্যে JPG, PNG বা WebP ছবি দিন।",
     listingSaved: "তালিকাটি প্রকাশের জন্য সংরক্ষিত হয়েছে।",
     stockUpdated: "উপলভ্য পরিমাণ হালনাগাদ হয়েছে।",
+    profileSaved: "আপনার স্টোরফ্রন্ট হালনাগাদ হয়েছে।",
     incomingRequests: "নতুন অনুরোধ",
     sendQuote: "মূল্য প্রস্তাব পাঠান",
     quotePrice: "প্রস্তাবিত একক মূল্য",

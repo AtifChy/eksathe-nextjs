@@ -79,11 +79,11 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
         </Field>
         <Field id="listing-title-bn" label={t.workflow.titleBn}><Input id="listing-title-bn" name="titleBn" required maxLength={120} /></Field>
         <Field id="listing-title-en" label={t.workflow.titleEn}><Input id="listing-title-en" name="titleEn" required maxLength={120} /></Field>
-        <Field id="listing-category" label={t.workflow.category}><Input id="listing-category" name="category" required maxLength={80} placeholder={locale === "bn" ? "যেমন: সবজি, ইট, রাজমিস্ত্রি" : "e.g. vegetables, bricks, masonry"} /></Field>
+        <Field id="listing-category" label={t.workflow.category}><Input id="listing-category" name="category" list="agriculture-category-options" required maxLength={80} placeholder={locale === "bn" ? "যেমন: সবজি, ইট, রাজমিস্ত্রি" : "e.g. vegetables, bricks, masonry"} /><datalist id="agriculture-category-options"><option value="Grains / শস্য" /><option value="Vegetables / সবজি" /><option value="Fruits / ফল" /><option value="Dairy / দুগ্ধজাত" /><option value="Fish / মাছ" /><option value="Spices / মসলা" /><option value="Other / অন্যান্য" /></datalist></Field>
         <Field id="listing-district" label={t.workflow.district}><Input id="listing-district" name="district" required maxLength={80} /></Field>
         <Field id="listing-unit" label={t.workflow.unit}><Input id="listing-unit" name="unit" required maxLength={30} placeholder={locale === "bn" ? "কেজি, দিন, বস্তা" : "kg, day, bag"} /></Field>
         <Field id="listing-unit-price" label={t.workflow.price}><Input id="listing-unit-price" name="unitPrice" type="number" min="0.01" step="0.01" required /></Field>
-        <Field id="listing-stock" label={t.workflow.stock}><Input id="listing-stock" name="stock" type="number" min="0.001" step="0.001" defaultValue="1" required /></Field>
+        <Field id="listing-stock" label={t.workflow.stock}><Input id="listing-stock" name="stock" type="number" min="0" step="0.001" defaultValue="0" required /></Field>
         <Field id="listing-available-from" label={locale === "bn" ? "উপলভ্যতার তারিখ" : "Available from (optional)"}><Input id="listing-available-from" name="availableFrom" type="date" /></Field>
       </div>
       <Field id="listing-description-bn" label={t.workflow.descriptionBn}><textarea id="listing-description-bn" name="descriptionBn" rows={3} maxLength={2000} className="rounded-lg border border-input bg-background px-3 py-2 text-sm" /></Field>
@@ -92,6 +92,7 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
         <Input ref={fileInput} id="listing-image" type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading || pending} onChange={(event) => { setUploadError(null); uploadedFile.current = null; const form = event.currentTarget.form; for (const name of ["imageKey", "imageContentType", "imageSizeBytes"]) { const field = form?.elements.namedItem(name); if (field instanceof HTMLInputElement) field.value = ""; } }} />
       </Field>
       <p className="text-xs text-muted-foreground">{t.workflow.listingImageHelp}</p>
+      <p className="text-xs text-muted-foreground">{locale === "bn" ? "পণ্য বিক্রির জন্য মজুত দিন। শ্রমিক ও যন্ত্রপাতির তালিকায় মজুত ০ হতে পারে; বুকিংয়ের তারিখ অনুযায়ী উপলভ্যতা যাচাই হয়।" : "Goods need stock to sell. Worker and machinery listings may use zero stock; booking dates determine availability."}</p>
       <input type="hidden" name="imageKey" defaultValue="" />
       <input type="hidden" name="imageContentType" defaultValue="" />
       <input type="hidden" name="imageSizeBytes" defaultValue="" />

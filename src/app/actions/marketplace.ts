@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireUser, safeNextPath } from "@/lib/dal";
 import {
   acceptQuote,
+  archiveProviderListing,
   cancelMarketplaceRequest,
   confirmPayment,
   createMarketplaceRequest,
@@ -16,10 +17,15 @@ import {
   submitQuote,
   WorkflowError,
   updateProviderListingStock,
+  updateProviderListing,
+  updateProviderStorefront,
   writeReview,
 } from "@/lib/domain/marketplace";
 import {
   createListingSchema,
+  updateListingSchema,
+  archiveListingSchema,
+  storefrontSchema,
   createQuoteSchema,
   createRequestSchema,
   orderCancellationSchema,
@@ -115,14 +121,60 @@ export async function createListingAction(_state: WorkflowState, formData: FormD
     } : {}),
   });
   if (!parsed.success) return failure(parsed.error);
-  return run(() => createProviderListing(user.id, parsed.data), "listingSaved", ["/provider", "/dashboard/agriculture-labor", "/dashboard/construction", "/admin"]);
+  return run(() => createProviderListing(user.id, parsed.data), "listingSaved", ["/provider", "/agriculture", "/agriculture/market", "/dashboard/agriculture", "/dashboard/agriculture/market", "/dashboard/construction", "/admin"]);
+}
+
+export async function updateListingAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+  const user = await requireUser("/provider#listings");
+  const rawAvailableFrom = value(formData, "availableFrom");
+  const parsed = updateListingSchema.safeParse({
+    listingId: value(formData, "listingId"),
+    sectorSlug: value(formData, "sectorSlug"),
+    kind: value(formData, "kind"),
+    titleBn: value(formData, "titleBn"),
+    titleEn: value(formData, "titleEn"),
+    descriptionBn: value(formData, "descriptionBn"),
+    descriptionEn: value(formData, "descriptionEn"),
+    category: value(formData, "category"),
+    district: value(formData, "district"),
+    unit: value(formData, "unit"),
+    unitPrice: value(formData, "unitPrice"),
+    stock: value(formData, "stock"),
+    ...(rawAvailableFrom ? { availableFrom: rawAvailableFrom } : {}),
+    ...(value(formData, "imageKey") ? { imageKey: value(formData, "imageKey"), imageContentType: value(formData, "imageContentType"), imageSizeBytes: value(formData, "imageSizeBytes") } : {}),
+  });
+  if (!parsed.success) return failure(parsed.error);
+  return run(() => updateProviderListing(user.id, parsed.data), "listingSaved", ["/provider", "/agriculture", "/agriculture/market", "/dashboard/agriculture", "/dashboard/agriculture/market", "/dashboard/construction", "/admin"]);
+}
+
+export async function archiveListingAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+  const user = await requireUser("/provider#listings");
+  const parsed = archiveListingSchema.safeParse({ listingId: value(formData, "listingId") });
+  if (!parsed.success) return failure(parsed.error);
+  return run(() => archiveProviderListing(user.id, parsed.data.listingId).then(() => undefined), "listingSaved", ["/provider", "/agriculture", "/agriculture/market", "/dashboard/agriculture", "/dashboard/agriculture/market", "/dashboard/construction", "/admin"]);
+}
+
+export async function updateProviderStorefrontAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+  const user = await requireUser("/provider#storefront");
+  const parsed = storefrontSchema.safeParse({
+    nameBn: value(formData, "nameBn"),
+    nameEn: value(formData, "nameEn"),
+    bioBn: value(formData, "bioBn"),
+    bioEn: value(formData, "bioEn"),
+    district: value(formData, "district"),
+    upazila: value(formData, "upazila"),
+    ...(value(formData, "profileImageKey") ? { profileImageKey: value(formData, "profileImageKey"), profileImageContentType: value(formData, "profileImageContentType"), profileImageSizeBytes: value(formData, "profileImageSizeBytes") } : {}),
+    ...(value(formData, "coverImageKey") ? { coverImageKey: value(formData, "coverImageKey"), coverImageContentType: value(formData, "coverImageContentType"), coverImageSizeBytes: value(formData, "coverImageSizeBytes") } : {}),
+  });
+  if (!parsed.success) return failure(parsed.error);
+  return run(() => updateProviderStorefront(user.id, parsed.data).then(() => undefined), "profileSaved", ["/provider", "/agriculture", "/dashboard/agriculture"]);
 }
 
 export async function updateListingStockAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
   const user = await requireUser("/provider#listings");
   const parsed = stockUpdateSchema.safeParse({ listingId: value(formData, "listingId"), stock: value(formData, "stock") });
   if (!parsed.success) return failure(parsed.error);
-  return run(() => updateProviderListingStock(user.id, parsed.data.listingId, parsed.data.stock).then(() => undefined), "stockUpdated", ["/provider", "/dashboard/agriculture-labor", "/dashboard/construction"]);
+  return run(() => updateProviderListingStock(user.id, parsed.data.listingId, parsed.data.stock).then(() => undefined), "stockUpdated", ["/provider", "/agriculture", "/agriculture/market", "/dashboard/agriculture", "/dashboard/agriculture/market", "/dashboard/construction"]);
 }
 
 export async function createMarketplaceRequestAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {

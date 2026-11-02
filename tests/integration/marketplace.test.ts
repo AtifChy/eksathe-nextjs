@@ -6,10 +6,11 @@ if (!testDatabaseUrl) throw new Error("Set TEST_DATABASE_URL to a dedicated, mig
 process.env.DATABASE_URL = testDatabaseUrl;
 mock.module("server-only", () => ({}));
 
-const [{ prisma }, marketplace, { getAdminWorkspace }] = await Promise.all([
+const [{ prisma }, marketplace, { getAdminWorkspace }, listings] = await Promise.all([
   import("@/lib/prisma"),
   import("@/lib/domain/marketplace"),
   import("@/lib/workspaces"),
+  import("@/lib/listings"),
 ]);
 
 const suffix = crypto.randomUUID();
@@ -40,19 +41,19 @@ async function createRequestAndQuote(listingId: string, customerId: string) {
   return request.id;
 }
 
-async function createListing(stock: string, sectorSlug = "agriculture-labor", kind: "PRODUCE" | "CONSTRUCTION_MATERIAL" = "PRODUCE") {
+async function createListing(stock: string, sectorSlug = "agriculture-labor", kind: "PRODUCE" | "WORKER" | "MACHINERY" | "CONSTRUCTION_MATERIAL" = "PRODUCE") {
   const listing = await prisma.marketplaceListing.create({
     data: {
       providerId,
       sectorSlug,
       kind,
       titleBn: "পরীক্ষার ধান",
-      titleEn: kind === "PRODUCE" ? "Test rice" : "Test cement",
+      titleEn: kind === "PRODUCE" ? "Test rice" : kind === "CONSTRUCTION_MATERIAL" ? "Test cement" : "Test worker",
       descriptionBn: "",
       descriptionEn: "",
-      category: kind === "PRODUCE" ? "Rice" : "Cement",
+      category: kind === "PRODUCE" ? "Rice" : kind === "CONSTRUCTION_MATERIAL" ? "Cement" : "Farm labor",
       district: "Dhaka",
-      unit: kind === "PRODUCE" ? "kg" : "bag",
+      unit: kind === "PRODUCE" ? "kg" : kind === "CONSTRUCTION_MATERIAL" ? "bag" : "day",
       unitPrice: new Prisma.Decimal(10),
       stock: new Prisma.Decimal(stock),
       moderationStatus: "APPROVED",
@@ -82,6 +83,7 @@ describe("PostgreSQL marketplace transactions", () => {
     const profile = await prisma.providerProfile.create({ data: { userId: providerUserId, nameBn: "পরীক্ষার কৃষক", nameEn: "Test farmer", district: "Dhaka", status: "APPROVED" }, select: { id: true } });
     providerId = profile.id;
     await prisma.providerCapability.create({ data: { providerId, sectorSlug: "agriculture-labor", kind: "PRODUCE", status: "APPROVED" } });
+    await prisma.providerCapability.create({ data: { providerId, sectorSlug: "agriculture-labor", kind: "WORKER", status: "APPROVED" } });
     await prisma.providerCapability.create({ data: { providerId, sectorSlug: "construction", kind: "CONSTRUCTION_MATERIAL", status: "APPROVED" } });
   });
 
@@ -117,6 +119,28 @@ describe("PostgreSQL marketplace transactions", () => {
     expect(completedOrder.commission).toEqual({ status: "COLLECTED", reference: "integration-receipt" });
     expect(Boolean(completedOrder.payments[0]?.buyerConfirmedAt && completedOrder.payments[0]?.providerConfirmedAt)).toBe(true);
     expect(await prisma.activityLog.count({ where: { entityType: "order", entityId: order.id } })).toBeGreaterThanOrEqual(3);
+
+    await marketplace.updateProviderListing(providerUserId, {
+      listingId,
+      sectorSlug: "agriculture-labor",
+      kind: "PRODUCE",
+      titleBn: "পরীক্ষার নতুন ধান",
+      titleEn: "Updated test rice",
+      descriptionBn: "",
+      descriptionEn: "Updated description",
+      category: "Grains / শস্য",
+      district: "Dhaka",
+      unit: "kg",
+      unitPrice: "99",
+      stock: "4",
+      availableFrom: undefined,
+    });
+    const moderatedListing = await prisma.marketplaceListing.findUniqueOrThrow({ where: { id: listingId }, select: { unitPrice: true, moderationStatus: true, isPublished: true } });
+    const orderSnapshot = await prisma.order.findUniqueOrThrow({ where: { id: order.id }, select: { unitPrice: true } });
+    expect(moderatedListing.unitPrice.toString()).toBe("99");
+    expect(moderatedListing.moderationStatus).toBe("PENDING");
+    expect(moderatedListing.isPublished).toBe(false);
+    expect(orderSnapshot.unitPrice.toString()).toBe("10");
   });
 
   it("does not oversell when two customers accept quotes concurrently", async () => {
@@ -133,6 +157,44 @@ describe("PostgreSQL marketplace transactions", () => {
     expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
     expect((await prisma.marketplaceListing.findUniqueOrThrow({ where: { id: listingId }, select: { stock: true } })).stock.toString()).toBe("0");
     expect(await prisma.order.count({ where: { listingId } })).toBe(1);
+  });
+
+  it("keeps zero-stock workers visible and uses bookings instead of stock for availability", async () => {
+    const workerListingId = await createListing("0", "agriculture-labor", "WORKER");
+    const [market, detail, profile] = await Promise.all([
+      listings.getPublicListings("agriculture-labor", "WORKER"),
+      listings.getPublicListing(workerListingId),
+      listings.getPublicProviderProfile("agriculture-labor", providerId),
+    ]);
+    expect(market.items.some((item) => item.id === workerListingId)).toBe(true);
+    expect(detail.listing?.id).toBe(workerListingId);
+    expect(profile.provider?.listings.some((item) => item.id === workerListingId)).toBe(true);
+    await expect(marketplace.updateProviderListingStock(providerUserId, workerListingId, "1")).rejects.toMatchObject({ code: "invalidState" });
+
+    const startsAt = new Date();
+    startsAt.setUTCDate(startsAt.getUTCDate() + 1);
+    const endsAt = new Date(startsAt);
+    endsAt.setUTCDate(endsAt.getUTCDate() + 1);
+    const startDate = startsAt.toISOString().slice(0, 10);
+    const endDate = endsAt.toISOString().slice(0, 10);
+    const request = await marketplace.createMarketplaceRequest(buyerId, { listingId: workerListingId, quantity: "1", district: "Dhaka", details: "Worker availability test", requestedStart: startDate, requestedEnd: endDate });
+    requestIds.push(request.id);
+    await marketplace.submitQuote(providerUserId, { requestId: request.id, quantity: "2", unitPrice: "10", transportFee: "0", note: "Two days" });
+    const order = await marketplace.acceptQuote(buyerId, request.id);
+    orderIds.push(order.id);
+    const scheduled = await prisma.order.findUniqueOrThrow({ where: { id: order.id }, select: { quantity: true, booking: { select: { startsAt: true, endsAt: true } } } });
+    expect(scheduled.quantity.toString()).toBe("2");
+    expect(scheduled.booking).not.toBeNull();
+    expect((await prisma.marketplaceListing.findUniqueOrThrow({ where: { id: workerListingId }, select: { stock: true } })).stock.toString()).toBe("0");
+  });
+
+  it("archives listings without deleting their order references", async () => {
+    const listingId = await createListing("3");
+    await marketplace.archiveProviderListing(providerUserId, listingId);
+    const archived = await prisma.marketplaceListing.findUniqueOrThrow({ where: { id: listingId }, select: { archivedAt: true, isPublished: true } });
+    expect(archived.archivedAt).toBeInstanceOf(Date);
+    expect(archived.isPublished).toBe(false);
+    expect((await listings.getPublicListing(listingId)).listing).toBeNull();
   });
 
   it("limits the operations request queue to open requests in assigned sectors", async () => {

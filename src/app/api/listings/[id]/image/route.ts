@@ -9,8 +9,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     where: {
       id,
       isPublished: true,
+      archivedAt: null,
       moderationStatus: "APPROVED",
-      stock: { gt: 0 },
+      OR: [
+        { kind: { in: ["PRODUCE", "CONSTRUCTION_MATERIAL"] }, stock: { gt: 0 } },
+        { kind: { in: ["WORKER", "MACHINERY", "CONSTRUCTION_SERVICE"] } },
+      ],
       provider: {
         status: "APPROVED",
         user: { status: "active" },

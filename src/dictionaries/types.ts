@@ -127,6 +127,7 @@ export interface Dictionary {
     listingImageHelp: string;
     listingSaved: string;
     stockUpdated: string;
+    profileSaved: string;
     incomingRequests: string;
     sendQuote: string;
     quotePrice: string;

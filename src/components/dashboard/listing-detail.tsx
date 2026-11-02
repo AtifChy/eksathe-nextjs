@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { ArrowLeftIcon, ArrowRightIcon, MapPinIcon, PackageIcon, UserRoundIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, MapPinIcon, PackageIcon, StarIcon, UserRoundIcon } from "lucide-react";
 import { ListingRequestForm } from "@/components/workflows/listing-request-form";
 import { useLanguage } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { PublicListing } from "@/lib/listings";
+import type { PublicListing, PublicProvider } from "@/lib/listings";
 import type { SectorDefinition } from "@/lib/sectors";
 import { cn } from "cn";
 
 export function ListingDetail({
   sector,
   listing,
+  provider,
   unavailable,
   signedIn,
   projectId,
@@ -22,6 +23,7 @@ export function ListingDetail({
 }: {
   sector: SectorDefinition;
   listing: PublicListing | null;
+  provider?: PublicProvider | null;
   unavailable: boolean;
   signedIn: boolean;
   projectId?: string;
@@ -31,6 +33,7 @@ export function ListingDetail({
   const { locale, t } = useLanguage();
   const price = (value: string) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value));
   const base = routeBase ?? `/dashboard/${sector.slug}`;
+  const scheduled = listing ? ["WORKER", "MACHINERY", "CONSTRUCTION_SERVICE"].includes(listing.kind) : false;
   const returnTo = `${base}/listings/${listing?.id ?? ""}${projectId ? `?${new URLSearchParams({ projectId, ...(packageLabel ? { packageLabel } : {}) }).toString()}` : ""}`;
 
   return (
@@ -52,12 +55,13 @@ export function ListingDetail({
                 <span aria-hidden="true">·</span>
                 <span className="inline-flex items-center gap-1"><MapPinIcon className="size-4" aria-hidden="true" />{listing.district}</span>
               </CardDescription>
+              {listing.averageRating !== null && <p className="inline-flex items-center gap-1 text-sm font-medium"><StarIcon aria-hidden="true" className="size-4 fill-current text-amber-500" />{listing.averageRating.toFixed(1)} · {listing.reviewCount} {locale === "bn" ? "টি পর্যালোচনা" : "reviews"}</p>}
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">{locale === "bn" ? listing.descriptionBn : listing.descriptionEn}</p>
               <div className="grid gap-3 rounded-xl bg-muted/60 p-4 sm:grid-cols-3">
                 <div><p className="text-xs text-muted-foreground">{t.workflow.price}</p><p className="mt-1 font-semibold">{price(listing.unitPrice)} / {listing.unit}</p></div>
-                <div><p className="text-xs text-muted-foreground">{t.workflow.stock}</p><p className="mt-1 inline-flex items-center gap-1 font-semibold"><PackageIcon aria-hidden="true" className="size-4" />{listing.stock} {listing.unit}</p></div>
+                <div><p className="text-xs text-muted-foreground">{scheduled ? (locale === "bn" ? "বুকিংয়ের উপলভ্যতা" : "Booking availability") : t.workflow.stock}</p><p className="mt-1 inline-flex items-center gap-1 font-semibold"><PackageIcon aria-hidden="true" className="size-4" />{scheduled ? (listing.availableFrom ? `${locale === "bn" ? "শুরু" : "From"} ${new Date(listing.availableFrom).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}` : (locale === "bn" ? "তারিখ অনুযায়ী যাচাই হবে" : "Checked for requested dates")) : `${listing.stock} ${listing.unit}`}</p></div>
                 <div><p className="text-xs text-muted-foreground">{t.workflow.district}</p><p className="mt-1 font-semibold">{listing.district}</p></div>
               </div>
               <Link href={`${base}/providers/${listing.providerId}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit gap-2")}>
@@ -66,6 +70,22 @@ export function ListingDetail({
             </CardContent>
           </Card>
         ) : null}
+        {listing && !unavailable && provider && (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">{locale === "bn" ? "বিক্রেতা" : "Seller"}</CardTitle>
+                <CardDescription className="flex flex-wrap items-center gap-2">{locale === "bn" ? provider.nameBn : provider.nameEn} · {provider.district}{provider.averageRating !== null && <span className="inline-flex items-center gap-1"><StarIcon aria-hidden="true" className="size-4 fill-current text-amber-500" />{provider.averageRating.toFixed(1)} ({provider.reviewCount})</span>}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap items-center gap-3">
+                <p className="max-w-2xl text-sm text-muted-foreground">{locale === "bn" ? provider.bioBn : provider.bioEn}</p>
+                <Link href={`${base}/providers/${provider.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-2")}>{locale === "bn" ? "দোকান দেখুন" : "Visit storefront"}<ArrowRightIcon aria-hidden="true" className="size-4" /></Link>
+              </CardContent>
+            </Card>
+            {provider.listings.filter((item) => item.id !== listing.id).length > 0 && <section className="flex flex-col gap-4"><h2 className="text-xl font-bold">{locale === "bn" ? "এই বিক্রেতার আরও পণ্য" : "More from this seller"}</h2><div className="grid gap-4 sm:grid-cols-2">{provider.listings.filter((item) => item.id !== listing.id).slice(0, 4).map((item) => <Link key={item.id} href={`${base}/listings/${item.id}`} className="rounded-xl border border-border/70 p-4 hover:border-primary/40"><p className="font-semibold">{locale === "bn" ? item.titleBn : item.titleEn}</p><p className="mt-1 text-sm text-muted-foreground">{item.category} · {item.unitPrice} BDT / {item.unit}</p></Link>)}</div></section>}
+          </>
+        )}
+        {listing && !unavailable && listing.reviews && listing.reviews.length > 0 && <section className="flex flex-col gap-4"><h2 className="text-xl font-bold">{locale === "bn" ? "ক্রেতার পর্যালোচনা" : "Customer reviews"}</h2>{listing.reviews.map((review, index) => <Card key={`${review.createdAt}-${index}`}><CardContent className="flex flex-col gap-2 p-4"><p className="inline-flex items-center gap-1 text-sm font-semibold"><StarIcon aria-hidden="true" className="size-4 fill-current text-amber-500" />{review.rating} / 5</p><p className="whitespace-pre-line text-sm text-muted-foreground">{review.comment}</p><p className="text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}</p></CardContent></Card>)}</section>}
         <div className="flex gap-3">
           <Link href={base} className={buttonVariants({ variant: "outline" })}>{t.nav.browse}</Link>
           <Link href="/dashboard" className={buttonVariants({ variant: "ghost" })}>{locale === "bn" ? "সব বিভাগ" : "All sectors"}</Link>

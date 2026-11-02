@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { permanentRedirect } from "next/navigation";
 import { ListingDetail } from "@/components/dashboard/listing-detail";
 import { getCurrentUser } from "@/lib/dal";
-import { getPublicListing } from "@/lib/listings";
+import { getPublicListing, getPublicProviderProfile } from "@/lib/listings";
 import { getSector } from "@/lib/sectors";
 
 export const instant = false;
@@ -26,11 +26,13 @@ export default async function ListingPage({ params, searchParams }: {
   const [result, user] = await Promise.all([getPublicListing(listingId), getCurrentUser()]);
   if (result.listing && result.listing.sectorSlug !== slug) notFound();
   if (!result.listing && !result.unavailable) notFound();
+  const providerResult = result.listing ? await getPublicProviderProfile(sector.slug, result.listing.providerId) : null;
 
   return (
     <ListingDetail
       sector={sector}
       listing={result.listing}
+      provider={providerResult?.provider}
       unavailable={result.unavailable}
       signedIn={Boolean(user && user.status === "active")}
       projectId={typeof query.projectId === "string" && query.projectId.length <= 64 ? query.projectId : undefined}
