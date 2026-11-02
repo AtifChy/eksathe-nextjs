@@ -32,6 +32,9 @@ bun run db:migrate
 bun run db:seed
 ```
 
+To load sample accounts, listings and workflow records for the agriculture and
+construction services, follow [the local demo data guide](docs/demo-data.md).
+
 Then start the app:
 
 ```bash
@@ -67,6 +70,7 @@ is for local testing; configure a sender on your verified domain for production.
 | `bun run db:migrate` | Create and apply a dev migration |
 | `bun run db:deploy` | Apply migrations (production) |
 | `bun run db:seed` | Seed the 30 panels (idempotent upserts) |
+| `bun run db:seed:demo` | Add opt-in, local-only agriculture and construction demo records |
 | `bun run db:studio` | Open Prisma Studio |
 | `bun run db:status` | Show migration status |
 | `bun run db:reset` | **Destructive:** wipe the volume, migrate and seed |
