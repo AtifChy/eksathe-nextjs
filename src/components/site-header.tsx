@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChevronDownIcon, LayoutDashboardIcon, LogOutIcon, UserRoundIcon } from "lucide-react";
+import { signOutAction } from "@/app/actions/session";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { authClient } from "@/lib/auth-client";
 
 type SiteHeaderProps = {
   userName?: string;
@@ -18,15 +17,7 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHeaderProps) {
   const { t } = useLanguage();
-  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  async function signOut() {
-    await authClient.signOut();
-    setMenuOpen(false);
-    router.replace("/");
-    router.refresh();
-  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-[#0b5036] text-white shadow-sm">
@@ -69,9 +60,11 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                   <Link role="menuitem" href="/account" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm hover:bg-muted">{t.dashboard.profile}</Link>
                   {canProvider && <Link role="menuitem" href="/provider" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm hover:bg-muted">{t.nav.provider}</Link>}
                   {canAdmin && <Link role="menuitem" href="/admin" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm hover:bg-muted">{t.nav.admin}</Link>}
-                  <button role="menuitem" type="button" onClick={signOut} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted">
-                    <LogOutIcon aria-hidden="true" />{t.nav.signOut}
-                  </button>
+                  <form action={signOutAction}>
+                    <button role="menuitem" type="submit" className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted">
+                      <LogOutIcon aria-hidden="true" />{t.nav.signOut}
+                    </button>
+                  </form>
                 </div>
               )}
             </div>
