@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { getProjectWorkspace } from "@/lib/workspaces";
 import { prisma } from "@/lib/prisma";
 import { createDownloadUrl } from "@/lib/storage/s3";
+import { logError } from "@/lib/logging";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ projectId: string; documentId: string }> }) {
   const { projectId, documentId } = await params;
@@ -18,7 +19,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pro
     if (!url) return new NextResponse(null, { status: 404 });
     return NextResponse.redirect(url, { status: 302, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
-    console.error("Project document signing failed.", error);
+    logError("project.document_signing_failed", error);
     return new NextResponse(null, { status: 503 });
   }
 }

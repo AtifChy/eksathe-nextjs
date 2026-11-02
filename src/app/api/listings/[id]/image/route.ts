@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createDownloadUrl } from "@/lib/storage/s3";
+import { logError } from "@/lib/logging";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,7 +26,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!url) return new NextResponse(null, { status: 404 });
     return NextResponse.redirect(url, { status: 302, headers: { "Cache-Control": "public, max-age=30" } });
   } catch (error) {
-    console.error("Listing image signing failed.", error);
+    logError("listing.image_signing_failed", error);
     return new NextResponse(null, { status: 503 });
   }
 }

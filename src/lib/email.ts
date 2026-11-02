@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { logError } from "@/lib/logging";
 
 function previewEmailInDevelopment(subject: string, url: string, reason: string) {
   if (process.env.NODE_ENV === "production") return false;
@@ -25,10 +26,7 @@ export async function sendAuthEmail(to: string, subject: string, url: string) {
   });
 
   if (error) {
-    console.error("Authentication email delivery failed.", {
-      name: error.name,
-      message: error.message,
-    });
+    logError("auth.email_delivery_failed", error);
     if (previewEmailInDevelopment(subject, url, "Resend could not deliver the message")) return;
     throw new Error("Account email could not be delivered.");
   }

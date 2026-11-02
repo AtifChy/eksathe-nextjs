@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logging";
 
 export type PublicListing = {
   id: string;
@@ -133,7 +134,7 @@ export async function getPublicListings(sectorSlug: string, kind?: PublicListing
       unavailable: false,
     };
   } catch (error) {
-    console.error("Public listing query failed.", error);
+    logError("listing.public_query_failed", error);
     return { items: [], unavailable: true };
   }
 }
@@ -167,7 +168,7 @@ export async function getPublicListing(id: string): Promise<PublicListingResult>
     }
     return { listing: toPublicListing(row), unavailable: false };
   } catch (error) {
-    console.error("Public listing query failed.", error);
+    logError("listing.public_query_failed", error);
     return { listing: null, unavailable: true };
   }
 }
@@ -248,7 +249,7 @@ export async function getPublicProviderProfile(sectorSlug: string, providerId: s
       unavailable: false,
     };
   } catch (error) {
-    console.error("Public provider query failed.", error);
+    logError("provider.public_query_failed", error);
     return { provider: null, unavailable: true };
   }
 }

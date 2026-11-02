@@ -7,6 +7,7 @@ import { updateOwnProfile } from "@/lib/domain/account";
 import { profileSchema } from "@/lib/validations/workflows";
 import type { WorkflowState } from "@/lib/workflow-state";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logging";
 
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
@@ -22,7 +23,7 @@ export async function updateProfileAction(_state: WorkflowState, formData: FormD
     revalidatePath("/account");
     return { status: "success", messageKey: "profileUpdated" };
   } catch (error) {
-    console.error("Profile update failed.", error);
+    logError("account.profile_update_failed", error);
     return { status: "error", messageKey: "requestFailed" };
   }
 }
@@ -38,7 +39,7 @@ export async function markNotificationReadAction(_state: WorkflowState, formData
     revalidatePath("/provider");
     return { status: "success", messageKey: "notificationRead" };
   } catch (error) {
-    console.error("Notification update failed.", error);
+    logError("account.notification_update_failed", error);
     return { status: "error", messageKey: "requestFailed" };
   }
 }

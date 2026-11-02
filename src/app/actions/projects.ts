@@ -7,6 +7,7 @@ import { WorkflowError } from "@/lib/domain/marketplace";
 import { requireUser } from "@/lib/dal";
 import { attachProjectDocumentSchema, createProjectSchema, milestoneSchema, milestoneUpdateSchema, projectExpenseSchema } from "@/lib/validations/workflows";
 import type { WorkflowMessageKey, WorkflowState } from "@/lib/workflow-state";
+import { logError } from "@/lib/logging";
 
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
@@ -27,7 +28,7 @@ function fail(error: unknown): WorkflowState {
     };
     return { status: "error", messageKey: keys[error.code] };
   }
-  console.error("Project action failed.", error);
+  logError("project.action_failed", error);
   return { status: "error", messageKey: "requestFailed" };
 }
 

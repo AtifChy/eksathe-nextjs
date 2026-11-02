@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { logError } from "@/lib/logging";
 
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -59,7 +60,7 @@ export async function enforceRateLimit(
     const result = await limiter.limit(identifier);
     return { allowed: result.success, available: true, resetAt: result.reset };
   } catch (error) {
-    console.error("Shared rate limit service failed.", error instanceof Error ? error.name : "Unknown error");
+    logError("rate_limit.shared_storage_failed", error);
     return { allowed: false, available: false, resetAt: Date.now() + windowSeconds * 1000 };
   }
 }

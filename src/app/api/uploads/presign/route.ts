@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { createUploadUrl, isObjectStorageConfigured } from "@/lib/storage/s3";
 import { uploadPresignSchema } from "@/lib/validations/workflows";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { logError } from "@/lib/logging";
 
 const extensions: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
     if (!signed) return NextResponse.json({ error: "File storage is not configured." }, { status: 503 });
     return NextResponse.json({ key, url: signed.url, expiresIn: signed.expiresIn });
   } catch (error) {
-    console.error("Upload URL creation failed.", error);
+    logError("upload.presign_failed", error);
     return NextResponse.json({ error: "Could not prepare the file upload." }, { status: 503 });
   }
 }

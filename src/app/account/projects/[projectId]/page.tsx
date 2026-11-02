@@ -4,6 +4,7 @@ import { WorkspaceError } from "@/components/workflows/workspace-error";
 import { requireUser } from "@/lib/dal";
 import { getPublicListings } from "@/lib/listings";
 import { getProjectWorkspace } from "@/lib/workspaces";
+import { logError } from "@/lib/logging";
 
 export const instant = false;
 
@@ -11,7 +12,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ projec
   const { projectId } = await params;
   const user = await requireUser(`/account/projects/${projectId}`);
   const project = await getProjectWorkspace(user.id, projectId).catch((error) => {
-    console.error("Project access query failed.", error);
+    logError("workspace.project_query_failed", error);
     return undefined;
   });
   if (project === undefined) return <WorkspaceError />;

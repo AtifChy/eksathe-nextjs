@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser, hasStaffPermission } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { createDownloadUrl } from "@/lib/storage/s3";
+import { logError } from "@/lib/logging";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ orderId: string; paymentId: string }> }) {
   const { orderId, paymentId } = await params;
@@ -20,7 +21,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ord
     if (!url) return new NextResponse(null, { status: 404 });
     return NextResponse.redirect(url, { status: 302, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
-    console.error("Payment receipt signing failed.", error);
+    logError("payment.receipt_signing_failed", error);
     return new NextResponse(null, { status: 503 });
   }
 }

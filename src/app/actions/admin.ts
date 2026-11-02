@@ -17,6 +17,7 @@ import {
 import { commissionRateSchema, commissionReceiptSchema, disputeResolutionSchema, moderationSchema, refundSchema, revokeStaffGrantSchema, staffGrantSchema } from "@/lib/validations/workflows";
 import { prisma } from "@/lib/prisma";
 import type { WorkflowMessageKey, WorkflowState } from "@/lib/workflow-state";
+import { logError } from "@/lib/logging";
 
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
@@ -37,7 +38,7 @@ function failure(error: unknown): WorkflowState {
     };
     return { status: "error", messageKey: keys[error.code] };
   }
-  console.error("Administration action failed.", error);
+  logError("admin.action_failed", error);
   return { status: "error", messageKey: "requestFailed" };
 }
 

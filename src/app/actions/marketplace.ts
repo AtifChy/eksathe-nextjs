@@ -32,6 +32,7 @@ import {
 } from "@/lib/validations/workflows";
 import { applyForProvider } from "@/lib/domain/marketplace";
 import type { WorkflowMessageKey, WorkflowState } from "@/lib/workflow-state";
+import { logError } from "@/lib/logging";
 
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
@@ -58,7 +59,7 @@ function failure(error: unknown, fallback: WorkflowMessageKey = "requestFailed")
     };
     return { status: "error", messageKey: messageKey[error.code] };
   }
-  console.error("Marketplace action failed.", error);
+  logError("marketplace.action_failed", error);
   return { status: "error", messageKey: fallback };
 }
 
