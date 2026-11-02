@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDownIcon, LayoutDashboardIcon, LogOutIcon, UserRoundIcon } from "lucide-react";
+import { BriefcaseBusinessIcon, ChevronDownIcon, LayoutDashboardIcon, LogOutIcon, ShieldCheckIcon, UserRoundIcon } from "lucide-react";
 import { signOutAction } from "@/app/actions/session";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -27,7 +27,8 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           <span className="hidden text-[0.65rem] font-normal text-white/70 sm:block">{t.common.brandSlogan}</span>
         </Link>
 
-        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto sm:gap-2" aria-label={t.header.services}>
+        <nav className="flex min-w-0 items-center gap-1 sm:gap-2" aria-label={t.header.services}>
+          <div className="flex min-w-0 items-center gap-1 overflow-x-auto sm:gap-2">
           <Link href="/dashboard" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
             <span className="hidden sm:inline">{t.header.dashboard}</span>
             <span className="sm:hidden" aria-label={t.header.dashboard}>13</span>
@@ -39,6 +40,8 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
             {t.home.construction}
           </Link>
 
+          </div>
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <LanguageToggle />
           <ThemeToggle />
 
@@ -57,9 +60,9 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
               </button>
               {menuOpen && (
                 <div role="menu" className="absolute right-0 top-full mt-2 flex min-w-48 flex-col gap-1 rounded-xl border border-border bg-card p-2 text-foreground shadow-lg">
-                  <Link role="menuitem" href="/account" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm hover:bg-muted">{t.dashboard.profile}</Link>
-                  {canProvider && <Link role="menuitem" href="/provider" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm hover:bg-muted">{t.nav.provider}</Link>}
-                  {canAdmin && <Link role="menuitem" href="/admin" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm hover:bg-muted">{t.nav.admin}</Link>}
+                  <Link role="menuitem" href="/account#profile" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted"><UserRoundIcon aria-hidden="true" className="size-4" />{t.dashboard.profile}</Link>
+                  {canProvider && <Link role="menuitem" href="/provider" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted"><BriefcaseBusinessIcon aria-hidden="true" className="size-4" />{t.nav.provider}</Link>}
+                  {canAdmin && <Link role="menuitem" href="/admin" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted"><ShieldCheckIcon aria-hidden="true" className="size-4" />{t.nav.admin}</Link>}
                   <form action={signOutAction}>
                     <button role="menuitem" type="submit" className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted">
                       <LogOutIcon aria-hidden="true" />{t.nav.signOut}
@@ -76,6 +79,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
               </Link>
             </div>
           )}
+          </div>
         </nav>
       </div>
     </header>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { BellIcon, ClipboardListIcon, HardHatIcon, MailIcon, PhoneIcon, ShoppingBagIcon, UserRoundIcon } from "lucide-react";
 import { acceptQuoteAction, cancelMarketplaceRequestAction } from "@/app/actions/marketplace";
 import { markNotificationReadAction, updateProfileAction } from "@/app/actions/account";
 import { AddMilestoneForm } from "@/components/projects/project-forms";
@@ -27,11 +28,11 @@ export function AccountWorkspace({ workspace, user }: {
 
   return (
     <WorkspaceNavigation label={locale === "bn" ? "অ্যাকাউন্ট নেভিগেশন" : "Account navigation"} items={[
-      { id: "profile", label: t.dashboard.profile },
-      { id: "requests", label: locale === "bn" ? "অনুরোধ" : "Requests" },
-      { id: "orders", label: locale === "bn" ? "অর্ডার" : "Orders" },
-      { id: "projects", label: t.workflow.projectTitle },
-      { id: "notifications", label: t.dashboard.notifications },
+      { id: "profile", label: t.dashboard.profile, icon: UserRoundIcon },
+      { id: "requests", label: locale === "bn" ? "অনুরোধ" : "Requests", icon: ClipboardListIcon },
+      { id: "orders", label: locale === "bn" ? "অর্ডার" : "Orders", icon: ShoppingBagIcon },
+      { id: "projects", label: t.workflow.projectTitle, icon: HardHatIcon },
+      { id: "notifications", label: t.dashboard.notifications, icon: BellIcon },
     ]}>
       <div>
         <p className="text-sm text-primary">{locale === "bn" ? "আপনার একাউন্ট" : "Your account"}</p>
@@ -41,7 +42,7 @@ export function AccountWorkspace({ workspace, user }: {
 
       <section id="profile" className="scroll-mt-24">
         <Card>
-          <CardHeader><CardTitle>{t.dashboard.profile}</CardTitle><CardDescription>{locale === "bn" ? "এই তথ্য আপনার অনুরোধ ও বুকিংয়ে ব্যবহৃত হবে।" : "These details are used for requests and bookings."}</CardDescription></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><UserRoundIcon aria-hidden="true" className="size-5 text-primary" />{t.dashboard.profile}</CardTitle><CardDescription>{locale === "bn" ? "এই তথ্য আপনার অনুরোধ ও বুকিংয়ে ব্যবহৃত হবে।" : "These details are used for requests and bookings."}</CardDescription></CardHeader>
           <CardContent>
             <ProfileForm user={user} />
           </CardContent>
@@ -121,7 +122,23 @@ export function AccountWorkspace({ workspace, user }: {
 function ProfileForm({ user }: { user: { name: string; email: string; phone: string } }) {
   const [state, action, pending] = useActionState(updateProfileAction, initialWorkflowState);
   const { t } = useLanguage();
-  return <form action={action} className="grid gap-4 sm:grid-cols-2"><Field id="account-name" label={t.auth.name}><Input id="account-name" name="name" defaultValue={user.name} required maxLength={120} /></Field><Field id="account-phone" label={t.auth.phone}><Input id="account-phone" name="phone" type="tel" defaultValue={user.phone} required maxLength={30} /></Field><Field id="account-email" label={t.auth.email}><Input id="account-email" value={user.email} readOnly /></Field><div className="flex flex-col justify-end gap-2"><ActionFeedback state={state} /><Button type="submit" disabled={pending}>{pending ? t.common.loading : (t.auth.submit)}</Button></div></form>;
+  return (
+    <form action={action} className="grid gap-4 sm:grid-cols-2">
+      <Field id="account-name" label={t.auth.name} icon={<UserRoundIcon aria-hidden="true" className="size-4" />}>
+        <Input id="account-name" name="name" autoComplete="name" defaultValue={user.name} required maxLength={120} />
+      </Field>
+      <Field id="account-phone" label={t.auth.phone} icon={<PhoneIcon aria-hidden="true" className="size-4" />}>
+        <Input id="account-phone" name="phone" type="tel" autoComplete="tel" defaultValue={user.phone} required maxLength={30} />
+      </Field>
+      <Field id="account-email" label={t.auth.email} icon={<MailIcon aria-hidden="true" className="size-4" />}>
+        <Input id="account-email" type="email" autoComplete="email" value={user.email} readOnly />
+      </Field>
+      <div className="flex flex-col justify-end gap-2">
+        <ActionFeedback state={state} />
+        <Button type="submit" disabled={pending}>{pending ? t.common.loading : t.auth.submit}</Button>
+      </div>
+    </form>
+  );
 }
 
 function AcceptQuoteForm({ requestId }: { requestId: string }) {
@@ -146,6 +163,6 @@ function Empty({ text }: { text: string }) {
   return <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">{text}</div>;
 }
 
-function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
-  return <div className="flex flex-col gap-2"><Label htmlFor={id}>{label}</Label>{children}</div>;
+function Field({ id, label, icon, children }: { id: string; label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  return <div className="flex flex-col gap-2"><Label htmlFor={id} className="flex items-center gap-2">{icon}{label}</Label>{children}</div>;
 }
