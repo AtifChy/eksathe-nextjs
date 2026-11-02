@@ -81,6 +81,9 @@ bun run test:e2e
 By default, Playwright starts a dev server on port 3100. Set
 `PLAYWRIGHT_BASE_URL` to reuse an already running app.
 
+See [docs/operations.md](docs/operations.md) for readiness, shared rate-limit
+configuration, and PostgreSQL backup and restore steps.
+
 ## Database
 
 The compose file exposes Postgres on `localhost:5432` with the dev credentials in `.env.example`. If that port is taken, change the mapping in `docker-compose.yml` and update `DATABASE_URL`.

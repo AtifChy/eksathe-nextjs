@@ -23,6 +23,12 @@ test("the service hub links to all 13 sector panels", async ({ page }) => {
   }
 });
 
+test("the readiness endpoint reports database availability", async ({ request }) => {
+  const response = await request.get("/api/health/ready");
+  expect(response.status()).toBe(200);
+  await expect(response.json()).resolves.toMatchObject({ status: "ready" });
+});
+
 test("planned sectors show a coming-soon page and unknown sectors return 404", async ({ page }) => {
   await page.goto("/dashboard/ecommerce-b2b");
   await expect(page.getByText("এই বিভাগে সেবা শিগগিরই চালু হবে।")).toBeVisible();

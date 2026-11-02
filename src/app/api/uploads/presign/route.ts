@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { createUploadUrl, isObjectStorageConfigured } from "@/lib/storage/s3";
 import { uploadPresignSchema } from "@/lib/validations/workflows";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const extensions: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -16,6 +17,15 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Sign in to upload files." }, { status: 401 });
   if (user.status !== "active") return NextResponse.json({ error: "This account cannot upload files." }, { status: 403 });
   if (!user.emailVerified) return NextResponse.json({ error: "Verify your email before uploading files." }, { status: 403 });
+
+  const limit = await enforceRateLimit("uploads", user.id, 20, 600);
+  if (!limit.available) return NextResponse.json({ error: "Upload preparation is temporarily unavailable." }, { status: 503 });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many upload requests. Try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.max(1, Math.ceil((limit.resetAt - Date.now()) / 1000))) } },
+    );
+  }
 
   let body: unknown;
   try {

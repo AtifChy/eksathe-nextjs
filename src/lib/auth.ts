@@ -3,11 +3,29 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@/lib/prisma";
 import { sendAuthEmail } from "@/lib/email";
+import { authSecondaryStorage } from "@/lib/rate-limit";
+
+const authRateLimit = {
+  enabled: true,
+  window: 60,
+  max: 100,
+  storage: authSecondaryStorage ? "secondary-storage" as const : "memory" as const,
+  customRules: {
+    "/sign-in/email": { window: 60, max: 5 },
+    "/sign-up/email": { window: 60, max: 3 },
+    "/forget-password": { window: 60, max: 3 },
+    "/request-password-reset": { window: 60, max: 3 },
+    "/reset-password": { window: 60, max: 5 },
+    "/send-verification-email": { window: 60, max: 3 },
+  },
+};
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  rateLimit: authRateLimit,
+  ...(authSecondaryStorage ? { secondaryStorage: authSecondaryStorage } : {}),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 10,
