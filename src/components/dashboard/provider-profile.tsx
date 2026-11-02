@@ -11,15 +11,16 @@ import type { PublicProvider } from "@/lib/listings";
 import type { SectorDefinition } from "@/lib/sectors";
 import { cn } from "cn";
 
-export function ProviderProfile({ provider, sector, unavailable }: { provider: PublicProvider | null; sector: SectorDefinition; unavailable: boolean }) {
+export function ProviderProfile({ provider, sector, unavailable, routeBase }: { provider: PublicProvider | null; sector: SectorDefinition; unavailable: boolean; routeBase?: string }) {
   const { locale, t } = useLanguage();
   if (unavailable) return <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6"><WorkspaceError /></div>;
   if (!provider) return null;
   const formatMoney = (value: string) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value));
+  const base = routeBase ?? `/dashboard/${sector.slug}`;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-7 px-4 py-8 sm:px-6">
-      <Link href={`/dashboard/${sector.slug}`} className="inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeftIcon aria-hidden="true" className="size-4" />{t.nav.browse}</Link>
+      <Link href={base} className="inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeftIcon aria-hidden="true" className="size-4" />{t.nav.browse}</Link>
       <Card>
         <CardHeader>
           <CardTitle className="text-3xl">{locale === "bn" ? provider.nameBn : provider.nameEn}</CardTitle>
@@ -30,7 +31,7 @@ export function ProviderProfile({ provider, sector, unavailable }: { provider: P
 
       <section className="flex flex-col gap-4">
         <h2 className="text-xl font-bold">{locale === "bn" ? "সেবা ও তালিকা" : "Services and listings"}</h2>
-        {provider.listings.length === 0 ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">{t.workflow.noRecords}</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{provider.listings.map((listing) => <Card key={listing.id}><ListingImage listing={listing} alt={locale === "bn" ? listing.titleBn : listing.titleEn} sizes="(max-width: 1024px) 100vw, 33vw" /><CardHeader><CardTitle>{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle><CardDescription>{listing.district} · {listing.category}</CardDescription></CardHeader><CardContent><p className="line-clamp-3 text-sm text-muted-foreground">{locale === "bn" ? listing.descriptionBn : listing.descriptionEn}</p><div className="mt-4 flex items-center justify-between gap-2"><span className="text-sm font-semibold text-primary">{formatMoney(listing.unitPrice)} / {listing.unit}</span><Link href={`/dashboard/${sector.slug}/listings/${listing.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>{locale === "bn" ? "বিস্তারিত" : "Details"}</Link></div></CardContent></Card>)}</div>}
+        {provider.listings.length === 0 ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">{t.workflow.noRecords}</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{provider.listings.map((listing) => <Card key={listing.id}><ListingImage listing={listing} alt={locale === "bn" ? listing.titleBn : listing.titleEn} sizes="(max-width: 1024px) 100vw, 33vw" /><CardHeader><CardTitle>{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle><CardDescription>{listing.district} · {listing.category}</CardDescription></CardHeader><CardContent><p className="line-clamp-3 text-sm text-muted-foreground">{locale === "bn" ? listing.descriptionBn : listing.descriptionEn}</p><div className="mt-4 flex items-center justify-between gap-2"><span className="text-sm font-semibold text-primary">{formatMoney(listing.unitPrice)} / {listing.unit}</span><Link href={`${base}/listings/${listing.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>{locale === "bn" ? "বিস্তারিত" : "Details"}</Link></div></CardContent></Card>)}</div>}
       </section>
 
       <section className="flex flex-col gap-4">

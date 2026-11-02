@@ -76,3 +76,64 @@ Ordering, quote requests, bookings, and projects require a verified email accoun
 - Currency is BDT with decimal arithmetic and explicit units. The 10% commission excludes separately listed transport charges.
 - Customers and providers arrange delivery and site visits themselves. No marketplace shopping cart, payment gateway, social feed, live chat, or provider fleet dispatch in the MVP.
 - The other 11 sectors remain visible as coming soon; their service definitions are not transactable.
+
+## Agriculture prototype restoration
+
+Restore the agriculture prototype as a dedicated experience while keeping the current Next.js accounts, provider approvals, marketplace orders, bookings, payments, and commission records. The internal sector slug remains `agriculture-labor`.
+
+### Agriculture routes
+
+| Route | Purpose |
+| --- | --- |
+| `/agriculture` | Canonical agriculture homepage, without a dashboard back link |
+| `/dashboard/agriculture` | Same homepage with a back link to `/dashboard` |
+| Both prefixes + `/services/[slug]` | Shareable service details and request form |
+| Both prefixes + `/market` | Searchable produce and service marketplace |
+| Both prefixes + `/listings/[id]` | Listing details |
+| Both prefixes + `/providers/[id]` | Farmer/provider storefront |
+| Both prefixes + `/market-prices` | Staff-published, sourced market prices |
+| Both prefixes + `/updates` | Staff-published news, advice, and weather alerts |
+
+Use one shared agriculture module with an explicit route base. Keep that base in detail links, filters, breadcrumbs, and login return URLs. The header and homepage CTA use `/agriculture`; the agriculture sector card opens `/dashboard/agriculture`. Permanently redirect `/dashboard/agriculture-labor` and its listing/provider descendants to matching `/dashboard/agriculture` routes, preserving query parameters. Direct agriculture URLs are canonical for public pages.
+
+The agriculture homepage restores the prototype's introduction, marketplace CTA, searchable service directory and category filters, how-it-works section, commission estimate, and published updates. Keep the project logo, Bangla/English translations, Lucide controls, and emoji fallbacks for missing photos. Support information must come from platform settings; do not use the prototype's unverified emergency number.
+
+### Service request catalogue
+
+Create one typed, versioned registry sourced from `includes/panel-data.php`. It defines all 30 stable slugs, bilingual descriptions and labels, category, fields, options, validation, and form version:
+
+- Crop production: crop farming, seeds and seedlings, fertilizer and soil testing, pest and disease management, irrigation, and organic farming.
+- Farm enterprises: livestock, poultry, fisheries, land and equipment, training and advice, and contract farming.
+- Markets and supply: farm inputs, produce market, wholesale buyers, daily market prices, storage and warehouses, transport and logistics, food processing, and export support.
+- Labor and machinery: farm labor, machinery hire and repair, and worker marketplace.
+- Finance: farm finance and insurance claims.
+- Information and community: weather alerts, disaster support, women farmers, youth agripreneurs, and community reports.
+
+Keep common name, phone, district, and requirement details required. Prototype-specific fields and budget are optional unless a selected operation needs them. Validate counts as numbers, dates as dates, and money using decimal arithmetic. Do not treat prototype digit-length limits as maximum quantities. A crop-disease photo is optional, private, and limited to JPEG/PNG/WebP up to 5 MB. Service request submission requires a verified account and shows a reference plus customer tracking link. Existing direct purchase and booking flows stay in place for produce, workers, and machinery; those service pages also offer staff-assisted requests.
+
+### Request operations and privacy
+
+Extend `ServiceDefinition` and `ServiceRequest`; do not create a second request system. Store versioned structured answers with the submitted field labels and options, staff assignment, public updates, private notes, private attachments, and an optional link to a marketplace request. The marketplace link records matching only and must not create an order or payment.
+
+Agriculture operations staff manually review and coordinate requests. Use the existing `NEW → REVIEWING → ASSIGNED → COMPLETED` progression. Customers can withdraw new or reviewing requests; staff handle cancellations after assignment. Add an agriculture intake queue filtered by service, district, date, status, and assignee. Notify customers about meaningful status changes, log mutations in the audit trail, and authorize every request and photo read by owner or agriculture staff. Enable all 30 service definitions with an additive migration; subsequent seeds must preserve staff availability settings.
+
+### Farmer shops, marketplace, and information
+
+- Add editable bilingual storefront name/bio, district, profile and cover photos, and a public preview.
+- Add product editing and archiving for price, unit, category, availability, stock, description, and optional image. Moderate material content/photo edits and retain accepted order snapshots.
+- Add prototype produce categories (vegetables, fruits, dairy, fish, spices, and other) while retaining grain listings. Support category, district, minimum/maximum price, sorting, result counts, and pagination with filters stored in the URL.
+- Show product ratings, reviews, seller information, and more products by that seller. Continue to allow one review per completed order.
+- Apply stock visibility only to goods; worker and machinery listings depend on schedule availability.
+- Add sourced market prices with product, market, district, unit, price, observation date, and publication status. Staff review submissions before publishing and never publish customer contact details.
+- Add bilingual news, advice, and weather alerts with source and publication date. Weather alerts require an expiry. Show only published, current content and honest empty states. Do not add automated external feeds in this release.
+
+Finance, insurance, disaster, and advisory requests provide intake and coordination only; a request does not mean approval, coverage, or guaranteed assistance. Keep customer payments direct to providers and continue to record commission under the existing rules.
+
+### Delivery increments
+
+1. **Routes and registry:** add the shared agriculture routes, redirects, homepage, route-aware navigation, and 30-service registry. Acceptance: both entry routes share content, only the dashboard entry shows the back link, old URLs redirect, unknown service slugs return 404, and all services have stable bilingual metadata and fields.
+2. **Requests and staff intake:** add specific forms, verified-account submission, private disease photos, customer tracking, agriculture staff queue, updates, and audit history. Acceptance: all 30 forms persist versioned answers and authorized users can track a request from submission through completion.
+3. **Storefront and discovery:** add storefront/product management, moderation and archive behavior, URL-backed filters, ratings, and corrected stock/schedule visibility. Acceptance: edits do not change accepted order terms and all supported filters work on mobile and desktop.
+4. **Publishing and integration:** add staff publishing for sourced prices/news/advice/weather, public updates, commission estimate, settings-backed support information, and translations. Acceptance: only current published records appear, sources/dates are visible, expired alerts/drafts remain private, and the full flow works in Bangla and English.
+
+After each increment, update this plan and commit the completed change. Verify migrations/seeds, lint, typecheck, targeted integration/browser journeys, responsive layouts, and production build at completion.

@@ -37,7 +37,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
             <span className="hidden sm:inline">{t.header.dashboard}</span>
             <span className="sm:hidden" aria-label={t.header.dashboard}>13</span>
           </Link>
-          <Link href="/dashboard/agriculture-labor" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
+          <Link href="/agriculture" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
             {t.home.agriculture}
           </Link>
           <Link href="/dashboard/construction" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">

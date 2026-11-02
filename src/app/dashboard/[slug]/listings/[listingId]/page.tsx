@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import { ListingDetail } from "@/components/dashboard/listing-detail";
 import { getCurrentUser } from "@/lib/dal";
 import { getPublicListing } from "@/lib/listings";
@@ -13,6 +14,13 @@ export default async function ListingPage({ params, searchParams }: {
   const { slug, listingId } = await params;
   const query = await searchParams;
   const sector = getSector(slug);
+  if (slug === "agriculture-labor") {
+    const queryString = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      for (const item of Array.isArray(value) ? value : value ? [value] : []) queryString.append(key, item);
+    }
+    permanentRedirect(`/dashboard/agriculture/listings/${encodeURIComponent(listingId)}${queryString.size ? `?${queryString.toString()}` : ""}`);
+  }
   if (!sector || sector.status !== "live") notFound();
 
   const [result, user] = await Promise.all([getPublicListing(listingId), getCurrentUser()]);

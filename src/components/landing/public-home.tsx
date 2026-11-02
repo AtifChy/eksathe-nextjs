@@ -23,7 +23,7 @@ export function PublicHome() {
           </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Link href="/dashboard/agriculture-labor" className="rounded-2xl outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">
+          <Link href="/agriculture" className="rounded-2xl outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">
             <Card className="h-full transition-colors hover:border-primary/40">
               <CardHeader>
                 <SproutIcon aria-hidden="true" className="size-9 text-primary" />

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import { ProviderProfile } from "@/components/dashboard/provider-profile";
 import { getPublicProviderProfile } from "@/lib/listings";
 import { getSector } from "@/lib/sectors";
@@ -8,6 +9,7 @@ export const instant = false;
 export default async function PublicProviderPage({ params }: { params: Promise<{ slug: string; providerId: string }> }) {
   const { slug, providerId } = await params;
   const sector = getSector(slug);
+  if (slug === "agriculture-labor") permanentRedirect(`/dashboard/agriculture/providers/${encodeURIComponent(providerId)}`);
   if (!sector || sector.status !== "live") notFound();
   const result = await getPublicProviderProfile(slug, providerId);
   if (!result.provider && !result.unavailable) notFound();

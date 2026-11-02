@@ -18,6 +18,7 @@ export function ListingDetail({
   signedIn,
   projectId,
   packageLabel,
+  routeBase,
 }: {
   sector: SectorDefinition;
   listing: PublicListing | null;
@@ -25,15 +26,17 @@ export function ListingDetail({
   signedIn: boolean;
   projectId?: string;
   packageLabel?: string;
+  routeBase?: string;
 }) {
   const { locale, t } = useLanguage();
   const price = (value: string) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value));
-  const returnTo = `/dashboard/${sector.slug}/listings/${listing?.id ?? ""}${projectId ? `?${new URLSearchParams({ projectId, ...(packageLabel ? { packageLabel } : {}) }).toString()}` : ""}`;
+  const base = routeBase ?? `/dashboard/${sector.slug}`;
+  const returnTo = `${base}/listings/${listing?.id ?? ""}${projectId ? `?${new URLSearchParams({ projectId, ...(packageLabel ? { packageLabel } : {}) }).toString()}` : ""}`;
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
       <div className="flex flex-col gap-6">
-        <Link href={`/dashboard/${sector.slug}`} className="inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link href={base} className="inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeftIcon aria-hidden="true" className="size-4" />{locale === "bn" ? "সব সেবা" : "All services"}
         </Link>
         {unavailable ? (
@@ -57,14 +60,14 @@ export function ListingDetail({
                 <div><p className="text-xs text-muted-foreground">{t.workflow.stock}</p><p className="mt-1 inline-flex items-center gap-1 font-semibold"><PackageIcon aria-hidden="true" className="size-4" />{listing.stock} {listing.unit}</p></div>
                 <div><p className="text-xs text-muted-foreground">{t.workflow.district}</p><p className="mt-1 font-semibold">{listing.district}</p></div>
               </div>
-              <Link href={`/dashboard/${sector.slug}/providers/${listing.providerId}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit gap-2")}>
+              <Link href={`${base}/providers/${listing.providerId}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit gap-2")}>
                 {locale === "bn" ? "সেবাদাতার পরিচিতি" : "Provider profile"}<ArrowRightIcon aria-hidden="true" className="size-4" />
               </Link>
             </CardContent>
           </Card>
         ) : null}
         <div className="flex gap-3">
-          <Link href={`/dashboard/${sector.slug}`} className={buttonVariants({ variant: "outline" })}>{t.nav.browse}</Link>
+          <Link href={base} className={buttonVariants({ variant: "outline" })}>{t.nav.browse}</Link>
           <Link href="/dashboard" className={buttonVariants({ variant: "ghost" })}>{locale === "bn" ? "সব বিভাগ" : "All sectors"}</Link>
         </div>
       </div>

@@ -59,7 +59,7 @@ export function CategoryGrid() {
             return (
               <Link
                 key={cat.id}
-                href={`/dashboard/${cat.slug}`}
+                href={cat.slug === "agriculture-labor" ? "/dashboard/agriculture" : `/dashboard/${cat.slug}`}
                 className="group relative flex flex-col items-center justify-between rounded-2xl border border-border/70 bg-card p-5 text-center shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md active:translate-y-0"
               >
                 <div className="flex flex-1 flex-col items-center justify-center pt-1 pb-3">

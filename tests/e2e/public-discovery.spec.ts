@@ -19,7 +19,8 @@ const sectors = [
 test("the service hub links to all 13 sector panels", async ({ page }) => {
   await page.goto("/dashboard");
   for (const slug of sectors) {
-    await expect(page.locator(`main a[href="/dashboard/${slug}"]`)).toHaveCount(1);
+    const route = slug === "agriculture-labor" ? "/dashboard/agriculture" : `/dashboard/${slug}`;
+    await expect(page.locator(`main a[href="${route}"]`)).toHaveCount(1);
   }
 });
 
@@ -36,11 +37,29 @@ test("planned sectors show a coming-soon page and unknown sectors return 404", a
   expect(response?.status()).toBe(404);
 });
 
-test("agriculture and construction expose their MVP service areas", async ({ page }) => {
-  await page.goto("/dashboard/agriculture-labor");
-  await expect(page.getByText("কৃষিপণ্যের বাজার").first()).toBeVisible();
-  await expect(page.getByText("কৃষিশ্রমিক বুকিং").first()).toBeVisible();
-  await expect(page.getByText("কৃষিযন্ত্র ভাড়া").first()).toBeVisible();
+test("agriculture routes share the prototype service directory and old routes redirect", async ({ page }) => {
+  await page.goto("/agriculture");
+  await expect(page.getByRole("heading", { name: "কোন সেবাটি আপনার প্রয়োজন?" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ফসল উৎপাদন ও চাষাবাদ/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /কৃষিশ্রমিক বুকিং/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "ড্যাশবোর্ডে ফিরে যান" })).toHaveCount(0);
+
+  await page.goto("/dashboard/agriculture");
+  await expect(page.getByRole("heading", { name: "কোন সেবাটি আপনার প্রয়োজন?" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "ড্যাশবোর্ডে ফিরে যান" })).toHaveAttribute("href", "/dashboard");
+
+  await page.goto("/dashboard/agriculture-labor?source=legacy");
+  await expect(page).toHaveURL(/\/dashboard\/agriculture\?source=legacy$/);
+});
+
+test("agriculture service routes show specific form fields and unknown slugs return 404", async ({ page }) => {
+  await page.goto("/agriculture/services/crop-farming");
+  await expect(page.getByText("জমির পরিমাণ", { exact: true })).toBeVisible();
+  const response = await page.goto("/agriculture/services/not-a-service");
+  expect(response?.status()).toBe(404);
+});
+
+test("construction exposes its MVP service areas", async ({ page }) => {
 
   await page.goto("/dashboard/construction");
   await expect(page.getByText("নির্মাণসামগ্রী").first()).toBeVisible();
