@@ -26,6 +26,6 @@ export default async function SectorPage({ params }: SectorPageProps) {
 
   const isAgriculture = slug === "agriculture-labor";
   const services = isAgriculture ? agricultureListings : constructionListings;
-  const listings = await getPublicListings(slug);
-  return <SectorLanding sector={sector} listings={listings} services={[...services]} />;
+  const listingResult = await getPublicListings(slug);
+  return <SectorLanding sector={sector} listings={listingResult.items} unavailable={listingResult.unavailable} services={[...services]} />;
 }

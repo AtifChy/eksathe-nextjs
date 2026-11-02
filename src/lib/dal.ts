@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sectors } from "@/lib/sectors";
 
 export type CurrentUser = {
   id: string;
@@ -58,6 +59,60 @@ export async function hasStaffPermission(
     select: { id: true },
   });
   return Boolean(grant);
+}
+
+export async function hasAnyStaffPermission(user: CurrentUser) {
+  if (user.role === "super_admin") return true;
+  const grant = await prisma.staffGrant.findFirst({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  return Boolean(grant);
+}
+
+export type StaffAccess = {
+  isSuperAdmin: boolean;
+  operationSectors: string[];
+  financeSectors: string[];
+  canManageStaff: boolean;
+};
+
+export async function getStaffAccess(user: CurrentUser): Promise<StaffAccess> {
+  const isSuperAdmin = user.role === "super_admin";
+  const liveSectorSlugs = sectors.filter((sector) => sector.status === "live").map((sector) => sector.slug);
+  if (isSuperAdmin) {
+    return { isSuperAdmin, operationSectors: liveSectorSlugs, financeSectors: liveSectorSlugs, canManageStaff: true };
+  }
+
+  const grants = await prisma.staffGrant.findMany({
+    where: { userId: user.id },
+    select: { scopeKey: true, sectorSlug: true, permission: true },
+  });
+  const scopesFor = (permission: "OPERATIONS" | "FINANCE") => {
+    const matching = grants.filter((grant) => grant.permission === permission);
+    if (matching.some((grant) => grant.scopeKey === "global")) return liveSectorSlugs;
+    return matching.map((grant) => grant.sectorSlug).filter((slug): slug is string => Boolean(slug));
+  };
+
+  return {
+    isSuperAdmin,
+    operationSectors: scopesFor("OPERATIONS"),
+    financeSectors: scopesFor("FINANCE"),
+    canManageStaff: false,
+  };
+}
+
+export async function requireAdmin() {
+  const user = await requireUser("/admin");
+  const access = await getStaffAccess(user);
+  if (!access.isSuperAdmin && access.operationSectors.length === 0 && access.financeSectors.length === 0) notFound();
+  return { user, access };
+}
+
+export async function requireSuperAdmin() {
+  const user = await requireUser("/admin");
+  if (user.role !== "super_admin") notFound();
+  return user;
 }
 
 export async function requireStaff(

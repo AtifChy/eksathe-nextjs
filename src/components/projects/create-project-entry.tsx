@@ -1,0 +1,17 @@
+"use client";
+
+import Link from "next/link";
+import { ArrowLeftIcon } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
+import { CreateProjectForm } from "@/components/projects/project-forms";
+
+export function CreateProjectEntry() {
+  const { locale, t } = useLanguage();
+  return (
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+      <Link href="/account#projects" className="inline-flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeftIcon aria-hidden="true" className="size-4" />{locale === "bn" ? "আমার প্রকল্প" : "My projects"}</Link>
+      <div><p className="text-sm text-primary">{t.home.construction}</p><h1 className="mt-1 text-3xl font-bold tracking-tight">{t.workflow.createProject}</h1><p className="mt-2 text-sm text-muted-foreground">{locale === "bn" ? "কাজের বিবরণ যোগ করুন। পরে নির্মাণ পেশাজীবীদের দরপ্রস্তাবের জন্য আমন্ত্রণ জানাতে পারবেন।" : "Describe the work. You can invite construction providers to quote after creating the project."}</p></div>
+      <CreateProjectForm />
+    </div>
+  );
+}

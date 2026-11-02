@@ -1,5 +1,5 @@
 import { SiteHeader } from "@/components/site-header";
-import { getCurrentUser, hasStaffPermission } from "@/lib/dal";
+import { getCurrentUser, hasAnyStaffPermission } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 
 export async function SiteHeaderServer() {
@@ -8,10 +8,7 @@ export async function SiteHeaderServer() {
   const [canProvider, canAdmin] = activeUser
     ? await Promise.all([
         prisma.providerProfile.findUnique({ where: { userId: activeUser.id }, select: { id: true } }).then(Boolean),
-        Promise.all([
-          hasStaffPermission(activeUser, "OPERATIONS"),
-          hasStaffPermission(activeUser, "FINANCE"),
-        ]).then(([operations, finance]) => operations || finance),
+        hasAnyStaffPermission(activeUser),
       ])
     : [false, false];
 

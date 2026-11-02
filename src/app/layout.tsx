@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { Geist_Mono, Hind_Siliguri } from "next/font/google";
 
 import { LanguageProvider } from "@/components/language-provider";
 import { SiteFooter } from "@/components/site-footer";
@@ -9,18 +8,11 @@ import { SiteHeaderServer } from "@/components/site-header-server";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
-
-const hindSiliguri = Hind_Siliguri({
-  variable: "--font-hind-siliguri",
-  subsets: ["bengali", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import "@fontsource/hind-siliguri/300.css";
+import "@fontsource/hind-siliguri/400.css";
+import "@fontsource/hind-siliguri/500.css";
+import "@fontsource/hind-siliguri/600.css";
+import "@fontsource/hind-siliguri/700.css";
 
 export const metadata: Metadata = {
   title: "EKsathe Bangladesh | One account for everyday services",
@@ -33,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="bn"
       suppressHydrationWarning
-      className={`${hindSiliguri.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider

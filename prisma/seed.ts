@@ -6,7 +6,7 @@ import { sectors } from "../src/lib/sectors";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
-const panels = [
+const serviceDefinitions = [
   {
     "slug": "crop-farming",
     "titleBn": "ফসল উৎপাদন ও চাষাবাদ",
@@ -302,15 +302,15 @@ async function main() {
   }
 
   const liveServiceSlugs = new Set(["produce-market", "farm-labour", "farm-machinery"]);
-  for (const panel of panels) {
-    await prisma.panel.upsert({
-      where: { slug: panel.slug },
-      update: { ...panel, isActive: liveServiceSlugs.has(panel.slug) },
-      create: { ...panel, isActive: liveServiceSlugs.has(panel.slug) },
+  for (const service of serviceDefinitions) {
+    await prisma.serviceDefinition.upsert({
+      where: { slug: service.slug },
+      update: { ...service, isActive: liveServiceSlugs.has(service.slug) },
+      create: { ...service, isActive: liveServiceSlugs.has(service.slug) },
     });
   }
 
-  console.log(`Seeded ${sectors.length} sectors and ${panels.length} service definitions.`);
+  console.log(`Seeded ${sectors.length} sectors and ${serviceDefinitions.length} service definitions.`);
 }
 
 main()

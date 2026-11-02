@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useMemo, useState } from "react";
 import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import type { PublicListing } from "@/lib/listings";
 import type { agricultureListings, constructionListings, SectorDefinition } from "@/lib/sectors";
 import { cn } from "cn";
@@ -14,15 +17,25 @@ type Service = (typeof agricultureListings)[number] | (typeof constructionListin
 export function SectorLanding({
   sector,
   listings,
+  unavailable = false,
   services,
 }: {
   sector: SectorDefinition;
   listings: PublicListing[];
+  unavailable?: boolean;
   services: Service[];
 }) {
   const { locale, t } = useLanguage();
+  const [query, setQuery] = useState("");
+  const [district, setDistrict] = useState("");
   const title = locale === "bn" ? sector.labelBn : sector.labelEn;
   const price = (value: string) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value));
+  const districts = useMemo(() => Array.from(new Set(listings.map((listing) => listing.district))).sort(), [listings]);
+  const term = query.trim().toLowerCase();
+  const matches = (listing: PublicListing) => {
+    const searchable = `${listing.titleBn} ${listing.titleEn} ${listing.descriptionBn} ${listing.descriptionEn} ${listing.category} ${listing.district}`.toLowerCase();
+    return (!term || searchable.includes(term)) && (!district || listing.district === district);
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-9 px-4 py-8 sm:px-6">
@@ -62,8 +75,16 @@ export function SectorLanding({
 
       {sector.status === "live" && (
         <div className="flex flex-col gap-10">
+          <div className="grid gap-3 rounded-2xl border border-border/70 bg-card p-4 sm:grid-cols-[minmax(0,1fr)_220px]">
+            <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.workflow.searchListings} aria-label={t.workflow.searchListings} />
+            <select value={district} onChange={(event) => setDistrict(event.target.value)} aria-label={t.workflow.district} className="h-9 rounded-lg border border-input bg-background px-3 text-sm">
+              <option value="">{t.workflow.allDistricts}</option>
+              {districts.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+          {unavailable && <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{t.workflow.dataUnavailable}</p>}
           {services.map((service) => {
-            const serviceListings = listings.filter((listing) => listing.kind === service.kind);
+            const serviceListings = listings.filter((listing) => listing.kind === service.kind && matches(listing));
             return (
               <section key={service.slug} id={service.slug} className="flex flex-col gap-4 scroll-mt-24">
                 <div className="flex flex-wrap items-end justify-between gap-3">
@@ -72,7 +93,7 @@ export function SectorLanding({
                     <p className="mt-1 text-sm text-muted-foreground">{serviceListings.length} {locale === "bn" ? "টি সেবা তালিকা" : "available listings"}</p>
                   </div>
                 </div>
-                {serviceListings.length === 0 ? (
+                {serviceListings.length === 0 && !unavailable ? (
                   <div className="rounded-2xl border border-dashed border-border bg-card/70 px-5 py-6">
                     <p className="text-sm text-muted-foreground">{locale === "bn" ? "এখনো কোনো অনুমোদিত তালিকা নেই। সেবাদাতা হিসেবে যোগ দিন।" : "No approved listings yet. Apply to become a provider."}</p>
                     <Link href={`/register?next=${encodeURIComponent("/provider")}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4")}>{locale === "bn" ? "সেবাদাতা হিসেবে যোগ দিন" : "Apply to provide"}<ArrowRightIcon data-icon="inline-end" /></Link>
@@ -82,6 +103,7 @@ export function SectorLanding({
                     {serviceListings.map((listing) => (
                       <Link key={listing.id} href={`/dashboard/${sector.slug}/listings/${listing.id}`} className="rounded-2xl outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">
                         <Card className="h-full transition-colors hover:border-primary/40">
+                          {listing.hasImage && <div className="relative aspect-[16/9] overflow-hidden rounded-t-2xl bg-muted"><Image src={`/api/listings/${listing.id}/image`} alt={locale === "bn" ? listing.titleBn : listing.titleEn} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" unoptimized /></div>}
                           <CardHeader>
                             <CardTitle>{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle>
                             <CardDescription>{locale === "bn" ? listing.providerNameBn : listing.providerNameEn} · {listing.district}</CardDescription>
