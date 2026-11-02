@@ -1,11 +1,12 @@
-import { Suspense } from "react";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 
 import { LanguageProvider } from "@/components/language-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeaderServer } from "@/components/site-header-server";
 import { ThemeProvider } from "@/components/theme-provider";
+import type { Locale } from "@/dictionaries";
 
 import "./globals.css";
 import "@fontsource/hind-siliguri/300.css";
@@ -21,10 +22,14 @@ export const metadata: Metadata = {
     "Find services, farm produce, agricultural workers, machinery, construction providers, and materials on one platform.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export const instant = false;
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const savedLocale = (await cookies()).get("NEXT_LOCALE")?.value;
+  const initialLocale: Locale = savedLocale === "en" || savedLocale === "bn" ? savedLocale : "bn";
   return (
     <html
-      lang="bn"
+      lang={initialLocale}
       suppressHydrationWarning
       className="h-full antialiased"
     >
@@ -35,10 +40,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <LanguageProvider initialLocale="bn">
-            <Suspense fallback={<div className="h-16 border-b bg-card" aria-hidden="true" />}>
-              <SiteHeaderServer />
-            </Suspense>
+          <LanguageProvider initialLocale={initialLocale}>
+            <SiteHeaderServer />
             <main className="flex-1">{children}</main>
             <SiteFooter />
           </LanguageProvider>

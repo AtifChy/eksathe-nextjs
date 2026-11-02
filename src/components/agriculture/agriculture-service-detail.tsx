@@ -1,18 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { ServiceRequestForm } from "@/components/agriculture/service-request-form";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AgricultureService } from "@/lib/agriculture/service-registry";
-import { cn } from "cn";
 
 export function AgricultureServiceDetail({ service, routeBase, customer, emailVerified }: { service: AgricultureService; routeBase: string; customer: { name: string; phone: string } | null; emailVerified: boolean }) {
   const { locale } = useLanguage();
   const english = locale === "en";
-  const returnTo = `${routeBase}/services/${service.slug}`;
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
@@ -21,7 +19,7 @@ export function AgricultureServiceDetail({ service, routeBase, customer, emailVe
         <CardHeader className="gap-4 sm:flex-row sm:items-start"><span aria-hidden="true" className="text-5xl">{service.icon}</span><div><p className="text-sm font-semibold text-primary">{english ? service.titleEn : service.titleBn}</p><CardTitle className="mt-1 text-3xl">{english ? service.titleEn : service.titleBn}</CardTitle><CardDescription className="mt-3 max-w-3xl text-base leading-7">{english ? service.descriptionEn : service.descriptionBn}</CardDescription></div></CardHeader>
         <CardContent className="flex flex-col gap-6">
           <p className="text-sm leading-6 text-muted-foreground">{english ? "Service requests are reviewed and coordinated by agriculture operations staff. Sending a request does not create an order or payment." : "কৃষি পরিচালনা দল সেবার অনুরোধ যাচাই ও সমন্বয় করবে। অনুরোধ জমা দিলে অর্ডার বা পেমেন্ট তৈরি হয় না।"}</p>
-          {customer && emailVerified ? <ServiceRequestForm service={service} routeBase={routeBase} customer={customer} /> : <div className="flex flex-wrap gap-3">{customer ? <Link href={`/verify?next=${encodeURIComponent(returnTo)}`} className={cn(buttonVariants(), "gap-2")}>{english ? "Verify email to request" : "অনুরোধ করতে ইমেইল যাচাই করুন"}<ArrowRightIcon data-icon="inline-end" /></Link> : <><Link href={`/login?next=${encodeURIComponent(returnTo)}`} className={cn(buttonVariants(), "gap-2")}>{english ? "Sign in to request" : "অনুরোধ করতে লগইন করুন"}<ArrowRightIcon data-icon="inline-end" /></Link><Link href={`/register?next=${encodeURIComponent(returnTo)}`} className={buttonVariants({ variant: "outline" })}>{english ? "Create account" : "অ্যাকাউন্ট খুলুন"}</Link></>}</div>}
+          <ServiceRequestForm service={service} routeBase={routeBase} customer={customer} emailVerified={emailVerified} />
           <div className="flex flex-wrap gap-3"><Link href={`${routeBase}/market`} className={buttonVariants({ variant: "outline" })}>{english ? "Browse marketplace" : "মার্কেটপ্লেস দেখুন"}</Link></div>
         </CardContent>
       </Card>

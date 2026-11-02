@@ -11,7 +11,7 @@ type SectorPageProps = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: SectorPageProps): Promise<Metadata> {
   const { slug } = await params;
   const sector = getSector(slug);
-  if (!sector) return { title: "Sector not found | EKsathe Bangladesh" };
+  if (!sector) notFound();
   return { title: `${sector.labelEn} | EKsathe Bangladesh` };
 }
 

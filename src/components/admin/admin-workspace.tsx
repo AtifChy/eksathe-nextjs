@@ -42,6 +42,7 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
         <p className="text-sm text-primary">{locale === "bn" ? "প্ল্যাটফর্ম পরিচালনা" : "Platform operations"}</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">{t.nav.admin}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{locale === "bn" ? `আপনার বিভাগ: ${[...new Set([...data.access.operationSectors, ...data.access.financeSectors])].join(", ") || "সমগ্র প্ল্যাটফর্ম"}` : `Your sectors: ${[...new Set([...data.access.operationSectors, ...data.access.financeSectors])].join(", ") || "platform-wide"}`}</p>
+        {agricultureOperationsEnabled && <Link href="/admin/agriculture/publishing" className="mt-3 inline-flex w-fit items-center rounded-lg border border-primary/30 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5">{locale === "bn" ? "কৃষি বাজারদর ও আপডেট প্রকাশ" : "Publish agriculture prices and updates"}</Link>}
       </div>
 
       {operationsEnabled && (

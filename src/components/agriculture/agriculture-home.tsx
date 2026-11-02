@@ -5,14 +5,15 @@ import { useMemo, useState } from "react";
 import { ArrowRightIcon, SearchIcon } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { CommissionSection } from "@/components/landing/commission-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { AgricultureCommissionCalculator } from "@/components/agriculture/agriculture-commission-calculator";
 import { useLanguage } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { agricultureServiceCategories, agricultureServiceRegistry } from "@/lib/agriculture/service-registry";
 import type { PublicListing } from "@/lib/listings";
+import type { AgriculturePublicInfo } from "@/lib/agriculture/publishing";
 import { cn } from "cn";
 
 export function AgricultureHome({
@@ -20,11 +21,13 @@ export function AgricultureHome({
   showDashboardBackLink,
   listings,
   unavailable,
+  publicInfo,
 }: {
   routeBase: string;
   showDashboardBackLink: boolean;
   listings: PublicListing[];
   unavailable: boolean;
+  publicInfo: AgriculturePublicInfo;
 }) {
   const { locale } = useLanguage();
   const [query, setQuery] = useState("");
@@ -76,11 +79,23 @@ export function AgricultureHome({
       </section>
 
       <HowItWorksSection />
-      <CommissionSection />
+      <section id="commission" className="grid items-center gap-6 rounded-3xl border bg-secondary/40 p-5 sm:p-8 lg:grid-cols-2">
+        <div><p className="text-sm font-semibold text-primary">{english ? "Commission calculator" : "কমিশন ক্যালকুলেটর"}</p><h2 className="mt-1 text-2xl font-bold">{english ? "Estimate the platform fee" : "প্ল্যাটফর্ম ফি সম্পর্কে ধারণা নিন"}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{english ? "This estimate uses the current agriculture rate. It does not include separately agreed transport costs." : "এই হিসাবে কৃষির বর্তমান কমিশন হার ব্যবহার করা হয়। আলাদাভাবে নির্ধারিত পরিবহন খরচ এতে অন্তর্ভুক্ত নয়।"}</p></div>
+        <AgricultureCommissionCalculator ratePercent={publicInfo.commissionRate} />
+      </section>
 
       <section className="rounded-3xl border bg-secondary/50 p-6 sm:p-8">
         <p className="text-sm font-semibold text-primary">{english ? "Reviewed by the agriculture team" : "কৃষি পরিচালনা দলের যাচাইকৃত তথ্য"}</p>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-2xl font-bold">{english ? "Market prices and agriculture updates" : "বাজারদর ও কৃষি আপডেট"}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{english ? "Market prices, news, advice, and weather alerts are published by staff with a source and date." : "বাজারদর, খবর, পরামর্শ ও আবহাওয়া সতর্কতা পরিচালনা দলের মাধ্যমে উৎস ও তারিখসহ প্রকাশ করা হবে।"}</p></div><div className="flex gap-2"><Link href={`${routeBase}/market-prices`} className={buttonVariants({ variant: "outline" })}>{english ? "Market prices" : "বাজারদর"}</Link><Link href={`${routeBase}/updates`} className={buttonVariants({ variant: "outline" })}>{english ? "Updates" : "আপডেট"}</Link></div></div>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-2xl font-bold">{english ? "Market prices and agriculture updates" : "বাজারদর ও কৃষি আপডেট"}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{english ? "Market prices, news, advice, and weather alerts are published by staff with a source and date." : "বাজারদর, খবর, পরামর্শ ও আবহাওয়া সতর্কতা পরিচালনা দলের মাধ্যমে উৎস ও তারিখসহ প্রকাশ করা হয়।"}</p></div><div className="flex gap-2"><Link href={`${routeBase}/market-prices`} className={buttonVariants({ variant: "outline" })}>{english ? "Market prices" : "বাজারদর"}</Link><Link href={`${routeBase}/updates`} className={buttonVariants({ variant: "outline" })}>{english ? "Updates" : "আপডেট"}</Link></div></div>
+        {publicInfo.unavailable ? <p role="alert" className="mt-4 text-sm text-destructive">{english ? "Published information is temporarily unavailable." : "প্রকাশিত তথ্য সাময়িকভাবে পাওয়া যাচ্ছে না।"}</p> : <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <Card><CardHeader><CardTitle className="text-base">{english ? "Latest market prices" : "সর্বশেষ বাজারদর"}</CardTitle></CardHeader><CardContent className="flex flex-col gap-2">{publicInfo.prices.length ? publicInfo.prices.slice(0, 3).map((price) => <p key={price.id} className="text-sm"><strong>{english ? price.productEn : price.productBn}</strong> · {price.market}, {price.district} · {formatMoney(price.price)} / {price.unit}</p>) : <p className="text-sm text-muted-foreground">{english ? "No published market prices yet." : "এখনো কোনো বাজারদর প্রকাশিত হয়নি।"}</p>}</CardContent></Card>
+          <Card><CardHeader><CardTitle className="text-base">{english ? "Recent updates" : "সাম্প্রতিক আপডেট"}</CardTitle></CardHeader><CardContent className="flex flex-col gap-2">{publicInfo.updates.length ? publicInfo.updates.slice(0, 3).map((update) => <p key={update.id} className="text-sm"><strong>{english ? update.titleEn : update.titleBn}</strong> · {new Intl.DateTimeFormat(english ? "en-BD" : "bn-BD", { dateStyle: "medium", timeZone: "Asia/Dhaka" }).format(new Date(update.publishedAt))}</p>) : <p className="text-sm text-muted-foreground">{english ? "No current agriculture updates." : "বর্তমানে কোনো কৃষি আপডেট নেই।"}</p>}</CardContent></Card>
+        </div>}
+      </section>
+
+      <section aria-labelledby="agriculture-support-heading" className="rounded-2xl border p-5 sm:p-6">
+        <h2 id="agriculture-support-heading" className="text-lg font-bold">{english ? "Agriculture support" : "কৃষি সহায়তা"}</h2>
+        {publicInfo.unavailable ? <p className="mt-2 text-sm text-muted-foreground">{english ? "Support information could not be loaded." : "সহায়তার তথ্য লোড করা যায়নি।"}</p> : publicInfo.support && (publicInfo.support.phone || publicInfo.support.email || publicInfo.support.messageBn || publicInfo.support.messageEn) ? <div className="mt-2 flex flex-col gap-2 text-sm"><p>{english ? publicInfo.support.messageEn : publicInfo.support.messageBn}</p><div className="flex flex-wrap gap-x-5 gap-y-2">{publicInfo.support.phone && <a className="font-medium text-primary hover:underline" href={`tel:${publicInfo.support.phone.replace(/[^+\d]/g, "")}`}>{publicInfo.support.phone}</a>}{publicInfo.support.email && <a className="font-medium text-primary hover:underline" href={`mailto:${publicInfo.support.email}`}>{publicInfo.support.email}</a>}</div></div> : <p className="mt-2 text-sm text-muted-foreground">{english ? "Support contact details have not been configured yet." : "সহায়তার যোগাযোগের তথ্য এখনো নির্ধারণ করা হয়নি।"}</p>}
       </section>
     </div>
   );
