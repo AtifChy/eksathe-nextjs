@@ -30,6 +30,7 @@ export function AccountWorkspace({ workspace, user }: {
     <WorkspaceNavigation label={locale === "bn" ? "অ্যাকাউন্ট নেভিগেশন" : "Account navigation"} items={[
       { id: "profile", label: t.dashboard.profile, icon: UserRoundIcon },
       { id: "requests", label: locale === "bn" ? "অনুরোধ" : "Requests", icon: ClipboardListIcon },
+      { id: "agriculture-requests", label: locale === "bn" ? "কৃষি সেবা অনুরোধ" : "Agriculture service requests", icon: ClipboardListIcon },
       { id: "orders", label: locale === "bn" ? "অর্ডার" : "Orders", icon: ShoppingBagIcon },
       { id: "projects", label: t.workflow.projectTitle, icon: HardHatIcon },
       { id: "notifications", label: t.dashboard.notifications, icon: BellIcon },
@@ -47,6 +48,11 @@ export function AccountWorkspace({ workspace, user }: {
             <ProfileForm user={user} />
           </CardContent>
         </Card>
+      </section>
+
+      <section id="agriculture-requests" className="scroll-mt-24 flex flex-col gap-4">
+        <div><h2 className="text-xl font-bold">{locale === "bn" ? "কৃষি সেবা অনুরোধ" : "Agriculture service requests"}</h2><p className="mt-1 text-sm text-muted-foreground">{locale === "bn" ? "সেবার অবস্থা, আপনার জমা দেওয়া তথ্য ও পরিচালনা দলের আপডেট দেখুন।" : "Track request status, submitted details, and updates from the operations team."}</p></div>
+        {workspace.agricultureRequests.length === 0 ? <Empty text={t.workflow.noRecords} /> : workspace.agricultureRequests.map((request) => <Card key={request.id}><CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3"><div><CardTitle className="text-lg">{locale === "bn" ? request.service.titleBn : request.service.titleEn}</CardTitle><CardDescription>{request.referenceCode ?? `AG-${request.id}`} · {request.district} · {request.createdAt ? new Date(request.createdAt).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD") : ""}</CardDescription></div><StatusBadge status={request.status} /></CardHeader><CardContent className="flex flex-col gap-3"><p className="line-clamp-2 text-sm text-muted-foreground">{request.details}</p><div className="flex flex-wrap gap-3"><Link href={`/account/agriculture-requests/${request.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>{locale === "bn" ? "অনুরোধ দেখুন" : "View request"}</Link>{request.updates[0] && <span className="self-center text-xs text-muted-foreground">{locale === "bn" ? request.updates[0].messageBn ?? request.updates[0].messageEn : request.updates[0].messageEn ?? request.updates[0].messageBn}</span>}</div></CardContent></Card>)}
       </section>
 
       <section id="requests" className="scroll-mt-24 flex flex-col gap-4">

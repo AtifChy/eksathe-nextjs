@@ -17,28 +17,28 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসলের নাম",
         "labelEn": "Crop Name",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "land_area",
         "labelBn": "জমির পরিমাণ",
         "labelEn": "Land Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "crop_stage",
         "labelBn": "চাষের বর্তমান পর্যায়",
         "labelEn": "Crop Stage",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "planting_period",
         "labelBn": "চাষের সময়/মৌসুম",
         "labelEn": "Planting Period",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -84,21 +84,21 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসল/জাতের নাম",
         "labelEn": "Seed Variety",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "seed_quantity",
         "labelBn": "পরিমাণ ও একক",
         "labelEn": "Seed Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "seed_needed_by",
         "labelBn": "কখন প্রয়োজন",
         "labelEn": "Seed Needed By",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -120,14 +120,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসলের নাম",
         "labelEn": "Soil Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "soil_land_area",
         "labelBn": "জমির পরিমাণ",
         "labelEn": "Soil Land Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "soil_test_status",
@@ -158,7 +158,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কী ধরনের সহায়তা প্রয়োজন",
         "labelEn": "Soil Need",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -180,28 +180,28 @@ export const agricultureServiceRegistry = [
         "labelBn": "আক্রান্ত ফসল",
         "labelEn": "Affected Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "affected_area",
         "labelBn": "আক্রান্ত জমির পরিমাণ",
         "labelEn": "Affected Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "symptom_duration",
         "labelBn": "সমস্যা কতদিন ধরে",
         "labelEn": "Symptom Duration",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "crop_symptoms",
         "labelBn": "দেখা লক্ষণ",
         "labelEn": "Crop Symptoms",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "disease_photo",
@@ -230,14 +230,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসলের নাম",
         "labelEn": "Irrigation Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "irrigation_area",
         "labelBn": "সেচের জমির পরিমাণ",
         "labelEn": "Irrigation Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "water_source",
@@ -273,7 +273,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কখন সেচ প্রয়োজন",
         "labelEn": "Irrigation Time",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -353,7 +353,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কাজের এলাকা/জমির পরিমাণ",
         "labelEn": "Machine Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "machine_date",
@@ -423,7 +423,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কাজের সময়কাল",
         "labelEn": "Labour Duration",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "labour_date",
@@ -452,7 +452,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "পশুর ধরন",
         "labelEn": "Livestock Type",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "livestock_count",
@@ -495,7 +495,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "সমস্যা বা প্রয়োজনের বিবরণ",
         "labelEn": "Livestock Issue",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -517,7 +517,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "পাখির ধরন",
         "labelEn": "Poultry Type",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "poultry_count",
@@ -565,7 +565,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "সমস্যা বা প্রয়োজন",
         "labelEn": "Poultry Issue",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -587,14 +587,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "মাছের ধরন",
         "labelEn": "Fish Type",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "pond_area",
         "labelBn": "পুকুর/জলাশয়ের পরিমাণ",
         "labelEn": "Pond Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "fish_stage",
@@ -684,7 +684,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "উপকরণের নাম",
         "labelEn": "Input Product",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "input_trade",
@@ -710,14 +710,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "পরিমাণ ও একক",
         "labelEn": "Input Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "input_specs",
         "labelBn": "ব্র্যান্ড/মান/অন্যান্য শর্ত",
         "labelEn": "Input Specs",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -739,7 +739,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "পণ্যের নাম",
         "labelEn": "Produce Name",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "produce_trade",
@@ -765,14 +765,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "পরিমাণ ও একক",
         "labelEn": "Produce Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "produce_grade",
         "labelBn": "মান/গ্রেড বা অন্যান্য শর্ত",
         "labelEn": "Produce Grade",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "produce_ready_date",
@@ -801,14 +801,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "পণ্যের নাম",
         "labelEn": "Wholesale Product",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "wholesale_quantity",
         "labelBn": "পাইকারি পরিমাণ ও একক",
         "labelEn": "Wholesale Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "wholesale_role",
@@ -839,7 +839,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "সরবরাহ/ক্রয়ের সময়",
         "labelEn": "Wholesale Timing",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -861,14 +861,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "পণ্যের নাম",
         "labelEn": "Price Product",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "price_market",
         "labelBn": "বাজার ও এলাকা",
         "labelEn": "Price Market",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "price_amount",
@@ -882,7 +882,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "দরের একক",
         "labelEn": "Price Unit",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "price_date",
@@ -911,14 +911,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "সংরক্ষণের পণ্য",
         "labelEn": "Storage Product",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "storage_quantity",
         "labelBn": "পরিমাণ ও একক",
         "labelEn": "Storage Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "storage_type",
@@ -954,7 +954,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কতদিনের জন্য",
         "labelEn": "Storage Duration",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -976,28 +976,28 @@ export const agricultureServiceRegistry = [
         "labelBn": "পণ্য/মালামালের নাম",
         "labelEn": "Transport Product",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "transport_quantity",
         "labelBn": "পরিমাণ/আনুমানিক ওজন",
         "labelEn": "Transport Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "transport_pickup",
         "labelBn": "পণ্য তোলার স্থান",
         "labelEn": "Transport Pickup",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "transport_destination",
         "labelBn": "গন্তব্য",
         "labelEn": "Transport Destination",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "transport_date",
@@ -1026,14 +1026,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "পণ্যের নাম",
         "labelEn": "Processing Product",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "processing_quantity",
         "labelBn": "পরিমাণ ও একক",
         "labelEn": "Processing Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "processing_type",
@@ -1074,7 +1074,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "প্যাকেজিং/মানের শর্ত",
         "labelEn": "Processing Package",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1096,28 +1096,28 @@ export const agricultureServiceRegistry = [
         "labelBn": "পণ্যের নাম",
         "labelEn": "Export Product",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "export_quantity",
         "labelBn": "সম্ভাব্য পরিমাণ ও একক",
         "labelEn": "Export Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "export_destination",
         "labelBn": "সম্ভাব্য দেশ/বাজার",
         "labelEn": "Export Destination",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "export_requirements",
         "labelBn": "মান, সনদ বা প্যাকেজিংয়ের প্রয়োজন",
         "labelEn": "Export Requirements",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1163,7 +1163,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "পরিমাণ/সক্ষমতা",
         "labelEn": "Asset Size",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "asset_transaction",
@@ -1199,7 +1199,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কখন প্রয়োজন",
         "labelEn": "Asset Timing",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1221,14 +1221,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "প্রশিক্ষণ/পরামর্শের বিষয়",
         "labelEn": "Training Topic",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "training_experience",
         "labelBn": "আপনার অভিজ্ঞতা/বর্তমান পর্যায়",
         "labelEn": "Training Experience",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "training_format",
@@ -1281,21 +1281,21 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসল/পণ্যের নাম",
         "labelEn": "Organic Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "organic_area",
         "labelBn": "জমির পরিমাণ",
         "labelEn": "Organic Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "organic_practice",
         "labelBn": "বর্তমানে কী পদ্ধতি অনুসরণ করছেন",
         "labelEn": "Organic Practice",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "organic_need",
@@ -1351,14 +1351,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসল/পণ্যের নাম",
         "labelEn": "Contract Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "contract_quantity",
         "labelBn": "সম্ভাব্য পরিমাণ ও একক",
         "labelEn": "Contract Quantity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "contract_role",
@@ -1384,7 +1384,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "মৌসুম/সম্ভাব্য শর্ত",
         "labelEn": "Contract Terms",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1440,7 +1440,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসল/কৃষি উদ্যোগ",
         "labelEn": "Finance Enterprise",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "finance_amount",
@@ -1454,7 +1454,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কখন প্রয়োজন",
         "labelEn": "Finance Timing",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1476,7 +1476,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "ফসল/বীমার ধরন",
         "labelEn": "Insurance Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "insurance_event",
@@ -1563,14 +1563,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "এলাকা/ইউনিয়ন",
         "labelEn": "Weather Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "weather_crop",
         "labelBn": "ফসল/কৃষিকাজ",
         "labelEn": "Weather Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "weather_alert_type",
@@ -1611,7 +1611,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কোন সময়ের জন্য",
         "labelEn": "Weather Period",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1667,21 +1667,21 @@ export const agricultureServiceRegistry = [
         "labelBn": "ক্ষতিগ্রস্ত এলাকা",
         "labelEn": "Disaster Area",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "disaster_crop",
         "labelBn": "ক্ষতিগ্রস্ত ফসল/সম্পদ",
         "labelEn": "Disaster Crop",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "disaster_need",
         "labelBn": "জরুরি সহায়তার প্রয়োজন",
         "labelEn": "Disaster Need",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1703,7 +1703,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "কৃষি উদ্যোগ/পণ্যের নাম",
         "labelEn": "Women Enterprise",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "women_role",
@@ -1739,7 +1739,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "উৎপাদন/সরবরাহের পরিমাণ",
         "labelEn": "Women Capacity",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "women_support",
@@ -1795,7 +1795,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "উদ্যোগের ধারণা/ক্ষেত্র",
         "labelEn": "Youth Idea",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "youth_stage",
@@ -1860,7 +1860,7 @@ export const agricultureServiceRegistry = [
         "labelBn": "উৎপাদন/পরিকল্পনার পরিমাণ",
         "labelEn": "Youth Capacity",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   },
@@ -1882,14 +1882,14 @@ export const agricultureServiceRegistry = [
         "labelBn": "কাজের ধরন",
         "labelEn": "Worker Task",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "worker_skill",
         "labelBn": "প্রয়োজনীয় দক্ষতা",
         "labelEn": "Worker Skill",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "worker_count",
@@ -1954,21 +1954,21 @@ export const agricultureServiceRegistry = [
         "labelBn": "ঘটনার স্থান",
         "labelEn": "Report Location",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "report_date",
         "labelBn": "ঘটনার তারিখ/সময়",
         "labelEn": "Report Date",
         "type": "text",
-        "required": false
+        "required": false,
       },
       {
         "name": "report_action",
         "labelBn": "কী সহায়তা/পদক্ষেপ আশা করছেন",
         "labelEn": "Report Action",
         "type": "text",
-        "required": false
+        "required": false,
       }
     ]
   }

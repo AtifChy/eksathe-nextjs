@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { RequestStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { StaffAccess } from "@/lib/dal";
 
@@ -7,7 +8,7 @@ const decimal = (value: { toString(): string } | null | undefined) => value?.toS
 const iso = (value: Date | null | undefined) => value?.toISOString() ?? null;
 
 export async function getCustomerWorkspace(userId: string) {
-  const [requests, orders, projects, notifications] = await Promise.all([
+  const [requests, orders, projects, notifications, agricultureRequests] = await Promise.all([
     prisma.marketplaceRequest.findMany({
       where: { buyerId: userId },
       orderBy: { createdAt: "desc" },
@@ -42,6 +43,16 @@ export async function getCustomerWorkspace(userId: string) {
       },
     }),
     prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 30 }),
+    prisma.serviceRequest.findMany({
+      where: { userId, serviceDefinition: { sectorSlug: "agriculture-labor" } },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: {
+        serviceDefinition: { select: { slug: true, titleBn: true, titleEn: true, icon: true } },
+        updates: { where: { visibility: "CUSTOMER" }, orderBy: { createdAt: "desc" }, take: 5 },
+        attachments: { select: { id: true, filename: true, contentType: true, sizeBytes: true } },
+      },
+    }),
   ]);
 
   return {
@@ -157,6 +168,18 @@ export async function getCustomerWorkspace(userId: string) {
       href: notification.href,
       readAt: iso(notification.readAt),
       createdAt: iso(notification.createdAt),
+    })),
+    agricultureRequests: agricultureRequests.map((request) => ({
+      id: request.id,
+      referenceCode: request.referenceCode,
+      status: request.status,
+      district: request.district,
+      details: request.details,
+      budget: decimal(request.budget),
+      createdAt: iso(request.createdAt),
+      service: request.serviceDefinition,
+      updates: request.updates.map((update) => ({ id: update.id, messageBn: update.messageBn, messageEn: update.messageEn, createdAt: iso(update.createdAt) })),
+      attachments: request.attachments,
     })),
   };
 }
@@ -282,9 +305,28 @@ export async function getProviderWorkspace(userId: string) {
   };
 }
 
-export async function getAdminWorkspace(access: StaffAccess) {
+export type AgricultureAdminFilters = {
+  serviceSlug?: string;
+  district?: string;
+  status?: RequestStatus;
+  assigneeId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+export async function getAdminWorkspace(access: StaffAccess, agricultureFilters: AgricultureAdminFilters = {}) {
   const sectorSlugs = Array.from(new Set([...access.operationSectors, ...access.financeSectors]));
-  const [capabilities, listings, requests, disputes, commissions, paymentMismatches, sectors, staffGrants] = await Promise.all([
+  const dateToExclusive = agricultureFilters.dateTo ? new Date(`${agricultureFilters.dateTo}T00:00:00.000Z`) : undefined;
+  dateToExclusive?.setUTCDate(dateToExclusive.getUTCDate() + 1);
+  const agricultureWhere = {
+    serviceDefinition: { sectorSlug: "agriculture-labor", ...(agricultureFilters.serviceSlug ? { slug: agricultureFilters.serviceSlug } : {}) },
+    ...(agricultureFilters.district ? { district: { contains: agricultureFilters.district, mode: "insensitive" as const } } : {}),
+    ...(agricultureFilters.status ? { status: agricultureFilters.status } : {}),
+    ...(agricultureFilters.assigneeId ? { assignedToId: agricultureFilters.assigneeId } : {}),
+    ...((agricultureFilters.dateFrom || dateToExclusive) ? { createdAt: { ...(agricultureFilters.dateFrom ? { gte: new Date(`${agricultureFilters.dateFrom}T00:00:00.000Z`) } : {}), ...(dateToExclusive ? { lt: dateToExclusive } : {}) } } : {}),
+  };
+  const agricultureEnabled = access.operationSectors.includes("agriculture-labor");
+  const [capabilities, listings, requests, disputes, commissions, paymentMismatches, sectors, staffGrants, agricultureRequests, agricultureStaff] = await Promise.all([
     access.operationSectors.length ? prisma.providerCapability.findMany({
       where: { status: "PENDING", sectorSlug: { in: access.operationSectors } },
       orderBy: { createdAt: "asc" },
@@ -326,6 +368,24 @@ export async function getAdminWorkspace(access: StaffAccess) {
     }) : Promise.resolve([]),
     sectorSlugs.length ? prisma.sector.findMany({ where: { slug: { in: sectorSlugs } }, orderBy: { position: "asc" } }) : Promise.resolve([]),
     access.isSuperAdmin ? prisma.staffGrant.findMany({ orderBy: [{ permission: "asc" }, { scopeKey: "asc" }], include: { user: { select: { name: true, email: true } } } }) : Promise.resolve([]),
+    agricultureEnabled ? prisma.serviceRequest.findMany({
+      where: agricultureWhere,
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: {
+        serviceDefinition: { select: { slug: true, titleBn: true, titleEn: true, icon: true } },
+        user: { select: { id: true, name: true, email: true } },
+        assignedTo: { select: { id: true, name: true, email: true } },
+        updates: { orderBy: { createdAt: "desc" }, take: 10 },
+        attachments: { select: { id: true, filename: true, sizeBytes: true } },
+        marketplaceRequest: { select: { id: true, listing: { select: { titleBn: true, titleEn: true } } } },
+      },
+    }) : Promise.resolve([]),
+    agricultureEnabled ? prisma.user.findMany({
+      where: { status: "active", OR: [{ role: "super_admin" }, { staffGrants: { some: { permission: "OPERATIONS", scopeKey: { in: ["global", "agriculture-labor"] } } } }] },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" },
+    }) : Promise.resolve([]),
   ]);
 
   return {
@@ -424,7 +484,57 @@ export async function getAdminWorkspace(access: StaffAccess) {
     })),
     sectors: sectors.map((sector) => ({ slug: sector.slug, titleBn: sector.titleBn, titleEn: sector.titleEn, commissionRate: sector.commissionRate.toString() })),
     staffGrants: staffGrants.map((grant) => ({ id: grant.id, name: grant.user.name, email: grant.user.email, permission: grant.permission, scopeKey: grant.scopeKey })),
+    agricultureRequests: agricultureRequests.map((request) => ({
+      id: request.id,
+      referenceCode: request.referenceCode,
+      customerName: request.customerName,
+      customerEmail: request.user?.email ?? "",
+      phone: request.phone,
+      district: request.district,
+      details: request.details,
+      budget: decimal(request.budget),
+      status: request.status,
+      createdAt: iso(request.createdAt),
+      service: request.serviceDefinition,
+      answers: request.answers,
+      fieldSnapshot: request.fieldSnapshot,
+      assignedTo: request.assignedTo,
+      userId: request.userId,
+      updates: request.updates.map((update) => ({ id: update.id, visibility: update.visibility, messageBn: update.messageBn, messageEn: update.messageEn, createdAt: iso(update.createdAt) })),
+      attachments: request.attachments,
+      marketplaceRequest: request.marketplaceRequest,
+    })),
+    agricultureStaff,
+    agricultureFilters,
     access,
+  };
+}
+
+export async function getCustomerAgricultureRequest(userId: string, requestId: number) {
+  const request = await prisma.serviceRequest.findFirst({
+    where: { id: requestId, userId, serviceDefinition: { sectorSlug: "agriculture-labor" } },
+    include: {
+      serviceDefinition: { select: { slug: true, titleBn: true, titleEn: true, icon: true } },
+      updates: { where: { visibility: "CUSTOMER" }, orderBy: { createdAt: "asc" } },
+      attachments: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
+    },
+  });
+  if (!request) return null;
+  return {
+    id: request.id,
+    referenceCode: request.referenceCode,
+    status: request.status,
+    customerName: request.customerName,
+    phone: request.phone,
+    district: request.district,
+    details: request.details,
+    budget: decimal(request.budget),
+    answers: request.answers,
+    fieldSnapshot: request.fieldSnapshot,
+    createdAt: iso(request.createdAt),
+    service: request.serviceDefinition,
+    updates: request.updates.map((update) => ({ id: update.id, messageBn: update.messageBn, messageEn: update.messageEn, createdAt: iso(update.createdAt) })),
+    attachments: request.attachments.map((attachment) => ({ ...attachment, createdAt: iso(attachment.createdAt) })),
   };
 }
 

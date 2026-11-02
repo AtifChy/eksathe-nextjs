@@ -88,6 +88,11 @@ export const uploadPresignSchema = z.discriminatedUnion("purpose", [
     contentType: z.enum(["image/jpeg", "image/png", "image/webp", "application/pdf"]),
     sizeBytes: z.number().int().positive().max(10_000_000),
   }),
+  z.strictObject({
+    purpose: z.literal("crop-disease-photo"),
+    contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    sizeBytes: z.number().int().positive().max(5_000_000),
+  }),
 ]);
 
 export const attachProjectDocumentSchema = z.strictObject({

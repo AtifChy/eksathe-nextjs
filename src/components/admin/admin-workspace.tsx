@@ -22,16 +22,19 @@ import { Label } from "@/components/ui/label";
 import type { AdminWorkspace as AdminWorkspaceData } from "@/lib/workspaces";
 import { WorkspaceNavigation } from "@/components/workspaces/workspace-navigation";
 import { initialWorkflowState } from "@/lib/workflow-state";
+import { AgricultureRequestsQueue } from "@/components/admin/agriculture-requests-queue";
 
 export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
   const { locale, t } = useLanguage();
   const formatMoney = (value: string) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value));
   const operationsEnabled = data.access.operationSectors.length > 0;
+  const agricultureOperationsEnabled = data.access.operationSectors.includes("agriculture-labor");
   const financeEnabled = data.access.financeSectors.length > 0;
 
   return (
     <WorkspaceNavigation label={locale === "bn" ? "প্রশাসন নেভিগেশন" : "Administration navigation"} items={[
       ...(operationsEnabled ? [{ id: "provider-approvals", label: t.workflow.adminApprovals }, { id: "listing-moderation", label: locale === "bn" ? "তালিকা" : "Listings" }, { id: "requests", label: t.workflow.adminRequests }, { id: "disputes", label: locale === "bn" ? "বিরোধ" : "Disputes" }] : []),
+      ...(agricultureOperationsEnabled ? [{ id: "agriculture-requests", label: locale === "bn" ? "কৃষি অনুরোধ" : "Agriculture intake" }] : []),
       ...(financeEnabled ? [{ id: "payment-mismatches", label: locale === "bn" ? "পেমেন্ট যাচাই" : "Payments" }, { id: "commission", label: locale === "bn" ? "কমিশন" : "Commissions" }] : []),
       ...(data.access.isSuperAdmin ? [{ id: "commission-settings", label: locale === "bn" ? "কমিশন হার" : "Rates" }, { id: "staff-access", label: t.workflow.manageStaff }] : []),
     ]}>
@@ -96,6 +99,8 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
           </section>
         </>
       )}
+
+      {agricultureOperationsEnabled && <AgricultureRequestsQueue requests={data.agricultureRequests} staff={data.agricultureStaff} filters={data.agricultureFilters} />}
 
       {financeEnabled && (
         <>

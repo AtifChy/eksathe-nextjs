@@ -50,6 +50,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "An approved provider capability is required." }, { status: 403 });
     }
     key = `marketplace/${profile.id}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
+  } else if (parsed.data.purpose === "crop-disease-photo") {
+    key = `agriculture-requests/${user.id}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
   } else {
     if (parsed.data.purpose === "project-document") {
       const project = await prisma.constructionProject.findFirst({ where: { id: parsed.data.projectId, ownerId: user.id }, select: { id: true } });

@@ -9,7 +9,7 @@ export const instant = false;
 
 export default async function ListingPage({ params, searchParams }: {
   params: Promise<{ slug: string; listingId: string }>;
-  searchParams: Promise<{ projectId?: string | string[]; packageLabel?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug, listingId } = await params;
   const query = await searchParams;
