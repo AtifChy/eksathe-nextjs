@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { ListingImage } from "@/components/dashboard/listing-image";
 import { useMemo, useState } from "react";
 import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
@@ -103,7 +103,7 @@ export function SectorLanding({
                     {serviceListings.map((listing) => (
                       <Link key={listing.id} href={`/dashboard/${sector.slug}/listings/${listing.id}`} className="rounded-2xl outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">
                         <Card className="h-full transition-colors hover:border-primary/40">
-                          {listing.hasImage && <div className="relative aspect-[16/9] overflow-hidden rounded-t-2xl bg-muted"><Image src={`/api/listings/${listing.id}/image`} alt={locale === "bn" ? listing.titleBn : listing.titleEn} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" unoptimized /></div>}
+                          <ListingImage listing={listing} alt={locale === "bn" ? listing.titleBn : listing.titleEn} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                           <CardHeader>
                             <CardTitle>{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle>
                             <CardDescription>{locale === "bn" ? listing.providerNameBn : listing.providerNameEn} · {listing.district}</CardDescription>

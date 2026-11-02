@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { ListingImage } from "@/components/dashboard/listing-image";
 import { ArrowLeftIcon, MapPinIcon, StarIcon } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { WorkspaceError } from "@/components/workflows/workspace-error";
@@ -30,7 +30,7 @@ export function ProviderProfile({ provider, sector, unavailable }: { provider: P
 
       <section className="flex flex-col gap-4">
         <h2 className="text-xl font-bold">{locale === "bn" ? "সেবা ও তালিকা" : "Services and listings"}</h2>
-        {provider.listings.length === 0 ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">{t.workflow.noRecords}</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{provider.listings.map((listing) => <Card key={listing.id}>{listing.hasImage && <div className="relative aspect-[16/9] overflow-hidden rounded-t-xl bg-muted"><Image src={`/api/listings/${listing.id}/image`} alt={locale === "bn" ? listing.titleBn : listing.titleEn} fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" unoptimized /></div>}<CardHeader><CardTitle>{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle><CardDescription>{listing.district} · {listing.category}</CardDescription></CardHeader><CardContent><p className="line-clamp-3 text-sm text-muted-foreground">{locale === "bn" ? listing.descriptionBn : listing.descriptionEn}</p><div className="mt-4 flex items-center justify-between gap-2"><span className="text-sm font-semibold text-primary">{formatMoney(listing.unitPrice)} / {listing.unit}</span><Link href={`/dashboard/${sector.slug}/listings/${listing.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>{locale === "bn" ? "বিস্তারিত" : "Details"}</Link></div></CardContent></Card>)}</div>}
+        {provider.listings.length === 0 ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">{t.workflow.noRecords}</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{provider.listings.map((listing) => <Card key={listing.id}><ListingImage listing={listing} alt={locale === "bn" ? listing.titleBn : listing.titleEn} sizes="(max-width: 1024px) 100vw, 33vw" /><CardHeader><CardTitle>{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle><CardDescription>{listing.district} · {listing.category}</CardDescription></CardHeader><CardContent><p className="line-clamp-3 text-sm text-muted-foreground">{locale === "bn" ? listing.descriptionBn : listing.descriptionEn}</p><div className="mt-4 flex items-center justify-between gap-2"><span className="text-sm font-semibold text-primary">{formatMoney(listing.unitPrice)} / {listing.unit}</span><Link href={`/dashboard/${sector.slug}/listings/${listing.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>{locale === "bn" ? "বিস্তারিত" : "Details"}</Link></div></CardContent></Card>)}</div>}
       </section>
 
       <section className="flex flex-col gap-4">

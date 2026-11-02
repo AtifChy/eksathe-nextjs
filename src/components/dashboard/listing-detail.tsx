@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { ListingImage } from "@/components/dashboard/listing-image";
 import { ArrowLeftIcon, ArrowRightIcon, MapPinIcon, PackageIcon, UserRoundIcon } from "lucide-react";
 import { ListingRequestForm } from "@/components/workflows/listing-request-form";
 import { useLanguage } from "@/components/language-provider";
@@ -40,7 +40,7 @@ export function ListingDetail({
           <p role="alert" className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">{t.workflow.dataUnavailable}</p>
         ) : listing ? (
           <Card>
-            {listing.hasImage && <div className="relative aspect-[16/9] overflow-hidden rounded-t-xl bg-muted"><Image src={`/api/listings/${listing.id}/image`} alt={locale === "bn" ? listing.titleBn : listing.titleEn} fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover" unoptimized /></div>}
+            <ListingImage listing={listing} alt={locale === "bn" ? listing.titleBn : listing.titleEn} sizes="(max-width: 1024px) 100vw, 60vw" />
             <CardHeader>
               <p className="text-sm font-medium text-primary">{locale === "bn" ? listing.category : listing.category}</p>
               <CardTitle className="text-3xl">{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle>
