@@ -5,6 +5,7 @@ import { useState } from "react";
 import { BriefcaseBusinessIcon, ChevronDownIcon, LayoutDashboardIcon, LogOutIcon, ShieldCheckIcon, UserRoundIcon } from "lucide-react";
 import { signOutAction } from "@/app/actions/session";
 import { LanguageToggle } from "@/components/language-toggle";
+import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
 
@@ -22,9 +23,12 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-[#0b5036] text-white shadow-sm">
       <div className="mx-auto flex min-h-16 w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 flex-col font-bold leading-tight" aria-label={t.common.brandName}>
+        <Link href="/" className="flex shrink-0 items-center gap-3 font-bold leading-tight" aria-label={t.common.brandName}>
+          <BrandLogo />
+          <span className="hidden flex-col gap-1 lg:flex">
           <span className="text-sm sm:text-base">{t.common.brandName}</span>
           <span className="hidden text-[0.65rem] font-normal text-white/70 sm:block">{t.common.brandSlogan}</span>
+          </span>
         </Link>
 
         <nav className="flex min-w-0 items-center gap-1 sm:gap-2" aria-label={t.header.services}>

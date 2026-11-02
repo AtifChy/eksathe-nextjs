@@ -5,6 +5,7 @@ import { cloneElement, useId, useState, type FormEvent, type ReactElement } from
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -83,6 +84,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
   return (
     <Card className="w-full max-w-lg">
       <CardHeader>
+        <BrandLogo className="mb-2 size-24" />
         <CardTitle className="text-2xl">{title}</CardTitle>
         <CardDescription>
           {mode === "verify" ? t.auth.verifyDescription : mode === "register" ? t.auth.termsNote : t.common.brandName}

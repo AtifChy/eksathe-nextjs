@@ -15,6 +15,7 @@ import "@fontsource/hind-siliguri/600.css";
 import "@fontsource/hind-siliguri/700.css";
 
 export const metadata: Metadata = {
+  icons: { apple: "/brand/eksathe-logo.png" },
   title: "EKsathe Bangladesh | One account for everyday services",
   description:
     "Find services, farm produce, agricultural workers, machinery, construction providers, and materials on one platform.",
