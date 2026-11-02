@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { sectors } from "../src/lib/sectors";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -279,15 +280,37 @@ const panels = [
 ];
 
 async function main() {
-  for (const panel of panels) {
-    await prisma.panel.upsert({
-      where: { slug: panel.slug },
-      update: panel,
-      create: panel,
+  for (const sector of sectors) {
+    await prisma.sector.upsert({
+      where: { slug: sector.slug },
+      update: {
+        position: sector.id,
+        titleBn: sector.labelBn,
+        titleEn: sector.labelEn,
+        icon: sector.icon,
+        status: sector.status === "live" ? "LIVE" : "COMING_SOON",
+      },
+      create: {
+        slug: sector.slug,
+        position: sector.id,
+        titleBn: sector.labelBn,
+        titleEn: sector.labelEn,
+        icon: sector.icon,
+        status: sector.status === "live" ? "LIVE" : "COMING_SOON",
+      },
     });
   }
 
-  console.log(`Seeded ${panels.length} panels.`);
+  const liveServiceSlugs = new Set(["produce-market", "farm-labour", "farm-machinery"]);
+  for (const panel of panels) {
+    await prisma.panel.upsert({
+      where: { slug: panel.slug },
+      update: { ...panel, isActive: liveServiceSlugs.has(panel.slug) },
+      create: { ...panel, isActive: liveServiceSlugs.has(panel.slug) },
+    });
+  }
+
+  console.log(`Seeded ${sectors.length} sectors and ${panels.length} service definitions.`);
 }
 
 main()

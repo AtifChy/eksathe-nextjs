@@ -1,6 +1,4 @@
-import { CategoryGrid } from "@/components/dashboard/category-grid";
-import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
-import { DashboardNotice } from "@/components/dashboard/dashboard-notice";
+import { DashboardHub } from "@/components/dashboard/dashboard-hub";
 
 export const metadata = {
   title: "Dashboard | EKsathe Bangladesh",
@@ -9,11 +7,5 @@ export const metadata = {
 };
 
 export default function DashboardPage() {
-  return (
-    <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 py-6 sm:py-8">
-      <DashboardTabs />
-      <DashboardNotice />
-      <CategoryGrid />
-    </div>
-  );
+  return <DashboardHub />;
 }

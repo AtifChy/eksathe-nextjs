@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@/lib/prisma";
+import { sendAuthEmail } from "@/lib/email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -10,6 +11,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 10,
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendAuthEmail(user.email, "Reset your EKsathe password", url);
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendAuthEmail(user.email, "Verify your EKsathe account", url);
+    },
   },
   user: {
     additionalFields: {
@@ -19,13 +31,13 @@ export const auth = betterAuth({
       },
       role: {
         type: "string",
-        required: false,
-        defaultValue: "guest",
+        defaultValue: "customer",
+        input: false,
       },
       status: {
         type: "string",
-        required: false,
-        defaultValue: "pending",
+        defaultValue: "active",
+        input: false,
       },
     },
   },

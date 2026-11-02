@@ -4,6 +4,7 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useSyncExternalStore,
 } from "react";
@@ -37,7 +38,7 @@ function setCookie(name: string, value: string) {
   document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`;
 }
 
-let memoryLocale: Locale = "en";
+let memoryLocale: Locale = "bn";
 const listeners = new Set<() => void>();
 
 function subscribe(callback: () => void) {
@@ -69,7 +70,7 @@ interface LanguageProviderProps {
 
 export function LanguageProvider({
   children,
-  initialLocale = "en",
+  initialLocale = "bn",
 }: LanguageProviderProps) {
   const router = useRouter();
   const locale = useSyncExternalStore(
@@ -77,6 +78,10 @@ export function LanguageProvider({
     getSnapshot,
     () => initialLocale,
   );
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const setLocale = useCallback(
     (newLocale: Locale) => {

@@ -1,9 +1,11 @@
+import { Suspense } from "react";
+import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Geist_Mono, Hind_Siliguri } from "next/font/google";
 
 import { LanguageProvider } from "@/components/language-provider";
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeaderServer } from "@/components/site-header-server";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
@@ -21,15 +23,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agriculture, Market & Labor | EKsathe Bangladesh",
+  title: "EKsathe Bangladesh | One account for everyday services",
   description:
-    "Manage agricultural produce, market prices, farm labor, transport, and service requests on a unified platform.",
+    "Find services, farm produce, agricultural workers, machinery, construction providers, and materials on one platform.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
-      lang="en"
+      lang="bn"
       suppressHydrationWarning
       className={`${hindSiliguri.variable} ${geistMono.variable} h-full antialiased`}
     >
@@ -40,8 +42,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           disableTransitionOnChange
         >
-          <LanguageProvider initialLocale="en">
-            <SiteHeader />
+          <LanguageProvider initialLocale="bn">
+            <Suspense fallback={<div className="h-16 border-b bg-card" aria-hidden="true" />}>
+              <SiteHeaderServer />
+            </Suspense>
             <main className="flex-1">{children}</main>
             <SiteFooter />
           </LanguageProvider>
