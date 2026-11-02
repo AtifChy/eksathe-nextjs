@@ -37,6 +37,7 @@ model User {
   reviewedOrders       Review[]              @relation("ReviewAuthor")
   collectedCommissions CommissionRecord[]    @relation("CommissionCollector")
   projectDocuments     ProjectDocument[]
+  projectExpenses      ProjectExpense[]
   activityLogs         ActivityLog[]
 
   @@unique([email])
@@ -394,6 +395,7 @@ model MarketplaceRequest {
   listingId      String                   @map("listing_id")
   sectorSlug     String                   @map("sector_slug")
   projectId      String?                  @map("project_id")
+  packageLabel   String?                  @map("package_label")
   quantity       Decimal                  @db.Decimal(12, 3)
   district       String
   details        String                   @default("")
@@ -442,6 +444,7 @@ model Order {
   providerId          String               @map("provider_id")
   listingId           String               @map("listing_id")
   projectId           String?              @map("project_id")
+  packageLabel        String?              @map("package_label")
   quantity            Decimal              @db.Decimal(12, 3)
   unit                String
   unitPrice           Decimal              @map("unit_price") @db.Decimal(12, 2)
@@ -468,6 +471,7 @@ model Order {
   commission          CommissionRecord?
   review              Review?
 
+  @@unique([projectId, packageLabel])
   @@index([buyerId, status])
   @@index([providerId, status])
   @@index([projectId])
@@ -560,6 +564,7 @@ model ConstructionProject {
   orders          Order[]
   milestones      ProjectMilestone[]
   documents       ProjectDocument[]
+  expenses        ProjectExpense[]
 
   @@index([ownerId, status])
   @@map("construction_projects")
@@ -595,6 +600,21 @@ model ProjectDocument {
 
   @@index([projectId, createdAt])
   @@map("project_documents")
+}
+
+model ProjectExpense {
+  id          String              @id @default(cuid())
+  projectId   String              @map("project_id")
+  createdById String              @map("created_by_id")
+  description String
+  amount      Decimal             @db.Decimal(12, 2)
+  occurredAt  DateTime            @map("occurred_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  project     ConstructionProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([projectId, occurredAt])
+  @@map("project_expenses")
 }
 
 model Notification {

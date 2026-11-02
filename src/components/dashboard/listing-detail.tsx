@@ -17,15 +17,18 @@ export function ListingDetail({
   unavailable,
   signedIn,
   projectId,
+  packageLabel,
 }: {
   sector: SectorDefinition;
   listing: PublicListing | null;
   unavailable: boolean;
   signedIn: boolean;
   projectId?: string;
+  packageLabel?: string;
 }) {
   const { locale, t } = useLanguage();
   const price = (value: string) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value));
+  const returnTo = `/dashboard/${sector.slug}/listings/${listing?.id ?? ""}${projectId ? `?${new URLSearchParams({ projectId, ...(packageLabel ? { packageLabel } : {}) }).toString()}` : ""}`;
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
@@ -73,12 +76,12 @@ export function ListingDetail({
           </CardHeader>
           <CardContent>
             {signedIn ? (
-              <ListingRequestForm listing={listing} projectId={projectId} />
+              <ListingRequestForm listing={listing} projectId={projectId} packageLabel={packageLabel} />
             ) : (
               <div className="flex flex-col gap-3">
                 <p className="text-sm text-muted-foreground">{t.workflow.signInToRequest}</p>
-                <Link href={`/login?next=${encodeURIComponent(`/dashboard/${sector.slug}/listings/${listing.id}`)}`} className={cn(buttonVariants(), "w-full")}>{t.auth.signIn}</Link>
-                <Link href={`/register?next=${encodeURIComponent(`/dashboard/${sector.slug}/listings/${listing.id}`)}`} className={cn(buttonVariants({ variant: "outline" }), "w-full")}>{t.auth.createAccount}</Link>
+                <Link href={`/login?next=${encodeURIComponent(returnTo)}`} className={cn(buttonVariants(), "w-full")}>{t.auth.signIn}</Link>
+                <Link href={`/register?next=${encodeURIComponent(returnTo)}`} className={cn(buttonVariants({ variant: "outline" }), "w-full")}>{t.auth.createAccount}</Link>
               </div>
             )}
           </CardContent>

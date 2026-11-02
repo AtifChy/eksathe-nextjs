@@ -47,6 +47,27 @@ export async function createConstructionProject(actorId: string, input: CreatePr
   return project;
 }
 
+export async function recordProjectExpense(actorId: string, input: { projectId: string; description: string; amount: string; occurredAt?: string }) {
+  return prisma.$transaction(async (tx) => {
+    const project = await tx.constructionProject.findUnique({ where: { id: input.projectId }, select: { id: true, ownerId: true, status: true } });
+    if (!project) throw new WorkflowError("notFound");
+    if (project.ownerId !== actorId) throw new WorkflowError("notAllowed");
+    if (project.status === "CANCELLED") throw new WorkflowError("invalidState");
+    const expense = await tx.projectExpense.create({
+      data: {
+        projectId: project.id,
+        createdById: actorId,
+        description: input.description,
+        amount: new Prisma.Decimal(input.amount),
+        occurredAt: input.occurredAt ? dateAtUtcStart(input.occurredAt) : new Date(),
+      },
+      select: { id: true },
+    });
+    await tx.activityLog.create({ data: { userId: actorId, action: "project.expense_recorded", entityType: "project_expense", entityId: expense.id } });
+    return expense;
+  });
+}
+
 export async function addProjectMilestone(actorId: string, input: MilestoneInput) {
   return prisma.$transaction(async (tx) => {
     const project = await tx.constructionProject.findUnique({ where: { id: input.projectId }, select: { id: true, ownerId: true, status: true } });

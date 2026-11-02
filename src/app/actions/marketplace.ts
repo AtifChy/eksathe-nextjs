@@ -130,6 +130,7 @@ export async function createMarketplaceRequestAction(_state: WorkflowState, form
   const rawStart = value(formData, "requestedStart");
   const rawEnd = value(formData, "requestedEnd");
   const rawProject = value(formData, "projectId");
+  const rawPackageLabel = value(formData, "packageLabel");
   const parsed = createRequestSchema.safeParse({
     listingId: value(formData, "listingId"),
     quantity: value(formData, "quantity") || "1",
@@ -138,6 +139,7 @@ export async function createMarketplaceRequestAction(_state: WorkflowState, form
     ...(rawStart ? { requestedStart: rawStart } : {}),
     ...(rawEnd ? { requestedEnd: rawEnd } : {}),
     ...(rawProject ? { projectId: rawProject } : {}),
+    ...(rawPackageLabel ? { packageLabel: rawPackageLabel } : {}),
   });
   if (!parsed.success) return failure(parsed.error);
   return run(() => createMarketplaceRequest(user.id, parsed.data), "requestSent", ["/account", "/provider"]);

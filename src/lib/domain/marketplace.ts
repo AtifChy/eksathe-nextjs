@@ -10,6 +10,7 @@ import type {
 } from "@/lib/validations/workflows";
 import { prisma } from "@/lib/prisma";
 import { validateStoredObject } from "@/lib/storage/s3";
+import { calculateCommission, calculateCommissionReduction, calculateRemainingPayment } from "@/lib/domain/money";
 
 type Tx = Prisma.TransactionClient;
 type ListingKind = "PRODUCE" | "WORKER" | "MACHINERY" | "CONSTRUCTION_MATERIAL" | "CONSTRUCTION_SERVICE";
@@ -244,6 +245,7 @@ export async function createMarketplaceRequest(actorId: string, input: CreateReq
     }
 
     let projectId: string | null = null;
+    let packageLabel: string | null = null;
     if (input.projectId) {
       if (listing.sectorSlug !== "construction") fail("notAllowed");
       const project = await tx.constructionProject.findFirst({
@@ -252,6 +254,8 @@ export async function createMarketplaceRequest(actorId: string, input: CreateReq
       });
       if (!project) fail("notFound");
       projectId = project.id;
+      packageLabel = input.packageLabel?.trim() || null;
+      if (!packageLabel) fail("invalidState");
     }
 
     const request = await tx.marketplaceRequest.create({
@@ -261,6 +265,7 @@ export async function createMarketplaceRequest(actorId: string, input: CreateReq
         listingId: listing.id,
         sectorSlug: listing.sectorSlug,
         projectId,
+        packageLabel,
         quantity: requestedQuantity,
         district: input.district,
         details: input.details,
@@ -357,6 +362,10 @@ export async function acceptQuote(actorId: string, requestId: string) {
       if (request.status !== "QUOTED" || request.quote.status !== "PENDING") fail("invalidState");
       if (request.quote.expiresAt && request.quote.expiresAt < new Date()) fail("unavailable");
       if (request.provider.status !== "APPROVED") fail("notAllowed");
+      if (request.projectId && request.packageLabel) {
+        const accepted = await tx.order.findFirst({ where: { projectId: request.projectId, packageLabel: request.packageLabel }, select: { id: true } });
+        if (accepted) fail("invalidState");
+      }
       await assertApprovedCapability(tx, request.providerId, request.sectorSlug, request.listing.kind);
 
       const bookingDates = request.requestedStart && request.requestedEnd
@@ -389,7 +398,7 @@ export async function acceptQuote(actorId: string, requestId: string) {
 
       const subtotal = request.quote.unitPrice.mul(request.quote.quantity).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
       const commissionRate = request.sector.commissionRate;
-      const commissionAmount = subtotal.mul(commissionRate).div(100).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+      const commissionAmount = calculateCommission(subtotal, commissionRate);
       const order = await tx.order.create({
         data: {
           requestId: request.id,
@@ -398,6 +407,7 @@ export async function acceptQuote(actorId: string, requestId: string) {
           providerId: request.providerId,
           listingId: request.listingId,
           projectId: request.projectId,
+          packageLabel: request.packageLabel,
           quantity: request.quote.quantity,
           unit: request.listing.unit,
           unitPrice: request.quote.unitPrice,
@@ -451,9 +461,7 @@ export async function progressOrder(actorId: string, orderId: string, action: "s
       if (!isBuyer || order.status !== "AWAITING_CONFIRMATION") fail("invalidState");
       await tx.order.update({ where: { id: order.id }, data: { status: "COMPLETED" } });
       const refundTotal = order.payments.reduce((sum, payment) => sum.plus(payment.refundAmount ?? 0), new Prisma.Decimal(0));
-      const orderTotal = order.subtotal.plus(order.transportFee);
-      const goodsRefund = orderTotal.greaterThan(0) ? refundTotal.mul(order.subtotal).div(orderTotal) : new Prisma.Decimal(0);
-      const adjustment = goodsRefund.mul(order.commissionRate).div(100).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+      const adjustment = calculateCommissionReduction(refundTotal, order.subtotal, order.transportFee, order.commissionRate);
       const commissionDue = Prisma.Decimal.max(0, order.commissionAmount.minus(adjustment));
       await tx.commissionRecord.upsert({
         where: { orderId: order.id },
@@ -533,8 +541,7 @@ export async function recordPayment(actorId: string, input: PaymentInput) {
       const isProvider = order.provider.userId === actorId;
       if (!isBuyer && !isProvider) fail("notAllowed");
       if (order.status === "CANCELLED") fail("invalidState");
-      const paid = order.payments.reduce((sum, row) => sum.plus(row.amount).minus(row.refundAmount ?? 0), new Prisma.Decimal(0));
-      const amountDue = order.subtotal.plus(order.transportFee).minus(paid);
+      const amountDue = calculateRemainingPayment(order.subtotal.plus(order.transportFee), order.payments);
       const amount = new Prisma.Decimal(input.amount);
       if (amount.greaterThan(amountDue)) fail("amountMismatch");
       const payment = await tx.paymentRecord.create({
@@ -718,9 +725,7 @@ export async function recordRefund(actorId: string, paymentId: string, amountVal
       data: { refundAmount: amount, refundedAt: new Date(), refundReference: reference || null },
     });
     if (payment.order.commission && payment.order.commission.status === "DUE") {
-      const orderTotal = payment.order.subtotal.plus(payment.order.transportFee);
-      const refundedGoodsValue = orderTotal.greaterThan(0) ? amount.mul(payment.order.subtotal).div(orderTotal) : new Prisma.Decimal(0);
-      const commissionReduction = refundedGoodsValue.mul(payment.order.commissionRate).div(100).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+      const commissionReduction = calculateCommissionReduction(amount, payment.order.subtotal, payment.order.transportFee, payment.order.commissionRate);
       const remainingCommission = Prisma.Decimal.max(0, payment.order.commission.amount.minus(commissionReduction));
       await tx.commissionRecord.update({
         where: { id: payment.order.commission.id },
@@ -764,9 +769,7 @@ export async function resolveDispute(actorId: string, orderId: string, decision:
       await tx.order.update({ where: { id: order.id }, data: { status: "COMPLETED" } });
       const refundTotal = order.payments.reduce((sum, payment) => sum.plus(payment.refundAmount ?? 0), new Prisma.Decimal(0));
       const total = await tx.order.findUniqueOrThrow({ where: { id: order.id }, select: { subtotal: true, transportFee: true, commissionRate: true } });
-      const orderTotal = total.subtotal.plus(total.transportFee);
-      const goodsRefund = orderTotal.greaterThan(0) ? refundTotal.mul(total.subtotal).div(orderTotal) : new Prisma.Decimal(0);
-      const adjustment = goodsRefund.mul(total.commissionRate).div(100).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+      const adjustment = calculateCommissionReduction(refundTotal, total.subtotal, total.transportFee, total.commissionRate);
       const commissionDue = Prisma.Decimal.max(0, order.commissionAmount.minus(adjustment));
       await tx.commissionRecord.upsert({
         where: { orderId: order.id },

@@ -10,17 +10,18 @@ import { Label } from "@/components/ui/label";
 import type { PublicListing } from "@/lib/listings";
 import { initialWorkflowState } from "@/lib/workflow-state";
 
-export function ListingRequestForm({ listing, projectId }: { listing: PublicListing; projectId?: string }) {
+export function ListingRequestForm({ listing, projectId, packageLabel }: { listing: PublicListing; projectId?: string; packageLabel?: string }) {
   const [state, action, pending] = useActionState(createMarketplaceRequestAction, initialWorkflowState);
   const { locale, t } = useLanguage();
   const isScheduled = listing.kind === "WORKER" || listing.kind === "MACHINERY" || listing.kind === "CONSTRUCTION_SERVICE";
-  const returnTo = `/dashboard/${listing.sectorSlug}/listings/${listing.id}`;
+  const returnTo = `/dashboard/${listing.sectorSlug}/listings/${listing.id}${projectId ? `?${new URLSearchParams({ projectId, ...(packageLabel ? { packageLabel } : {}) }).toString()}` : ""}`;
 
   return (
     <form action={action} className="flex flex-col gap-4">
       <input type="hidden" name="listingId" value={listing.id} />
       <input type="hidden" name="returnTo" value={returnTo} />
       {projectId && <input type="hidden" name="projectId" value={projectId} />}
+      {projectId && <div className="flex flex-col gap-2"><Label htmlFor="request-package-label">{t.workflow.workPackage}</Label><Input id="request-package-label" name="packageLabel" maxLength={80} defaultValue={packageLabel ?? (locale === "bn" ? "সাধারণ কাজ" : "General works")} required /></div>}
       {isScheduled ? (
         <input type="hidden" name="quantity" value="1" />
       ) : (

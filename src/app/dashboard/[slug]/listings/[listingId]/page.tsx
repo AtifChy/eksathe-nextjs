@@ -8,7 +8,7 @@ export const instant = false;
 
 export default async function ListingPage({ params, searchParams }: {
   params: Promise<{ slug: string; listingId: string }>;
-  searchParams: Promise<{ projectId?: string | string[] }>;
+  searchParams: Promise<{ projectId?: string | string[]; packageLabel?: string | string[] }>;
 }) {
   const { slug, listingId } = await params;
   const query = await searchParams;
@@ -26,6 +26,7 @@ export default async function ListingPage({ params, searchParams }: {
       unavailable={result.unavailable}
       signedIn={Boolean(user && user.status === "active")}
       projectId={typeof query.projectId === "string" && query.projectId.length <= 64 ? query.projectId : undefined}
+      packageLabel={typeof query.packageLabel === "string" && query.packageLabel.length <= 80 ? query.packageLabel : undefined}
     />
   );
 }

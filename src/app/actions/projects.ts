@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addProjectMilestone, attachProjectDocument, createConstructionProject, updateProjectMilestone } from "@/lib/domain/projects";
+import { addProjectMilestone, attachProjectDocument, createConstructionProject, recordProjectExpense, updateProjectMilestone } from "@/lib/domain/projects";
 import { WorkflowError } from "@/lib/domain/marketplace";
 import { requireUser } from "@/lib/dal";
-import { attachProjectDocumentSchema, createProjectSchema, milestoneSchema, milestoneUpdateSchema } from "@/lib/validations/workflows";
+import { attachProjectDocumentSchema, createProjectSchema, milestoneSchema, milestoneUpdateSchema, projectExpenseSchema } from "@/lib/validations/workflows";
 import type { WorkflowMessageKey, WorkflowState } from "@/lib/workflow-state";
 
 function value(formData: FormData, key: string) {
@@ -97,4 +97,18 @@ export async function attachProjectDocumentAction(_state: WorkflowState, formDat
   });
   if (!parsed.success) return fail(parsed.error);
   return run(() => attachProjectDocument(user.id, parsed.data), "documentUploaded", ["/account", `/account/projects/${projectId}`, "/provider"]);
+}
+
+export async function recordProjectExpenseAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+  const projectId = value(formData, "projectId");
+  const user = await requireUser(`/account/projects/${encodeURIComponent(projectId)}`);
+  const rawDate = value(formData, "occurredAt");
+  const parsed = projectExpenseSchema.safeParse({
+    projectId,
+    description: value(formData, "description"),
+    amount: value(formData, "amount"),
+    ...(rawDate ? { occurredAt: rawDate } : {}),
+  });
+  if (!parsed.success) return fail(parsed.error);
+  return run(() => recordProjectExpense(user.id, parsed.data), "expenseRecorded", ["/account", `/account/projects/${projectId}`]);
 }

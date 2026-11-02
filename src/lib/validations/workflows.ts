@@ -57,7 +57,9 @@ export const createRequestSchema = z.strictObject({
   requestedStart: optionalDate,
   requestedEnd: optionalDate,
   projectId: text(64).optional(),
+  packageLabel: text(80).optional(),
 }).superRefine((value, context) => {
+  if (Boolean(value.projectId) !== Boolean(value.packageLabel)) context.addIssue({ code: "custom", path: ["packageLabel"], message: "Project invitations need a work package name." });
   if (Boolean(value.requestedStart) !== Boolean(value.requestedEnd)) {
     context.addIssue({ code: "custom", path: ["requestedEnd"], message: "Provide both booking dates." });
   }
@@ -117,6 +119,13 @@ export const createProjectSchema = z.strictObject({
   if (value.startsAt && value.targetEndsAt && value.targetEndsAt < value.startsAt) {
     context.addIssue({ code: "custom", path: ["targetEndsAt"], message: "The target date must follow the start date." });
   }
+});
+
+export const projectExpenseSchema = z.strictObject({
+  projectId: requiredText(64),
+  description: requiredText(240),
+  amount: money.refine((value) => Number(value) > 0),
+  occurredAt: optionalDate,
 });
 
 export const milestoneSchema = z.strictObject({

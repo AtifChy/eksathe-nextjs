@@ -35,9 +35,10 @@ export async function getCustomerWorkspace(userId: string) {
       orderBy: { updatedAt: "desc" },
       include: {
         milestones: { orderBy: { createdAt: "asc" } },
-        orders: { include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { nameBn: true, nameEn: true } } } },
-        requests: { include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { nameBn: true, nameEn: true } }, quote: true, order: { select: { id: true, status: true } } } },
+        orders: { include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { nameBn: true, nameEn: true } }, payments: { orderBy: { createdAt: "desc" } } } },
+        requests: { include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { id: true, nameBn: true, nameEn: true } }, quote: true, order: { select: { id: true, status: true } } } },
         documents: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
+        expenses: { orderBy: { occurredAt: "desc" } },
       },
     }),
     prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 30 }),
@@ -112,11 +113,13 @@ export async function getCustomerWorkspace(userId: string) {
         id: order.id,
         status: order.status,
         subtotal: order.subtotal.toString(),
+        transportFee: order.transportFee.toString(),
         titleBn: order.listing.titleBn,
         titleEn: order.listing.titleEn,
         kind: order.listing.kind,
         providerNameBn: order.provider.nameBn,
         providerNameEn: order.provider.nameEn,
+        payments: order.payments.map((payment) => ({ id: payment.id, amount: payment.amount.toString(), method: payment.method, reference: payment.reference, refundAmount: decimal(payment.refundAmount), confirmed: Boolean(payment.buyerConfirmedAt && payment.providerConfirmedAt), hasReceipt: Boolean(payment.receiptKey) })),
       })),
       requests: project.requests.map((request) => ({
         id: request.id,
@@ -124,9 +127,11 @@ export async function getCustomerWorkspace(userId: string) {
         quantity: request.quantity.toString(),
         district: request.district,
         details: request.details,
+        packageLabel: request.packageLabel,
         requestedStart: iso(request.requestedStart),
         requestedEnd: iso(request.requestedEnd),
         listing: request.listing,
+        providerId: request.provider.id,
         providerNameBn: request.provider.nameBn,
         providerNameEn: request.provider.nameEn,
         quote: request.quote ? { id: request.quote.id, quantity: request.quote.quantity.toString(), unitPrice: request.quote.unitPrice.toString(), transportFee: request.quote.transportFee.toString(), note: request.quote.note, status: request.quote.status, expiresAt: iso(request.quote.expiresAt) } : null,
@@ -141,6 +146,7 @@ export async function getCustomerWorkspace(userId: string) {
         status: milestone.status,
       })),
       documents: project.documents.map((document) => ({ ...document, createdAt: iso(document.createdAt) })),
+      expenses: project.expenses.map((expense) => ({ id: expense.id, description: expense.description, amount: expense.amount.toString(), occurredAt: iso(expense.occurredAt) })),
     })),
     notifications: notifications.map((notification) => ({
       id: notification.id,
@@ -398,7 +404,7 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
         orderBy: { createdAt: "desc" },
         include: {
           listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true } },
-          provider: { select: { nameBn: true, nameEn: true } },
+          provider: { select: { id: true, nameBn: true, nameEn: true } },
           quote: true,
           order: { select: { id: true, status: true } },
         },
@@ -406,10 +412,11 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       orders: {
         ...(isOwner ? {} : { where: { providerId: providerId ?? undefined } }),
         orderBy: { createdAt: "desc" },
-        include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { nameBn: true, nameEn: true } } },
+        include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { nameBn: true, nameEn: true } }, payments: { orderBy: { createdAt: "desc" } } },
       },
       milestones: { orderBy: { createdAt: "asc" } },
       documents: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
+      expenses: { orderBy: { occurredAt: "desc" } },
     },
   });
   if (!project) return null;
@@ -433,9 +440,11 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       quantity: request.quantity.toString(),
       district: request.district,
       details: request.details,
+      packageLabel: request.packageLabel,
       requestedStart: iso(request.requestedStart),
       requestedEnd: iso(request.requestedEnd),
       listing: request.listing,
+      providerId: request.provider.id,
       providerNameBn: request.provider.nameBn,
       providerNameEn: request.provider.nameEn,
       quote: request.quote ? {
@@ -452,14 +461,18 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
     orders: project.orders.map((order) => ({
       id: order.id,
       status: order.status,
+      subtotal: order.subtotal.toString(),
+      transportFee: order.transportFee.toString(),
       titleBn: order.listing.titleBn,
       titleEn: order.listing.titleEn,
       kind: order.listing.kind,
       providerNameBn: order.provider.nameBn,
       providerNameEn: order.provider.nameEn,
+      payments: order.payments.map((payment) => ({ id: payment.id, amount: payment.amount.toString(), method: payment.method, reference: payment.reference, refundAmount: decimal(payment.refundAmount), confirmed: Boolean(payment.buyerConfirmedAt && payment.providerConfirmedAt), hasReceipt: Boolean(payment.receiptKey) })),
     })),
     milestones: project.milestones.map((milestone) => ({ id: milestone.id, title: milestone.title, description: milestone.description, amount: decimal(milestone.amount), dueAt: iso(milestone.dueAt), status: milestone.status })),
     documents: project.documents.map((document) => ({ id: document.id, filename: document.filename, contentType: document.contentType, sizeBytes: document.sizeBytes, createdAt: iso(document.createdAt) })),
+    expenses: isOwner ? project.expenses.map((expense) => ({ id: expense.id, description: expense.description, amount: expense.amount.toString(), occurredAt: iso(expense.occurredAt) })) : [],
   };
 }
 

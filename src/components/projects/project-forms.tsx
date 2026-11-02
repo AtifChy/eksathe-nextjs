@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useActionState, useEffect, useRef, useState } from "react";
-import { addMilestoneAction, attachProjectDocumentAction, createProjectAction, updateMilestoneAction } from "@/app/actions/projects";
+import { addMilestoneAction, attachProjectDocumentAction, createProjectAction, recordProjectExpenseAction, updateMilestoneAction } from "@/app/actions/projects";
 import { uploadPrivateFile } from "@/lib/client-upload";
 import { useLanguage } from "@/components/language-provider";
 import { ActionFeedback } from "@/components/workflows/action-feedback";
@@ -42,6 +42,20 @@ export function AddMilestoneForm({ projectId }: { projectId: string }) {
       <Field id={`milestone-due-${projectId}`} label={locale === "bn" ? "শেষ তারিখ" : "Due date"}><Input id={`milestone-due-${projectId}`} name="dueAt" type="date" /></Field>
       <Field id={`milestone-description-${projectId}`} label={t.workflow.milestoneDescription}><Input id={`milestone-description-${projectId}`} name="description" maxLength={1200} /></Field>
       <div className="flex flex-col gap-2 sm:col-span-2"><ActionFeedback state={state} /><Button type="submit" variant="outline" disabled={pending}>{pending ? t.common.loading : t.workflow.addMilestone}</Button></div>
+    </form>
+  );
+}
+
+export function ProjectExpenseForm({ projectId }: { projectId: string }) {
+  const [state, action, pending] = useActionState(recordProjectExpenseAction, initialWorkflowState);
+  const { t } = useLanguage();
+  return (
+    <form action={action} className="grid gap-3 rounded-xl border border-border/70 bg-card p-4 sm:grid-cols-[minmax(0,1fr)_180px_180px_auto]">
+      <input type="hidden" name="projectId" value={projectId} />
+      <Field id={`expense-description-${projectId}`} label={t.workflow.expenseDescription}><Input id={`expense-description-${projectId}`} name="description" maxLength={240} required /></Field>
+      <Field id={`expense-amount-${projectId}`} label={t.workflow.paymentAmount}><Input id={`expense-amount-${projectId}`} name="amount" type="number" min="0.01" step="0.01" required /></Field>
+      <Field id={`expense-date-${projectId}`} label={t.workflow.startDate}><Input id={`expense-date-${projectId}`} name="occurredAt" type="date" /></Field>
+      <div className="flex flex-col justify-end gap-2"><ActionFeedback state={state} /><Button type="submit" variant="outline" disabled={pending}>{pending ? t.common.loading : t.workflow.recordExpense}</Button></div>
     </form>
   );
 }

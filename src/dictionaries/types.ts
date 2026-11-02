@@ -156,6 +156,12 @@ export interface Dictionary {
     notificationRead: string;
     projectTitle: string;
     projectType: string;
+    workPackage: string;
+    projectPaymentHistory: string;
+    expenses: string;
+    recordExpense: string;
+    expenseDescription: string;
+    expenseRecorded: string;
     projectDescription: string;
     approximateArea: string;
     budget: string;

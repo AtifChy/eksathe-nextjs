@@ -40,6 +40,13 @@ bun run dev
 
 Open <http://localhost:3000>.
 
+In local development, verification and password reset messages are previewed in
+the dev server terminal when Resend is not configured or cannot deliver them.
+Copy the printed link into a browser. Configure `RESEND_API_KEY` and
+`RESEND_FROM` in `.env` to test actual email delivery. Production never uses the
+development preview path. The `onboarding@resend.dev` sender in `.env.example`
+is for local testing; configure a sender on your verified domain for production.
+
 ## Scripts
 
 | Script | What it does |
@@ -49,6 +56,9 @@ Open <http://localhost:3000>.
 | `bun run start` | Run the production build |
 | `bun run lint` | ESLint |
 | `bun run typecheck` | `tsc --noEmit` |
+| `bun run test:unit` | Domain unit tests |
+| `bun run test:integration` | PostgreSQL-backed marketplace tests (`TEST_DATABASE_URL` required) |
+| `bun run test:e2e` | Playwright browser journeys |
 | `bun run setup` | Start DB, migrate, seed |
 | `bun run db:up` | Start Postgres in Docker |
 | `bun run db:down` | Stop Postgres (keeps data) |
@@ -60,6 +70,16 @@ Open <http://localhost:3000>.
 | `bun run db:studio` | Open Prisma Studio |
 | `bun run db:status` | Show migration status |
 | `bun run db:reset` | **Destructive:** wipe the volume, migrate and seed |
+
+Install the browser once before running Playwright:
+
+```bash
+bunx playwright install chromium
+bun run test:e2e
+```
+
+By default, Playwright starts a dev server on port 3100. Set
+`PLAYWRIGHT_BASE_URL` to reuse an already running app.
 
 ## Database
 
