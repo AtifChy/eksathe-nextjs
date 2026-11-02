@@ -183,6 +183,7 @@ export interface Dictionary {
     invalidUpload: string;
     noRecords: string;
     adminApprovals: string;
+    adminRequests: string;
     approve: string;
     reject: string;
     commissionsDue: string;

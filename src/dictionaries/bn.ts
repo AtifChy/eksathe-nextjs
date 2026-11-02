@@ -174,6 +174,7 @@ export const bn: Dictionary = {
     invalidUpload: "নির্ধারিত সীমার মধ্যে সমর্থিত ফাইল বেছে নিন।",
     noRecords: "এখনো কোনো তথ্য নেই।",
     adminApprovals: "সেবাদাতা অনুমোদনের অপেক্ষায়",
+    adminRequests: "চলমান সেবা অনুরোধ",
     approve: "অনুমোদন",
     reject: "প্রত্যাখ্যান",
     commissionsDue: "আদায়যোগ্য কমিশন",

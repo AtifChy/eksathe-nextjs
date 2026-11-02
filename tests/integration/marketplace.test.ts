@@ -6,9 +6,10 @@ if (!testDatabaseUrl) throw new Error("Set TEST_DATABASE_URL to a dedicated, mig
 process.env.DATABASE_URL = testDatabaseUrl;
 mock.module("server-only", () => ({}));
 
-const [{ prisma }, marketplace] = await Promise.all([
+const [{ prisma }, marketplace, { getAdminWorkspace }] = await Promise.all([
   import("@/lib/prisma"),
   import("@/lib/domain/marketplace"),
+  import("@/lib/workspaces"),
 ]);
 
 const suffix = crypto.randomUUID();
@@ -39,19 +40,19 @@ async function createRequestAndQuote(listingId: string, customerId: string) {
   return request.id;
 }
 
-async function createListing(stock: string) {
+async function createListing(stock: string, sectorSlug = "agriculture-labor", kind: "PRODUCE" | "CONSTRUCTION_MATERIAL" = "PRODUCE") {
   const listing = await prisma.marketplaceListing.create({
     data: {
       providerId,
-      sectorSlug: "agriculture-labor",
-      kind: "PRODUCE",
+      sectorSlug,
+      kind,
       titleBn: "পরীক্ষার ধান",
-      titleEn: "Test rice",
+      titleEn: kind === "PRODUCE" ? "Test rice" : "Test cement",
       descriptionBn: "",
       descriptionEn: "",
-      category: "Rice",
+      category: kind === "PRODUCE" ? "Rice" : "Cement",
       district: "Dhaka",
-      unit: "kg",
+      unit: kind === "PRODUCE" ? "kg" : "bag",
       unitPrice: new Prisma.Decimal(10),
       stock: new Prisma.Decimal(stock),
       moderationStatus: "APPROVED",
@@ -70,12 +71,18 @@ describe("PostgreSQL marketplace transactions", () => {
       update: { status: "LIVE", commissionRate: new Prisma.Decimal("10.00") },
       create: { slug: "agriculture-labor", position: 4, titleBn: "কৃষি ও শ্রমিক", titleEn: "Agriculture & Labor", icon: "🌾", status: "LIVE", commissionRate: new Prisma.Decimal("10.00") },
     });
+    await prisma.sector.upsert({
+      where: { slug: "construction" },
+      update: { status: "LIVE", commissionRate: new Prisma.Decimal("10.00") },
+      create: { slug: "construction", position: 5, titleBn: "নির্মাণ", titleEn: "Construction", icon: "🏗️", status: "LIVE", commissionRate: new Prisma.Decimal("10.00") },
+    });
     for (const [id, role] of [[buyerId, "customer"], [buyerTwoId, "customer"], [providerUserId, "customer"], [financeUserId, "super_admin"]] as const) {
       await prisma.user.create({ data: { id, name: id, email: id + "@integration.example", emailVerified: true, phone: "+8801700000000", role, status: "active" } });
     }
     const profile = await prisma.providerProfile.create({ data: { userId: providerUserId, nameBn: "পরীক্ষার কৃষক", nameEn: "Test farmer", district: "Dhaka", status: "APPROVED" }, select: { id: true } });
     providerId = profile.id;
     await prisma.providerCapability.create({ data: { providerId, sectorSlug: "agriculture-labor", kind: "PRODUCE", status: "APPROVED" } });
+    await prisma.providerCapability.create({ data: { providerId, sectorSlug: "construction", kind: "CONSTRUCTION_MATERIAL", status: "APPROVED" } });
   });
 
   it("completes a request, quote, order, confirmed payment, review, and commission receipt", async () => {
@@ -120,6 +127,30 @@ describe("PostgreSQL marketplace transactions", () => {
     expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
     expect((await prisma.marketplaceListing.findUniqueOrThrow({ where: { id: listingId }, select: { stock: true } })).stock.toString()).toBe("0");
     expect(await prisma.order.count({ where: { listingId } })).toBe(1);
+  });
+
+  it("limits the operations request queue to open requests in assigned sectors", async () => {
+    const agricultureListingId = await createListing("10");
+    const constructionListingId = await createListing("10", "construction", "CONSTRUCTION_MATERIAL");
+    const agricultureRequest = await prisma.marketplaceRequest.create({
+      data: { buyerId, providerId, listingId: agricultureListingId, sectorSlug: "agriculture-labor", quantity: new Prisma.Decimal(1), district: "Dhaka", details: "Active agriculture request" },
+      select: { id: true },
+    });
+    const constructionRequest = await prisma.marketplaceRequest.create({
+      data: { buyerId, providerId, listingId: constructionListingId, sectorSlug: "construction", quantity: new Prisma.Decimal(1), district: "Dhaka", details: "Construction request" },
+      select: { id: true },
+    });
+    const cancelledRequest = await prisma.marketplaceRequest.create({
+      data: { buyerId, providerId, listingId: agricultureListingId, sectorSlug: "agriculture-labor", quantity: new Prisma.Decimal(1), district: "Dhaka", details: "Closed request", status: "CANCELLED" },
+      select: { id: true },
+    });
+    requestIds.push(agricultureRequest.id, constructionRequest.id, cancelledRequest.id);
+
+    const workspace = await getAdminWorkspace({ isSuperAdmin: false, operationSectors: ["agriculture-labor"], financeSectors: [], canManageStaff: false });
+    const requestIdsInQueue = workspace.requests.map(({ id }) => id);
+    expect(requestIdsInQueue).toContain(agricultureRequest.id);
+    expect(requestIdsInQueue).not.toContain(constructionRequest.id);
+    expect(requestIdsInQueue).not.toContain(cancelledRequest.id);
   });
 
   afterAll(async () => {

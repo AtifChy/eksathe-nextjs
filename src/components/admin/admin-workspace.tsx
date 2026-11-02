@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import {
   grantStaffAccessAction,
   markCommissionCollectedAction,
@@ -30,7 +31,7 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
 
   return (
     <WorkspaceNavigation label={locale === "bn" ? "প্রশাসন নেভিগেশন" : "Administration navigation"} items={[
-      ...(operationsEnabled ? [{ id: "provider-approvals", label: t.workflow.adminApprovals }, { id: "listing-moderation", label: locale === "bn" ? "তালিকা" : "Listings" }, { id: "disputes", label: locale === "bn" ? "বিরোধ" : "Disputes" }] : []),
+      ...(operationsEnabled ? [{ id: "provider-approvals", label: t.workflow.adminApprovals }, { id: "listing-moderation", label: locale === "bn" ? "তালিকা" : "Listings" }, { id: "requests", label: t.workflow.adminRequests }, { id: "disputes", label: locale === "bn" ? "বিরোধ" : "Disputes" }] : []),
       ...(financeEnabled ? [{ id: "payment-mismatches", label: locale === "bn" ? "পেমেন্ট যাচাই" : "Payments" }, { id: "commission", label: locale === "bn" ? "কমিশন" : "Commissions" }] : []),
       ...(data.access.isSuperAdmin ? [{ id: "commission-settings", label: locale === "bn" ? "কমিশন হার" : "Rates" }, { id: "staff-access", label: t.workflow.manageStaff }] : []),
     ]}>
@@ -58,6 +59,28 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
               <Card key={listing.id}>
                 <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3"><div><CardTitle className="text-lg">{locale === "bn" ? listing.titleBn : listing.titleEn}</CardTitle><CardDescription>{listing.kind} · {listing.category} · {listing.district}</CardDescription></div><StatusBadge status="PENDING" /></CardHeader>
                 <CardContent className="flex flex-col gap-3"><p className="text-sm text-muted-foreground">{locale === "bn" ? listing.providerNameBn : listing.providerNameEn}</p><p className="text-sm">{formatMoney(listing.unitPrice)} / {listing.unit} · {listing.stock} {listing.unit}</p><div className="flex flex-wrap gap-2"><ListingDecisionForm id={listing.id} decision="APPROVED" /><ListingDecisionForm id={listing.id} decision="REJECTED" /></div></CardContent>
+              </Card>
+            ))}
+          </section>
+
+          <section id="requests" className="scroll-mt-24 flex flex-col gap-4">
+            <h2 className="text-xl font-bold">{t.workflow.adminRequests}</h2>
+            {data.requests.length === 0 ? <Empty text={t.workflow.noRecords} /> : data.requests.map((request) => (
+              <Card key={request.id}>
+                <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-lg">{locale === "bn" ? request.titleBn : request.titleEn}</CardTitle>
+                    <CardDescription>{request.buyerName} · {locale === "bn" ? request.providerNameBn : request.providerNameEn} · {request.sectorSlug}</CardDescription>
+                  </div>
+                  <StatusBadge status={request.status} />
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3">
+                  {(request.packageLabel || request.projectTitle) && <p className="text-sm font-medium">{request.projectTitle ?? request.packageLabel}{request.projectTitle && request.packageLabel ? ` · ${request.packageLabel}` : ""}</p>}
+                  {request.details && <p className="text-sm text-muted-foreground">{request.details}</p>}
+                  <p className="text-sm">{request.district} · {request.quantity} {request.unit}{request.requestedStart ? ` · ${locale === "bn" ? "শুরু" : "Starts"}: ${new Date(request.requestedStart).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}` : ""}{request.requestedEnd ? ` · ${locale === "bn" ? "শেষ" : "Ends"}: ${new Date(request.requestedEnd).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}` : ""}</p>
+                  {request.quote && <p className="text-sm">{locale === "bn" ? "দরপ্রস্তাব" : "Quote"}: {formatMoney(request.quote.unitPrice)} / {request.unit} · {locale === "bn" ? "পরিবহন" : "Transport"}: {formatMoney(request.quote.transportFee)}</p>}
+                  <Link href={`/dashboard/${request.sectorSlug}/providers/${request.providerId}`} className="w-fit text-sm font-medium text-primary hover:underline">{locale === "bn" ? "সেবাদাতার প্রোফাইল" : "View provider profile"}</Link>
+                </CardContent>
               </Card>
             ))}
           </section>

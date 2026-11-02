@@ -274,7 +274,7 @@ export async function getProviderWorkspace(userId: string) {
 
 export async function getAdminWorkspace(access: StaffAccess) {
   const sectorSlugs = Array.from(new Set([...access.operationSectors, ...access.financeSectors]));
-  const [capabilities, listings, disputes, commissions, paymentMismatches, sectors, staffGrants] = await Promise.all([
+  const [capabilities, listings, requests, disputes, commissions, paymentMismatches, sectors, staffGrants] = await Promise.all([
     access.operationSectors.length ? prisma.providerCapability.findMany({
       where: { status: "PENDING", sectorSlug: { in: access.operationSectors } },
       orderBy: { createdAt: "asc" },
@@ -284,6 +284,17 @@ export async function getAdminWorkspace(access: StaffAccess) {
       where: { moderationStatus: "PENDING", sectorSlug: { in: access.operationSectors } },
       orderBy: { createdAt: "asc" },
       include: { provider: { select: { nameBn: true, nameEn: true } } },
+    }) : Promise.resolve([]),
+    access.operationSectors.length ? prisma.marketplaceRequest.findMany({
+      where: { status: { in: ["OPEN", "QUOTED"] }, sectorSlug: { in: access.operationSectors } },
+      orderBy: { createdAt: "asc" },
+      include: {
+        buyer: { select: { name: true } },
+        listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true } },
+        provider: { select: { id: true, nameBn: true, nameEn: true } },
+        project: { select: { title: true } },
+        quote: { select: { quantity: true, unitPrice: true, transportFee: true } },
+      },
     }) : Promise.resolve([]),
     access.operationSectors.length ? prisma.order.findMany({
       where: { status: "DISPUTED", request: { sectorSlug: { in: access.operationSectors } } },
@@ -338,6 +349,32 @@ export async function getAdminWorkspace(access: StaffAccess) {
       stock: listing.stock.toString(),
       providerNameBn: listing.provider.nameBn,
       providerNameEn: listing.provider.nameEn,
+    })),
+    requests: requests.map((request) => ({
+      id: request.id,
+      sectorSlug: request.sectorSlug,
+      status: request.status,
+      buyerName: request.buyer.name,
+      providerId: request.provider.id,
+      providerNameBn: request.provider.nameBn,
+      providerNameEn: request.provider.nameEn,
+      titleBn: request.listing.titleBn,
+      titleEn: request.listing.titleEn,
+      kind: request.listing.kind,
+      unit: request.listing.unit,
+      quantity: request.quantity.toString(),
+      district: request.district,
+      details: request.details,
+      packageLabel: request.packageLabel,
+      projectTitle: request.project?.title ?? null,
+      requestedStart: iso(request.requestedStart),
+      requestedEnd: iso(request.requestedEnd),
+      createdAt: iso(request.createdAt),
+      quote: request.quote ? {
+        quantity: request.quote.quantity.toString(),
+        unitPrice: request.quote.unitPrice.toString(),
+        transportFee: request.quote.transportFee.toString(),
+      } : null,
     })),
     disputes: disputes.map((order) => ({
       id: order.id,

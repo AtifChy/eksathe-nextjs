@@ -174,6 +174,7 @@ export const en: Dictionary = {
     invalidUpload: "Choose a supported file within the size limit.",
     noRecords: "There is nothing here yet.",
     adminApprovals: "Providers waiting for approval",
+    adminRequests: "Open service requests",
     approve: "Approve",
     reject: "Reject",
     commissionsDue: "Commission due",
