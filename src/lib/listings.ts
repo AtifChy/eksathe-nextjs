@@ -232,6 +232,108 @@ export async function getAgricultureMarketListings(filters: AgricultureMarketFil
   }
 }
 
+export type ConstructionMarketFilters = {
+  q?: string;
+  kind?: "CONSTRUCTION_SERVICE" | "CONSTRUCTION_MATERIAL";
+  category?: string;
+  district?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  sort?: "newest" | "price-asc" | "price-desc";
+  page?: number;
+  searchTerms?: string[];
+};
+export type ConstructionMarketResult = PublicListingsResult & {
+  total: number;
+  page: number;
+  totalPages: number;
+  districts: string[];
+  categories: string[];
+};
+
+export async function getConstructionMarketListings(filters: ConstructionMarketFilters): Promise<ConstructionMarketResult> {
+  const page = Math.max(1, Math.floor(filters.page ?? 1));
+  const pageSize = 12;
+  const base: Prisma.MarketplaceListingWhereInput = {
+    sectorSlug: "construction",
+    ...(filters.kind ? { kind: filters.kind } : {}),
+    isPublished: true,
+    archivedAt: null,
+    moderationStatus: "APPROVED",
+    provider: {
+      status: "APPROVED",
+      user: { status: "active" },
+      capabilities: { some: { sectorSlug: "construction", status: "APPROVED", ...(filters.kind ? { kind: filters.kind } : {}) } },
+    },
+    ...(filters.kind === "CONSTRUCTION_MATERIAL"
+      ? { stock: { gt: 0 } }
+      : filters.kind === "CONSTRUCTION_SERVICE"
+        ? {}
+        : { AND: [
+            { OR: [{ kind: "CONSTRUCTION_MATERIAL", stock: { gt: 0 } }, { kind: "CONSTRUCTION_SERVICE" }] },
+            { OR: [
+              { kind: "CONSTRUCTION_MATERIAL", provider: { capabilities: { some: { sectorSlug: "construction", kind: "CONSTRUCTION_MATERIAL", status: "APPROVED" } } } },
+              { kind: "CONSTRUCTION_SERVICE", provider: { capabilities: { some: { sectorSlug: "construction", kind: "CONSTRUCTION_SERVICE", status: "APPROVED" } } } },
+            ] },
+          ] }),
+  };
+  const and: Prisma.MarketplaceListingWhereInput[] = [];
+  const makeSearch = (term: string): Prisma.MarketplaceListingWhereInput => ({ OR: [
+    { titleBn: { contains: term, mode: "insensitive" } },
+    { titleEn: { contains: term, mode: "insensitive" } },
+    { descriptionBn: { contains: term, mode: "insensitive" } },
+    { descriptionEn: { contains: term, mode: "insensitive" } },
+    { category: { contains: term, mode: "insensitive" } },
+    { provider: { nameBn: { contains: term, mode: "insensitive" } } },
+    { provider: { nameEn: { contains: term, mode: "insensitive" } } },
+  ] });
+  const terms = (filters.searchTerms ?? []).map((term) => term.trim().slice(0, 80)).filter(Boolean);
+  if (terms.length) and.push({ OR: terms.map(makeSearch) });
+  const q = filters.q?.trim().slice(0, 100);
+  if (q) and.push(makeSearch(q));
+  if (filters.category) and.push({ category: filters.category.slice(0, 80) });
+  if (filters.district) and.push({ district: filters.district.slice(0, 80) });
+  if (filters.minPrice || filters.maxPrice) {
+    and.push({ unitPrice: {
+      ...(filters.minPrice ? { gte: new Prisma.Decimal(filters.minPrice) } : {}),
+      ...(filters.maxPrice ? { lte: new Prisma.Decimal(filters.maxPrice) } : {}),
+    } });
+  }
+  const where: Prisma.MarketplaceListingWhereInput = { ...base, ...(and.length ? { AND: and } : {}) };
+  const orderBy = filters.sort === "price-asc" ? { unitPrice: "asc" as const } : filters.sort === "price-desc" ? { unitPrice: "desc" as const } : { createdAt: "desc" as const };
+  try {
+    const [rows, total, districtRows, categoryRows] = await Promise.all([
+      prisma.marketplaceListing.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          ...publicSelect,
+          provider: { select: { ...publicSelect.provider.select, capabilities: { where: { sectorSlug: "construction", status: "APPROVED" }, select: { kind: true } } } },
+        },
+      }),
+      prisma.marketplaceListing.count({ where }),
+      prisma.marketplaceListing.findMany({ where: base, select: { district: true }, distinct: ["district"], orderBy: { district: "asc" } }),
+      prisma.marketplaceListing.findMany({ where: base, select: { category: true }, distinct: ["category"], orderBy: { category: "asc" } }),
+    ]);
+    const validRows = rows.filter((row) => row.provider.capabilities.some((capability) => capability.kind === row.kind));
+    const ratings = await listingRatings(validRows.map((row) => row.id));
+    return {
+      items: withListingRatings(validRows, ratings),
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      districts: districtRows.map((row) => row.district),
+      categories: categoryRows.map((row) => row.category),
+      unavailable: false,
+    };
+  } catch (error) {
+    logError("listing.construction_market_failed", error);
+    return { items: [], total: 0, page, totalPages: 1, districts: [], categories: [], unavailable: true };
+  }
+}
+
 export async function getPublicListing(id: string): Promise<PublicListingResult> {
   try {
     const row = await prisma.marketplaceListing.findFirst({

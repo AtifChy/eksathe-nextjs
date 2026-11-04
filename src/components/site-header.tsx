@@ -40,7 +40,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           <Link href="/agriculture" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
             {t.home.agriculture}
           </Link>
-          <Link href="/dashboard/construction" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
+          <Link href="/construction" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
             {t.home.construction}
           </Link>
 

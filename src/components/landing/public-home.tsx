@@ -32,7 +32,7 @@ export function PublicHome() {
               </CardHeader>
             </Card>
           </Link>
-          <Link href="/dashboard/construction" className="rounded-2xl outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">
+          <Link href="/construction" className="rounded-2xl outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary">
             <Card className="h-full transition-colors hover:border-primary/40">
               <CardHeader>
                 <Building2Icon aria-hidden="true" className="size-9 text-primary" />
