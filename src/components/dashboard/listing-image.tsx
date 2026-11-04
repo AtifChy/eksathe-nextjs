@@ -33,7 +33,7 @@ export function ListingImage({ listing, alt, sizes }: {
   const showPhoto = listing.hasImage && failedSource !== source;
 
   return (
-    <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-t-xl bg-secondary/50">
+    <div data-slot="listing-image" className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-t-xl bg-secondary/50">
       {showPhoto ? (
         <Image src={source} alt={alt} fill sizes={sizes} className="object-cover" unoptimized onError={() => setFailedSource(source)} />
       ) : (

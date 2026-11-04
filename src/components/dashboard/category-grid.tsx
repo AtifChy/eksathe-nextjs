@@ -26,12 +26,12 @@ export function CategoryGrid() {
       {/* Search Filter (subtle, aligned right/left) */}
       <div className="flex items-center justify-between gap-4">
         <div className="relative w-full max-w-xs">
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t.nav.search}
-            className="h-9 pl-9 pr-8 text-xs bg-card/60 backdrop-blur-xs"
+            className="h-9 pl-9 pr-8 bg-card/80 text-xs"
           />
           {query && (
             <button

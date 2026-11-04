@@ -134,6 +134,10 @@ test("construction marketplace keeps URL filters and route context", async ({ pa
 test("construction listing and provider details preserve direct and dashboard routes", async ({ page }) => {
   await page.goto("/construction/listings/demo-listing-brick");
   await expect(page.getByText("প্রথম শ্রেণির লাল ইট", { exact: true })).toBeVisible();
+  const listingImage = page.locator('[data-slot="listing-image"]').first();
+  await expect(listingImage).toBeVisible();
+  const cardTopPadding = await listingImage.evaluate((image) => getComputedStyle(image.parentElement!).paddingTop);
+  expect(cardTopPadding).toBe("0px");
   await expect(page.getByRole("link", { name: "সেবাদাতার পরিচিতি" })).toHaveAttribute("href", "/construction/providers/demo-construction-provider");
 
   await page.goto("/dashboard/construction/listings/demo-listing-brick");
@@ -158,6 +162,9 @@ test("a customer workspace sends a guest to sign in with the destination preserv
 test("the sector hub switches to English at a mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/dashboard");
+  const search = page.getByPlaceholder("বিভাগ খুঁজুন");
+  await expect.poll(() => search.evaluate((input) => getComputedStyle(input).backdropFilter)).toBe("none");
+  await expect.poll(() => search.locator("..").locator("svg").evaluate((icon) => getComputedStyle(icon).zIndex)).toBe("10");
   await page.getByRole("button", { name: "EN", exact: true }).click();
   await expect(page.getByText("Family & Household")).toBeVisible();
   await expect(page.getByRole("link", { name: "Agriculture & Labor", exact: true })).toBeVisible();
