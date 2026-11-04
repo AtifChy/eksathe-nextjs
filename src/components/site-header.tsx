@@ -32,8 +32,8 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           </span>
         </Link>
 
-        <nav id="site-navigation" className={`${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] flex-col gap-4 overflow-y-auto border-b border-white/20 bg-[#0b5036] p-4 shadow-lg xl:static xl:flex xl:max-h-none xl:flex-row xl:items-center xl:gap-2 xl:overflow-visible xl:border-0 xl:p-0 xl:shadow-none`} aria-label={t.header.services} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) { setNavigationOpen(false); setMenuOpen(false); } }}>
-          <div className="flex min-w-0 flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">
+        <nav id="site-navigation" className={`${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] flex-col gap-4 overflow-y-auto border-b border-white/20 bg-[#0b5036] p-4 shadow-lg xl:static xl:flex xl:flex-1 xl:max-h-none xl:flex-row xl:items-center xl:gap-2 xl:overflow-visible xl:border-0 xl:p-0 xl:shadow-none`} aria-label={t.header.services} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) { setNavigationOpen(false); setMenuOpen(false); } }}>
+          <div className="flex min-w-0 flex-col gap-1 xl:mx-auto xl:flex-row xl:items-center xl:gap-2">
           <Link href="/dashboard" className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">
             {t.header.dashboard}
           </Link>
