@@ -43,10 +43,11 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           <Link href="/construction" className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">
             {t.home.construction}
           </Link>
-          <div className="flex items-center [&_[role=group]]:h-11 [&_button]:h-9"><LanguageToggle /></div>
+          <div className="hidden items-center xl:flex [&_[role=group]]:h-11 [&_button]:h-9"><LanguageToggle /></div>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-white/20 pt-3 xl:justify-self-end xl:flex-nowrap xl:border-0 xl:pt-0">
           <div className="[&_button]:size-11"><ThemeToggle /></div>
+          <div className="flex items-center xl:hidden [&_[role=group]]:h-11 [&_button]:h-9"><LanguageToggle /></div>
 
           {signedIn ? (
             <div className="relative shrink-0">
