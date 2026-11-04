@@ -67,6 +67,10 @@ test("the readiness endpoint reports database availability", async ({ request })
 test("planned sectors show a coming-soon page and unknown sectors return 404", async ({ page }) => {
   await page.goto("/dashboard/ecommerce-b2b");
   await expect(page.getByText("এই বিভাগে সেবা শিগগিরই চালু হবে।")).toBeVisible();
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    /ইকসাথে বাংলাদেশে .+ সেবা ও সেবাদাতা খুঁজুন।/,
+  );
   const response = await page.goto("/dashboard/not-a-sector");
   expect(response?.status()).toBe(404);
 });
@@ -126,6 +130,8 @@ test("agriculture marketplace keeps filters in the direct and dashboard URL cont
     "rice",
   );
   await page.getByRole("button", { name: "বাং", exact: true }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "bn");
+  await expect(page.getByRole("heading", { name: "কৃষিপণ্য খুঁজুন" })).toBeVisible();
 
   await page.goto("/dashboard/agriculture/market?category=fish");
   await expect(page.getByRole("heading", { name: "কৃষিপণ্য খুঁজুন" })).toBeVisible();
@@ -298,5 +304,8 @@ test("the sector hub switches to English at a mobile viewport", async ({ page })
     .toBe("10");
   await page.getByRole("button", { name: "EN", exact: true }).click();
   await expect(page.getByText("Family & Household")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Agriculture & Labor", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Agriculture & Labor/ })).toHaveAttribute(
+    "href",
+    "/dashboard/agriculture",
+  );
 });

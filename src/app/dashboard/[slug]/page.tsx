@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: SectorPageProps): Promise<Met
   ]);
   return {
     title: metadata("sectorTitle", { sector: sectors(slug as never) }),
-    description: metadata("sectorDescription"),
+    description: metadata("sectorDescription", { sector: sectors(slug as never) }),
   };
 }
 
