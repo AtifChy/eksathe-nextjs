@@ -100,6 +100,5 @@ test("the sector hub switches to English at a mobile viewport", async ({ page })
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "EN", exact: true }).click();
   await expect(page.getByText("Family & Household")).toBeVisible();
-  await page.getByRole("button", { name: "Navigation menu" }).click();
   await expect(page.getByRole("link", { name: "Agriculture & Labor", exact: true })).toBeVisible();
 });

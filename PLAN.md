@@ -140,8 +140,6 @@ After each increment, update this plan and commit the completed change. Verify m
 
 ### Restoration progress
 
-- Homepage and agriculture headers restore the PHP navigation options: services, how it works, fresh produce, farmer panel, and commission calculator. Agriculture links retain the direct/dashboard route context; smaller screens use a collapsible navigation menu.
-
 - Routes/registry and request intake are implemented and committed.
 - Storefront/discovery is implemented: owner storefront editing and photos, moderated product edits, soft archive, URL filters and pagination, ratings/reviews, seller links, and schedule-based visibility for booking listings.
 - Storefront migration applied; its lint/typecheck, 12 unit tests, and 7 PostgreSQL integration checks passed. The marketplace was inspected in Codex's in-app browser in Bangla and English; final browser coverage is recorded below.
@@ -151,3 +149,43 @@ After each increment, update this plan and commit the completed change. Verify m
 - Publishing migration applied to the configured development database. Lint and typecheck pass; all 17 unit tests and 9 PostgreSQL integration checks pass. Codex's in-app browser confirmed both agriculture entry routes, the dashboard back link, empty public information states, the commission estimate, and Bangla/English rendering.
 - Market prices remain public for seven days after observation; older records remain available to staff. Guests can preview all service fields, while verified accounts can submit requests.
 - Restoration increment 4 is complete. Clean-database migrations/seeds, lint, typecheck, 17 unit tests, 9 PostgreSQL integration checks, all 9 Playwright browser checks, and the production build pass. Invalid sector/service slugs return HTTP 404, and locale selection is preserved during server rendering.
+
+## Construction MVP completion
+
+Complete the construction sector as a dedicated experience, reusing the accounts, provider approvals, listings, quotes, projects, orders, payments, notifications, and commission foundation. Keep the internal sector slug `construction` and provider capabilities `CONSTRUCTION_SERVICE` and `CONSTRUCTION_MATERIAL`.
+
+### Routes and discovery
+
+| Route | Purpose |
+| --- | --- |
+| `/construction` | Canonical construction homepage without a dashboard back link |
+| `/dashboard/construction` | Same shared homepage with a back link to `/dashboard` |
+| Both prefixes + `/services/[slug]` | Construction service details and matching listings |
+| Both prefixes + `/market` | Searchable professional and material directory |
+| Both prefixes + `/listings/[id]` | Listing detail and customer actions |
+| Both prefixes + `/providers/[id]` | Provider storefront and related listings |
+
+The header and platform homepage link to `/construction`; the sector card opens `/dashboard/construction`. Preserve dashboard construction listing/provider URLs. Keep route context in navigation, filters, and login return paths; direct construction pages are canonical. The homepage should match the agriculture experience's green identity, layout rhythm, cards, typography, bilingual behavior, theme, Lucide controls, and image/emoji fallbacks. Include a construction introduction, directory, professional/material previews, project actions, how-it-works, and a configured commission estimate that excludes transport charges.
+
+Provide eight directory entries: contractors, engineers, architects, masonry, electrical work, plumbing, painting/finishing, and building materials. Pages explain the service, link matching approved listings, and preserve a selected service into project creation. Marketplace discovery supports URL-backed search, district/category/type and price filters, sorting, counts, and pagination. Professional availability is distinct from material stock. Listing and storefront pages show ratings, reviews, seller information, and related listings, with honest empty/error states.
+
+### Projects and engagement
+
+Reuse the existing private construction projects and transaction system. Customers can create projects with a selected service/listing context, invite several providers to a defined work package, compare quote scope, quantities, price, transport, dates, and expiry, and accept one quote for each package. Replace free-text package matching with stable package records. Add an additive migration that backfills existing requests/orders by project and package label, and enforce a single accepted engagement per package atomically. A project may have multiple packages and material orders.
+
+Complete project overview with accepted engagements, scheduled work, milestones, private photos and PDF documents, recorded expenses, and payment history. Keep expenses separate from payment totals. Assign milestones to an engaged construction service provider; only that provider may submit progress and the customer approves it. Material suppliers cannot submit unrelated milestones. Customer handover completes a project only after accepted orders are completed and all milestones are approved. Payment state remains separate. Accepted scope and financial snapshots are immutable; additional work requires a new package and quote, and replacement work follows cancellation agreement/resolution before a new quote. Record ownership and sector checks, notifications, and audit entries for mutations.
+
+Extend private R2 upload/download access to project photos while retaining PDF documents and project authorization checks. Provider and construction operations views should surface only records their permissions allow.
+
+### Delivery increments
+
+1. **Header reversal and navigation:** revert the prototype-specific header navigation, restore its mobile navigation assertion, and record the construction plan here. Acceptance: initial platform header uses the normal dashboard/agriculture/construction links.
+2. **Construction experience:** add shared canonical/dashboard routes, homepage, service directory, marketplace discovery, and route-aware detail/storefront pages. Acceptance: both entry routes share content; only the dashboard entry shows the back link; filters, pagination, direct links, login return, missing images, and unknown routes behave correctly.
+3. **Project workflow:** add stable work packages with backfill, competing invitations, atomic quote acceptance, assigned milestones, project photos, and final handover. Acceptance: one accepted quote per package and customers can track separate professional/material work to completion with private records.
+4. **Operations and launch:** connect provider/admin views, seed representative demo data idempotently, and complete acceptance coverage. Acceptance: permissions prevent unrelated access; payments, commission, audits, and notifications agree with accepted transaction snapshots; agriculture flows continue to work.
+
+After each increment, update this plan and commit the completed change. Verify clean-database migrations/seeds, lint, typecheck, targeted unit/integration tests, Playwright and Codex browser journeys, and a production build. Keep direct customer-to-provider payments and existing commission rules. Defer construction news publishing, large staff-assisted service catalogues, BOQ/structural estimates, payroll, warranties, and construction ERP.
+
+### Construction progress
+
+- Increment 1 complete: reversed commit `29dcf05`; restored the prior initial-page header and removed the prototype-specific mobile menu assertion.
