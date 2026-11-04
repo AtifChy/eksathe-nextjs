@@ -567,8 +567,9 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
         ...(isOwner ? {} : { where: { providerId: providerId ?? undefined } }),
         orderBy: { createdAt: "desc" },
         include: {
-          listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true } },
+          listing: { select: { id: true, titleBn: true, titleEn: true, kind: true, unit: true } },
           provider: { select: { id: true, nameBn: true, nameEn: true } },
+          projectPackage: { select: { id: true, label: true, kind: true } },
           quote: true,
           order: { select: { id: true, status: true } },
         },
@@ -576,10 +577,20 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       orders: {
         ...(isOwner ? {} : { where: { providerId: providerId ?? undefined } }),
         orderBy: { createdAt: "desc" },
-        include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { nameBn: true, nameEn: true } }, payments: { orderBy: { createdAt: "desc" } } },
+        include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { id: true, nameBn: true, nameEn: true } }, projectPackage: { select: { id: true, label: true } }, payments: { orderBy: { createdAt: "desc" } } },
       },
-      milestones: { orderBy: { createdAt: "asc" } },
+      packages: {
+        ...(isOwner ? {} : { where: { requests: { some: { providerId: providerId ?? undefined } } } }),
+        orderBy: { createdAt: "asc" },
+        select: { id: true, label: true, description: true, kind: true, serviceSlug: true, preferredListingId: true, createdAt: true },
+      },
+      milestones: {
+        ...(isOwner ? {} : { where: { assignedProviderId: providerId ?? undefined } }),
+        orderBy: { createdAt: "asc" },
+        include: { assignedProvider: { select: { id: true, nameBn: true, nameEn: true } } },
+      },
       documents: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
+      photos: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
       expenses: { orderBy: { occurredAt: "desc" } },
     },
   });
@@ -598,13 +609,25 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
     startsAt: iso(project.startsAt),
     targetEndsAt: iso(project.targetEndsAt),
     status: project.status,
+    handedOverAt: iso(project.handedOverAt),
+    packages: project.packages.map((workPackage) => ({
+      id: workPackage.id,
+      label: workPackage.label,
+      description: workPackage.description,
+      kind: workPackage.kind,
+      serviceSlug: workPackage.serviceSlug,
+      preferredListingId: workPackage.preferredListingId,
+      createdAt: iso(workPackage.createdAt),
+    })),
     requests: project.requests.map((request) => ({
       id: request.id,
       status: request.status,
       quantity: request.quantity.toString(),
       district: request.district,
       details: request.details,
-      packageLabel: request.packageLabel,
+      packageId: request.projectPackage?.id ?? null,
+      packageLabel: request.projectPackage?.label ?? request.packageLabel,
+      packageKind: request.projectPackage?.kind ?? null,
       requestedStart: iso(request.requestedStart),
       requestedEnd: iso(request.requestedEnd),
       listing: request.listing,
@@ -630,14 +653,34 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       titleBn: order.listing.titleBn,
       titleEn: order.listing.titleEn,
       kind: order.listing.kind,
+      providerId: order.provider.id,
+      packageId: order.projectPackage?.id ?? null,
+      packageLabel: order.projectPackage?.label ?? null,
       providerNameBn: order.provider.nameBn,
       providerNameEn: order.provider.nameEn,
       payments: order.payments.map((payment) => ({ id: payment.id, amount: payment.amount.toString(), method: payment.method, reference: payment.reference, refundAmount: decimal(payment.refundAmount), confirmed: Boolean(payment.buyerConfirmedAt && payment.providerConfirmedAt), hasReceipt: Boolean(payment.receiptKey) })),
     })),
-    milestones: project.milestones.map((milestone) => ({ id: milestone.id, title: milestone.title, description: milestone.description, amount: decimal(milestone.amount), dueAt: iso(milestone.dueAt), status: milestone.status })),
+    milestones: project.milestones.map((milestone) => ({
+      id: milestone.id,
+      title: milestone.title,
+      description: milestone.description,
+      amount: decimal(milestone.amount),
+      dueAt: iso(milestone.dueAt),
+      status: milestone.status,
+      assignedProviderId: milestone.assignedProviderId,
+      assignedProvider: milestone.assignedProvider ? { id: milestone.assignedProvider.id, nameBn: milestone.assignedProvider.nameBn, nameEn: milestone.assignedProvider.nameEn } : null,
+    })),
     documents: project.documents.map((document) => ({ id: document.id, filename: document.filename, contentType: document.contentType, sizeBytes: document.sizeBytes, createdAt: iso(document.createdAt) })),
+    photos: project.photos.map((photo) => ({ id: photo.id, filename: photo.filename, contentType: photo.contentType, sizeBytes: photo.sizeBytes, createdAt: iso(photo.createdAt) })),
     expenses: isOwner ? project.expenses.map((expense) => ({ id: expense.id, description: expense.description, amount: expense.amount.toString(), occurredAt: iso(expense.occurredAt) })) : [],
   };
+}
+
+export async function getProjectPackageContext(userId: string, projectId: string, packageId: string) {
+  return prisma.projectPackage.findFirst({
+    where: { id: packageId, projectId, project: { ownerId: userId } },
+    select: { id: true, label: true, kind: true, serviceSlug: true },
+  });
 }
 
 export type CustomerWorkspace = Awaited<ReturnType<typeof getCustomerWorkspace>>;

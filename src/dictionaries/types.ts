@@ -158,6 +158,14 @@ export interface Dictionary {
     projectTitle: string;
     projectType: string;
     workPackage: string;
+    packageCreated: string;
+    assignedProvider: string;
+    projectPhotos: string;
+    projectPhotosHelp: string;
+    projectPhotoUploaded: string;
+    confirmHandover: string;
+    handoverConfirmed: string;
+    handoverBlocked: string;
     projectPaymentHistory: string;
     expenses: string;
     recordExpense: string;

@@ -90,9 +90,9 @@ export const createRequestSchema = z.strictObject({
   requestedStart: optionalDate,
   requestedEnd: optionalDate,
   projectId: text(64).optional(),
-  packageLabel: text(80).optional(),
+  packageId: text(64).optional(),
 }).superRefine((value, context) => {
-  if (Boolean(value.projectId) !== Boolean(value.packageLabel)) context.addIssue({ code: "custom", path: ["packageLabel"], message: "Project invitations need a work package name." });
+  if (Boolean(value.projectId) !== Boolean(value.packageId)) context.addIssue({ code: "custom", path: ["packageId"], message: "Project invitations need a work package." });
   if (Boolean(value.requestedStart) !== Boolean(value.requestedEnd)) {
     context.addIssue({ code: "custom", path: ["requestedEnd"], message: "Provide both booking dates." });
   }
@@ -122,6 +122,12 @@ export const uploadPresignSchema = z.discriminatedUnion("purpose", [
     sizeBytes: z.number().int().positive().max(10_000_000),
   }),
   z.strictObject({
+    purpose: z.literal("project-photo"),
+    projectId: requiredText(64),
+    contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+    sizeBytes: z.number().int().positive().max(5_000_000),
+  }),
+  z.strictObject({
     purpose: z.literal("payment-receipt"),
     orderId: requiredText(64),
     contentType: z.enum(["image/jpeg", "image/png", "image/webp", "application/pdf"]),
@@ -139,6 +145,14 @@ export const attachProjectDocumentSchema = z.strictObject({
   storageKey: requiredText(240),
   filename: requiredText(120),
   sizeBytes: z.string().regex(/^\d{1,8}$/).refine((value) => Number(value) > 0 && Number(value) <= 10_000_000),
+});
+
+export const attachProjectPhotoSchema = z.strictObject({
+  projectId: requiredText(64),
+  storageKey: requiredText(240),
+  filename: requiredText(120),
+  contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+  sizeBytes: z.string().regex(/^\d{1,8}$/).refine((value) => Number(value) > 0 && Number(value) <= 5_000_000),
 });
 
 export const createQuoteSchema = z.strictObject({
@@ -159,11 +173,23 @@ export const createProjectSchema = z.strictObject({
   budget: money.optional(),
   startsAt: optionalDate,
   targetEndsAt: optionalDate,
+  serviceSlug: text(80).optional(),
+  listingId: text(64).optional(),
 }).superRefine((value, context) => {
+  if (value.serviceSlug && value.listingId) context.addIssue({ code: "custom", path: ["listingId"], message: "Choose a service or a listing to start the project." });
   if (value.startsAt && value.targetEndsAt && value.targetEndsAt < value.startsAt) {
     context.addIssue({ code: "custom", path: ["targetEndsAt"], message: "The target date must follow the start date." });
   }
 });
+
+export const createProjectPackageSchema = z.strictObject({
+  projectId: requiredText(64),
+  label: requiredText(120),
+  description: text(1200),
+  kind: z.enum(["CONSTRUCTION_SERVICE", "CONSTRUCTION_MATERIAL"]),
+});
+
+export const projectHandoverSchema = z.strictObject({ projectId: requiredText(64) });
 
 export const projectExpenseSchema = z.strictObject({
   projectId: requiredText(64),
@@ -176,6 +202,7 @@ export const milestoneSchema = z.strictObject({
   projectId: requiredText(64),
   title: requiredText(120),
   description: text(1200),
+  assignedProviderId: requiredText(64),
   amount: money.optional(),
   dueAt: optionalDate,
 });
@@ -264,5 +291,6 @@ export type StorefrontInput = z.infer<typeof storefrontSchema>;
 export type CreateRequestInput = z.infer<typeof createRequestSchema>;
 export type CreateQuoteInput = z.infer<typeof createQuoteSchema>;
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
+export type CreateProjectPackageInput = z.infer<typeof createProjectPackageSchema>;
 export type MilestoneInput = z.infer<typeof milestoneSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;

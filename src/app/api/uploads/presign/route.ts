@@ -56,6 +56,19 @@ export async function POST(request: Request) {
     key = `marketplace/${profile.id}/${parsed.data.imageType}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
   } else if (parsed.data.purpose === "crop-disease-photo") {
     key = `agriculture-requests/${user.id}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
+  } else if (parsed.data.purpose === "project-photo") {
+    const project = await prisma.constructionProject.findFirst({
+      where: {
+        id: parsed.data.projectId,
+        OR: [
+          { ownerId: user.id },
+          { orders: { some: { provider: { userId: user.id }, listing: { kind: "CONSTRUCTION_SERVICE" }, status: { not: "CANCELLED" } } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!project) return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    key = `projects/${project.id}/${user.id}/${crypto.randomUUID()}.${extensions[parsed.data.contentType]}`;
   } else {
     if (parsed.data.purpose === "project-document") {
       const project = await prisma.constructionProject.findFirst({ where: { id: parsed.data.projectId, ownerId: user.id }, select: { id: true } });

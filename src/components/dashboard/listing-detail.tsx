@@ -18,6 +18,7 @@ export function ListingDetail({
   unavailable,
   signedIn,
   projectId,
+  packageId,
   packageLabel,
   routeBase,
 }: {
@@ -27,6 +28,7 @@ export function ListingDetail({
   unavailable: boolean;
   signedIn: boolean;
   projectId?: string;
+  packageId?: string;
   packageLabel?: string;
   routeBase?: string;
 }) {
@@ -34,7 +36,8 @@ export function ListingDetail({
   const price = (value: string) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value));
   const base = routeBase ?? `/dashboard/${sector.slug}`;
   const scheduled = listing ? ["WORKER", "MACHINERY", "CONSTRUCTION_SERVICE"].includes(listing.kind) : false;
-  const returnTo = `${base}/listings/${listing?.id ?? ""}${projectId ? `?${new URLSearchParams({ projectId, ...(packageLabel ? { packageLabel } : {}) }).toString()}` : ""}`;
+  const projectRequest = Boolean(projectId && packageId);
+  const returnTo = `${base}/listings/${listing?.id ?? ""}${projectRequest ? `?${new URLSearchParams({ projectId: projectId!, packageId: packageId! }).toString()}` : ""}`;
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
@@ -67,6 +70,7 @@ export function ListingDetail({
               <Link href={`${base}/providers/${listing.providerId}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit gap-2")}>
                 {locale === "bn" ? "সেবাদাতার পরিচিতি" : "Provider profile"}<ArrowRightIcon aria-hidden="true" className="size-4" />
               </Link>
+              {sector.slug === "construction" && <Link href={`/account/projects/new?listing=${encodeURIComponent(listing.id)}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit gap-2")}>{locale === "bn" ? "এই সেবা দিয়ে প্রকল্প তৈরি করুন" : "Create a project with this listing"}<ArrowRightIcon aria-hidden="true" className="size-4" /></Link>}
             </CardContent>
           </Card>
         ) : null}
@@ -99,7 +103,7 @@ export function ListingDetail({
           </CardHeader>
           <CardContent>
             {signedIn ? (
-              <ListingRequestForm listing={listing} projectId={projectId} packageLabel={packageLabel} />
+              <ListingRequestForm listing={listing} routeBase={base} projectId={projectRequest ? projectId : undefined} packageId={projectRequest ? packageId : undefined} packageLabel={projectRequest ? packageLabel : undefined} />
             ) : (
               <div className="flex flex-col gap-3">
                 <p className="text-sm text-muted-foreground">{t.workflow.signInToRequest}</p>

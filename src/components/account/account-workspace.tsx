@@ -5,7 +5,6 @@ import { useActionState } from "react";
 import { BellIcon, ClipboardListIcon, HardHatIcon, MailIcon, PhoneIcon, ShoppingBagIcon, UserRoundIcon } from "lucide-react";
 import { acceptQuoteAction, cancelMarketplaceRequestAction } from "@/app/actions/marketplace";
 import { markNotificationReadAction, updateProfileAction } from "@/app/actions/account";
-import { AddMilestoneForm } from "@/components/projects/project-forms";
 import { MilestoneList } from "@/components/projects/milestone-list";
 import { WorkspaceNavigation } from "@/components/workspaces/workspace-navigation";
 import { OrderCard } from "@/components/workflows/order-card";
@@ -104,7 +103,6 @@ export function AccountWorkspace({ workspace, user }: {
               {project.budget && <p className="text-sm">{t.workflow.budget}: {formatMoney(project.budget)}</p>}
               <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm">{project.orders.length} {locale === "bn" ? "টি অর্ডার/দরপ্রস্তাব গ্রহণ" : "accepted quote orders"} · {project.milestones.length} {t.workflow.milestones}</p><Link href={`/account/projects/${project.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>{locale === "bn" ? "প্রকল্প খুলুন" : "Open project"}</Link></div>
               {project.milestones.length > 0 && <MilestoneList milestones={project.milestones} owner />}
-              <AddMilestoneForm projectId={project.id} />
               {project.documents.length > 0 && <div><h3 className="font-semibold">{t.workflow.projectDocuments}</h3>{project.documents.map((document) => <p key={document.id} className="mt-1 text-sm">{document.filename}</p>)}</div>}
             </CardContent>
           </Card>

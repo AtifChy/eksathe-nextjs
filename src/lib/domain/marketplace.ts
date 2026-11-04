@@ -362,17 +362,21 @@ export async function createMarketplaceRequest(actorId: string, input: CreateReq
     }
 
     let projectId: string | null = null;
+    let packageId: string | null = null;
     let packageLabel: string | null = null;
     if (input.projectId) {
       if (listing.sectorSlug !== "construction") fail("notAllowed");
-      const project = await tx.constructionProject.findFirst({
-        where: { id: input.projectId, ownerId: actorId },
-        select: { id: true },
+      const workPackage = await tx.projectPackage.findFirst({
+        where: { id: input.packageId, projectId: input.projectId, project: { ownerId: actorId, status: { in: ["PLANNING", "ACTIVE"] } } },
+        select: { id: true, label: true, kind: true },
       });
-      if (!project) fail("notFound");
-      projectId = project.id;
-      packageLabel = input.packageLabel?.trim() || null;
-      if (!packageLabel) fail("invalidState");
+      if (!workPackage) fail("notFound");
+      if (workPackage.kind && workPackage.kind !== listing.kind) fail("invalidState");
+      projectId = input.projectId;
+      packageId = workPackage.id;
+      packageLabel = workPackage.label;
+    } else if (input.packageId) {
+      fail("invalidState");
     }
 
     const request = await tx.marketplaceRequest.create({
@@ -382,6 +386,7 @@ export async function createMarketplaceRequest(actorId: string, input: CreateReq
         listingId: listing.id,
         sectorSlug: listing.sectorSlug,
         projectId,
+        packageId,
         packageLabel,
         quantity: requestedQuantity,
         district: input.district,
@@ -479,8 +484,8 @@ export async function acceptQuote(actorId: string, requestId: string) {
       if (request.status !== "QUOTED" || request.quote.status !== "PENDING") fail("invalidState");
       if (request.quote.expiresAt && request.quote.expiresAt < new Date()) fail("unavailable");
       if (request.provider.status !== "APPROVED") fail("notAllowed");
-      if (request.projectId && request.packageLabel) {
-        const accepted = await tx.order.findFirst({ where: { projectId: request.projectId, packageLabel: request.packageLabel }, select: { id: true } });
+      if (request.packageId) {
+        const accepted = await tx.order.findFirst({ where: { packageId: request.packageId, status: { not: "CANCELLED" } }, select: { id: true } });
         if (accepted) fail("invalidState");
       }
       await assertApprovedCapability(tx, request.providerId, request.sectorSlug, request.listing.kind);
@@ -524,6 +529,7 @@ export async function acceptQuote(actorId: string, requestId: string) {
           providerId: request.providerId,
           listingId: request.listingId,
           projectId: request.projectId,
+          packageId: request.packageId,
           packageLabel: request.packageLabel,
           quantity: request.quote.quantity,
           unit: request.listing.unit,
@@ -617,13 +623,14 @@ export async function requestOrderCancellation(actorId: string, orderId: string,
 async function finalizeCancellation(tx: Tx, orderId: string, actorId: string, reason: string) {
   const order = await tx.order.findUniqueOrThrow({
     where: { id: orderId },
-    select: { id: true, status: true, listingId: true, quantity: true, listing: { select: { kind: true } }, buyerId: true, provider: { select: { userId: true } } },
+    select: { id: true, requestId: true, status: true, listingId: true, quantity: true, listing: { select: { kind: true } }, buyerId: true, provider: { select: { userId: true } } },
   });
   if (order.status === "CANCELLED" || order.status === "COMPLETED") fail("invalidState");
   await tx.order.update({
     where: { id: order.id },
     data: { status: "CANCELLED", cancelConfirmedAt: new Date(), cancellationReason: reason || undefined },
   });
+  await tx.marketplaceRequest.updateMany({ where: { id: order.requestId, status: "ACCEPTED" }, data: { status: "CANCELLED" } });
   if (isFiniteStock(order.listing.kind)) {
     await tx.marketplaceListing.update({ where: { id: order.listingId }, data: { stock: { increment: order.quantity } } });
   }
@@ -861,6 +868,7 @@ export async function resolveDispute(actorId: string, orderId: string, decision:
       where: { id: orderId },
       select: {
         id: true,
+        requestId: true,
         status: true,
         listingId: true,
         quantity: true,
@@ -878,6 +886,7 @@ export async function resolveDispute(actorId: string, orderId: string, decision:
 
     if (decision === "CANCEL") {
       await tx.order.update({ where: { id: order.id }, data: { status: "CANCELLED", cancellationReason: note || "Resolved by administration", cancelConfirmedAt: new Date() } });
+      await tx.marketplaceRequest.updateMany({ where: { id: order.requestId, status: "ACCEPTED" }, data: { status: "CANCELLED" } });
       if (isFiniteStock(order.listing.kind)) {
         await tx.marketplaceListing.update({ where: { id: order.listingId }, data: { stock: { increment: order.quantity } } });
       }

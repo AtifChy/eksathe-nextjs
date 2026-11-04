@@ -159,6 +159,13 @@ test("a customer workspace sends a guest to sign in with the destination preserv
   await expect(page.getByLabel("ইমেইল")).toBeVisible();
 });
 
+test("a construction project keeps its selected service through guest sign-in", async ({ page }) => {
+  await page.goto("/account/projects/new?service=contractors");
+  await expect(page).toHaveURL(/\/login\?next=/);
+  const destination = new URL(page.url()).searchParams.get("next");
+  expect(destination).toBe("/account/projects/new?service=contractors");
+});
+
 test("the sector hub switches to English at a mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/dashboard");
