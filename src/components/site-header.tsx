@@ -46,8 +46,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           <div className="hidden items-center xl:flex [&_[role=group]]:h-11 [&_button]:h-9"><LanguageToggle /></div>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-white/20 pt-3 xl:justify-self-end xl:flex-nowrap xl:border-0 xl:pt-0">
-          <div className="[&_button]:size-11"><ThemeToggle /></div>
-          <div className="flex items-center xl:hidden [&_[role=group]]:h-11 [&_button]:h-9"><LanguageToggle /></div>
+          <div className="hidden xl:block [&_button]:size-11"><ThemeToggle /></div>
 
           {signedIn ? (
             <div className="relative shrink-0">
@@ -86,6 +85,8 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           </div>
         </nav>
         <div className="ml-auto flex shrink-0 items-center gap-2 xl:hidden">
+          <div className="[&_button]:size-11"><ThemeToggle /></div>
+          <div className="flex items-center [&_[role=group]]:h-11 [&_button]:h-9"><LanguageToggle /></div>
           <button type="button" aria-controls="site-navigation" aria-expanded={navigationOpen} aria-label={locale === "bn" ? (navigationOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন") : (navigationOpen ? "Close menu" : "Open menu")} onClick={() => { setNavigationOpen((open) => !open); setMenuOpen(false); }} className="inline-flex size-11 items-center justify-center rounded-lg border border-white/20 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white xl:hidden">
             {navigationOpen ? <XIcon aria-hidden="true" className="size-5" /> : <MenuIcon aria-hidden="true" className="size-5" />}
           </button>
