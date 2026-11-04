@@ -140,6 +140,8 @@ After each increment, update this plan and commit the completed change. Verify m
 
 ### Restoration progress
 
+- Homepage and agriculture headers restore the PHP navigation options: services, how it works, fresh produce, farmer panel, and commission calculator. Agriculture links retain the direct/dashboard route context; smaller screens use a collapsible navigation menu.
+
 - Routes/registry and request intake are implemented and committed.
 - Storefront/discovery is implemented: owner storefront editing and photos, moderated product edits, soft archive, URL filters and pagination, ratings/reviews, seller links, and schedule-based visibility for booking listings.
 - Storefront migration applied; its lint/typecheck, 12 unit tests, and 7 PostgreSQL integration checks passed. The marketplace was inspected in Codex's in-app browser in Bangla and English; final browser coverage is recorded below.

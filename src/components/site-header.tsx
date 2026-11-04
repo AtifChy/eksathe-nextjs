@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BriefcaseBusinessIcon, ChevronDownIcon, LogOutIcon, ShieldCheckIcon, UserRoundIcon, UserRoundPlusIcon } from "lucide-react";
+import { BriefcaseBusinessIcon, ChevronDownIcon, LogOutIcon, MenuIcon, ShieldCheckIcon, UserRoundIcon, UserRoundPlusIcon, XIcon } from "lucide-react";
 import { signOutAction } from "@/app/actions/session";
 import { LanguageToggle } from "@/components/language-toggle";
 import { BrandLogo } from "@/components/brand-logo";
@@ -17,35 +18,41 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHeaderProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const pathname = usePathname();
+  const agricultureNavigation = pathname === "/" || pathname === "/agriculture" || pathname.startsWith("/agriculture/") || pathname.startsWith("/dashboard/agriculture");
+  const agricultureBase = pathname.startsWith("/dashboard/agriculture") ? "/dashboard/agriculture" : "/agriculture";
+  const navigation = agricultureNavigation ? [
+    { href: `${agricultureBase}#services`, label: t.header.services },
+    { href: `${agricultureBase}#how`, label: t.header.howItWorks },
+    { href: `${agricultureBase}/market`, label: locale === "bn" ? "তাজা কৃষিপণ্য কিনুন" : "Buy fresh produce" },
+    { href: "/provider", label: locale === "bn" ? "কৃষক প্যানেল" : "Farmer panel" },
+    { href: `${agricultureBase}#commission`, label: t.header.commissionCalculator },
+  ] : [
+    { href: "/dashboard", label: t.header.dashboard },
+    { href: "/agriculture", label: t.home.agriculture },
+    { href: "/dashboard/construction", label: t.home.construction },
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-[#0b5036] text-white shadow-sm">
       <div className="mx-auto flex min-h-16 w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-3 font-bold leading-tight" aria-label={t.common.brandName}>
           <BrandLogo />
-          <span className="hidden flex-col gap-1 lg:flex">
+          <span className="hidden flex-col gap-1 2xl:flex">
           <span className="text-sm sm:text-base">{t.common.brandName}</span>
           <span className="hidden text-[0.65rem] font-normal text-white/70 sm:block">{t.common.brandSlogan}</span>
           </span>
         </Link>
 
         <nav className="flex min-w-0 items-center gap-1 sm:gap-2" aria-label={t.header.services}>
-          <div className="flex min-w-0 items-center gap-1 overflow-x-auto sm:gap-2">
-          <Link href="/dashboard" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
-            <span className="hidden sm:inline">{t.header.dashboard}</span>
-            <span className="sm:hidden" aria-label={t.header.dashboard}>13</span>
-          </Link>
-          <Link href="/agriculture" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
-            {t.home.agriculture}
-          </Link>
-          <Link href="/dashboard/construction" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
-            {t.home.construction}
-          </Link>
-
+          <div className="hidden min-w-0 items-center gap-1 xl:flex">
+            {navigation.map((item) => <Link key={item.href} href={item.href} className="shrink-0 rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">{item.label}</Link>)}
           </div>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <button type="button" aria-label={locale === "bn" ? "নেভিগেশন মেনু" : "Navigation menu"} aria-expanded={navigationOpen} aria-controls="site-mobile-navigation" onClick={() => setNavigationOpen((open) => !open)} className="inline-flex rounded-lg p-2 hover:bg-white/10 xl:hidden">{navigationOpen ? <XIcon aria-hidden="true" className="size-5" /> : <MenuIcon aria-hidden="true" className="size-5" />}</button>
           <LanguageToggle />
           <ThemeToggle />
 
@@ -86,6 +93,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           </div>
         </nav>
       </div>
+      {navigationOpen && <nav id="site-mobile-navigation" aria-label={t.header.services} className="mx-auto flex max-w-[1440px] flex-col gap-1 border-t border-white/20 px-4 py-3 xl:hidden">{navigation.map((item) => <Link key={item.href} href={item.href} onClick={() => setNavigationOpen(false)} className="rounded-lg px-3 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">{item.label}</Link>)}</nav>}
     </header>
   );
 }
