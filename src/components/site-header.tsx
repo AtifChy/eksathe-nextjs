@@ -23,7 +23,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-[#0b5036] text-white shadow-sm" onKeyDown={(event) => { if (event.key === "Escape") { if (navigationOpen) event.currentTarget.querySelector<HTMLButtonElement>("[aria-controls=site-navigation]")?.focus(); setNavigationOpen(false); setMenuOpen(false); } }}>
-      <div className="mx-auto flex min-h-16 w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex min-h-16 w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 xl:grid xl:grid-cols-[1fr_auto_1fr]">
         <Link href="/" onClick={() => setNavigationOpen(false)} className="flex min-w-0 items-center gap-3 font-bold leading-tight [&_img]:size-11" aria-label={t.common.brandName}>
           <BrandLogo />
           <span className="hidden flex-col gap-1 sm:flex">
@@ -32,8 +32,8 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           </span>
         </Link>
 
-        <nav id="site-navigation" className={`${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] flex-col gap-4 overflow-y-auto border-b border-white/20 bg-[#0b5036] p-4 shadow-lg xl:static xl:flex xl:flex-1 xl:max-h-none xl:flex-row xl:items-center xl:gap-2 xl:overflow-visible xl:border-0 xl:p-0 xl:shadow-none`} aria-label={t.header.services} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) { setNavigationOpen(false); setMenuOpen(false); } }}>
-          <div className="flex min-w-0 flex-col gap-1 xl:mx-auto xl:flex-row xl:items-center xl:gap-2">
+        <nav id="site-navigation" className={`${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] flex-col gap-4 overflow-y-auto border-b border-white/20 bg-[#0b5036] p-4 shadow-lg xl:contents`} aria-label={t.header.services} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) { setNavigationOpen(false); setMenuOpen(false); } }}>
+          <div className="flex min-w-0 flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">
           <Link href="/dashboard" className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">
             {t.header.dashboard}
           </Link>
@@ -43,10 +43,10 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           <Link href="/construction" className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">
             {t.home.construction}
           </Link>
-
+          <div className="flex items-center [&_[role=group]]:h-11 [&_button]:h-9"><LanguageToggle /></div>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-white/20 pt-3 xl:flex-nowrap xl:border-0 xl:pt-0">
-          <ThemeToggle />
+          <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-white/20 pt-3 xl:justify-self-end xl:flex-nowrap xl:border-0 xl:pt-0">
+          <div className="[&_button]:size-11"><ThemeToggle /></div>
 
           {signedIn ? (
             <div className="relative shrink-0">
@@ -55,7 +55,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
                 onClick={() => setMenuOpen((open) => !open)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-2.5 py-2 text-xs font-semibold hover:bg-white/10 sm:text-sm"
+                className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/10"
               >
                 <UserRoundIcon aria-hidden="true" className="size-4" />
                 <span className="max-w-32 truncate">{userName ?? t.auth.signIn}</span>
@@ -76,16 +76,15 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
             </div>
           ) : (
             <div className="flex shrink-0 items-center gap-1">
-              <Link href="/login" className="rounded-lg px-2.5 py-2 text-xs font-semibold hover:bg-white/10 sm:text-sm">{t.header.login}</Link>
-              <Link href="/register" className="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-2 text-xs font-semibold text-[#0b5036] hover:bg-white/90 sm:text-sm">
+              <Link href="/login" className="inline-flex h-11 items-center rounded-lg px-3 text-sm font-semibold hover:bg-white/10">{t.header.login}</Link>
+              <Link href="/register" className="inline-flex h-11 items-center gap-1 rounded-lg bg-white px-3 text-sm font-semibold text-[#0b5036] hover:bg-white/90">
                 <UserRoundPlusIcon aria-hidden="true" className="size-4" />{t.header.register}
               </Link>
             </div>
           )}
           </div>
         </nav>
-        <div className="ml-auto flex shrink-0 items-center gap-2 xl:ml-0">
-          <LanguageToggle />
+        <div className="ml-auto flex shrink-0 items-center gap-2 xl:hidden">
           <button type="button" aria-controls="site-navigation" aria-expanded={navigationOpen} aria-label={locale === "bn" ? (navigationOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন") : (navigationOpen ? "Close menu" : "Open menu")} onClick={() => { setNavigationOpen((open) => !open); setMenuOpen(false); }} className="inline-flex size-11 items-center justify-center rounded-lg border border-white/20 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white xl:hidden">
             {navigationOpen ? <XIcon aria-hidden="true" className="size-5" /> : <MenuIcon aria-hidden="true" className="size-5" />}
           </button>
