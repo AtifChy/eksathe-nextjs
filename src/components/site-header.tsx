@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { BriefcaseBusinessIcon, ChevronDownIcon, LogOutIcon, ShieldCheckIcon, UserRoundIcon, UserRoundPlusIcon } from "lucide-react";
+import { BriefcaseBusinessIcon, ChevronDownIcon, LogOutIcon, MenuIcon, ShieldCheckIcon, UserRoundIcon, UserRoundPlusIcon, XIcon } from "lucide-react";
 import { signOutAction } from "@/app/actions/session";
 import { LanguageToggle } from "@/components/language-toggle";
 import { BrandLogo } from "@/components/brand-logo";
@@ -17,36 +17,35 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHeaderProps) {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navigationOpen, setNavigationOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-[#0b5036] text-white shadow-sm">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-[#0b5036] text-white shadow-sm" onKeyDown={(event) => { if (event.key === "Escape") { if (navigationOpen) event.currentTarget.querySelector<HTMLButtonElement>("[aria-controls=site-navigation]")?.focus(); setNavigationOpen(false); setMenuOpen(false); } }}>
       <div className="mx-auto flex min-h-16 w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-3 font-bold leading-tight" aria-label={t.common.brandName}>
+        <Link href="/" onClick={() => setNavigationOpen(false)} className="flex min-w-0 items-center gap-3 font-bold leading-tight [&_img]:size-11" aria-label={t.common.brandName}>
           <BrandLogo />
-          <span className="hidden flex-col gap-1 lg:flex">
+          <span className="hidden flex-col gap-1 sm:flex">
           <span className="text-sm sm:text-base">{t.common.brandName}</span>
           <span className="hidden text-[0.65rem] font-normal text-white/70 sm:block">{t.common.brandSlogan}</span>
           </span>
         </Link>
 
-        <nav className="flex min-w-0 items-center gap-1 sm:gap-2" aria-label={t.header.services}>
-          <div className="flex min-w-0 items-center gap-1 overflow-x-auto sm:gap-2">
-          <Link href="/dashboard" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
-            <span className="hidden sm:inline">{t.header.dashboard}</span>
-            <span className="sm:hidden" aria-label={t.header.dashboard}>13</span>
+        <nav id="site-navigation" className={`${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] flex-col gap-4 overflow-y-auto border-b border-white/20 bg-[#0b5036] p-4 shadow-lg xl:static xl:flex xl:max-h-none xl:flex-row xl:items-center xl:gap-2 xl:overflow-visible xl:border-0 xl:p-0 xl:shadow-none`} aria-label={t.header.services} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) { setNavigationOpen(false); setMenuOpen(false); } }}>
+          <div className="flex min-w-0 flex-col gap-1 xl:flex-row xl:items-center xl:gap-2">
+          <Link href="/dashboard" className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">
+            {t.header.dashboard}
           </Link>
-          <Link href="/agriculture" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
+          <Link href="/agriculture" className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">
             {t.home.agriculture}
           </Link>
-          <Link href="/construction" className="shrink-0 rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 hover:bg-white/10 sm:text-sm">
+          <Link href="/construction" className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10">
             {t.home.construction}
           </Link>
 
           </div>
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <LanguageToggle />
+          <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-white/20 pt-3 xl:flex-nowrap xl:border-0 xl:pt-0">
           <ThemeToggle />
 
           {signedIn ? (
@@ -58,18 +57,18 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                 onClick={() => setMenuOpen((open) => !open)}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-2.5 py-2 text-xs font-semibold hover:bg-white/10 sm:text-sm"
               >
-                <UserRoundIcon aria-hidden="true" />
-                <span className="hidden max-w-32 truncate md:inline">{userName ?? t.auth.signIn}</span>
-                <ChevronDownIcon aria-hidden="true" />
+                <UserRoundIcon aria-hidden="true" className="size-4" />
+                <span className="max-w-32 truncate">{userName ?? t.auth.signIn}</span>
+                <ChevronDownIcon aria-hidden="true" className="size-4" />
               </button>
               {menuOpen && (
-                <div role="menu" className="absolute right-0 top-full mt-2 flex min-w-48 flex-col gap-1 rounded-xl border border-border bg-card p-2 text-foreground shadow-lg">
+                <div role="menu" className="mt-2 flex min-w-48 flex-col gap-1 rounded-xl border border-border bg-card p-2 text-foreground shadow-lg xl:absolute xl:right-0 xl:top-full">
                   <Link role="menuitem" href="/account#profile" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted"><UserRoundIcon aria-hidden="true" className="size-4" />{t.dashboard.profile}</Link>
                   {canProvider && <Link role="menuitem" href="/provider" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted"><BriefcaseBusinessIcon aria-hidden="true" className="size-4" />{t.nav.provider}</Link>}
                   {canAdmin && <Link role="menuitem" href="/admin" onClick={() => setMenuOpen(false)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-muted"><ShieldCheckIcon aria-hidden="true" className="size-4" />{t.nav.admin}</Link>}
                   <form action={signOutAction}>
                     <button role="menuitem" type="submit" className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted">
-                      <LogOutIcon aria-hidden="true" />{t.nav.signOut}
+                      <LogOutIcon aria-hidden="true" className="size-4" />{t.nav.signOut}
                     </button>
                   </form>
                 </div>
@@ -85,6 +84,12 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           )}
           </div>
         </nav>
+        <div className="ml-auto flex shrink-0 items-center gap-2 xl:ml-0">
+          <LanguageToggle />
+          <button type="button" aria-controls="site-navigation" aria-expanded={navigationOpen} aria-label={locale === "bn" ? (navigationOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন") : (navigationOpen ? "Close menu" : "Open menu")} onClick={() => { setNavigationOpen((open) => !open); setMenuOpen(false); }} className="inline-flex size-11 items-center justify-center rounded-lg border border-white/20 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white xl:hidden">
+            {navigationOpen ? <XIcon aria-hidden="true" className="size-5" /> : <MenuIcon aria-hidden="true" className="size-5" />}
+          </button>
+        </div>
       </div>
     </header>
   );
