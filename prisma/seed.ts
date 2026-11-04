@@ -1,6 +1,8 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 
+import bnMessages from "../messages/bn.json";
+import enMessages from "../messages/en.json";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { agricultureServiceRegistry } from "../src/lib/agriculture/service-registry";
 import { sectors } from "../src/lib/sectors";
@@ -14,16 +16,16 @@ async function main() {
       where: { slug: sector.slug },
       update: {
         position: sector.id,
-        titleBn: sector.labelBn,
-        titleEn: sector.labelEn,
+        titleBn: bnMessages.sectors[sector.slug],
+        titleEn: enMessages.sectors[sector.slug],
         icon: sector.icon,
         status: sector.status === "live" ? "LIVE" : "COMING_SOON",
       },
       create: {
         slug: sector.slug,
         position: sector.id,
-        titleBn: sector.labelBn,
-        titleEn: sector.labelEn,
+        titleBn: bnMessages.sectors[sector.slug],
+        titleEn: enMessages.sectors[sector.slug],
         icon: sector.icon,
         status: sector.status === "live" ? "LIVE" : "COMING_SOON",
       },

@@ -1,9 +1,9 @@
 import { DashboardHub } from "@/components/dashboard/dashboard-hub";
+import { getPageMetadata } from "@/i18n/metadata";
 
-export const metadata = {
-  title: "Dashboard | EKsathe Bangladesh",
-  description: "Unified multi-sector category hub for EKsathe Bangladesh services and operations.",
-};
+export function generateMetadata() {
+  return getPageMetadata("dashboard");
+}
 
 export default function DashboardPage() {
   return <DashboardHub />;

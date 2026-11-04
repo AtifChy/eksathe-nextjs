@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ConstructionServicePage } from "@/components/construction/construction-service-page";
@@ -14,8 +15,9 @@ export async function generateMetadata({
   const { slug } = await params;
   const service = getConstructionService(slug);
   if (!service) notFound();
+  const t = await getTranslations();
   return {
-    title: `${service.titleEn} | Construction | EKsathe Bangladesh`,
+    title: `${t(`constructionServices.${service.slug}.title` as never)} | ${t("common.brandName")}`,
     alternates: { canonical: `/construction/services/${slug}` },
   };
 }

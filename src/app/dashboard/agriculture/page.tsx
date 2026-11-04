@@ -1,10 +1,13 @@
 import { connection } from "next/server";
 
 import { AgricultureHome } from "@/components/agriculture/agriculture-home";
+import { getPageMetadata } from "@/i18n/metadata";
 import { getAgriculturePublicInfo } from "@/lib/agriculture/publishing";
 import { getPublicListings } from "@/lib/listings";
 
-export const metadata = { alternates: { canonical: "/agriculture" } };
+export function generateMetadata() {
+  return getPageMetadata("agriculture", "/agriculture");
+}
 export const instant = false;
 
 export default async function DashboardAgriculturePage() {

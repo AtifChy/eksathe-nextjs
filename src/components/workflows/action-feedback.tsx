@@ -1,10 +1,11 @@
 "use client";
 
-import { useLanguage } from "@/components/language-provider";
+import { useTranslations } from "next-intl";
+
 import type { WorkflowState } from "@/lib/workflow-state";
 
 export function ActionFeedback({ state }: { state: WorkflowState }) {
-  const { t } = useLanguage();
+  const t = useTranslations();
   if (state.status === "idle" || !state.messageKey) return null;
   return (
     <p
@@ -15,7 +16,7 @@ export function ActionFeedback({ state }: { state: WorkflowState }) {
           : "bg-secondary text-secondary-foreground rounded-lg px-3 py-2 text-sm"
       }
     >
-      {t.workflow[state.messageKey]}
+      {t(`workflow.${state.messageKey}` as never)}
     </p>
   );
 }

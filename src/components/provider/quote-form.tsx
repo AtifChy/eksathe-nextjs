@@ -1,9 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { submitQuoteAction } from "@/app/actions/marketplace";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,12 +20,12 @@ export function QuoteForm({
   };
 }) {
   const [state, action, pending] = useActionState(submitQuoteAction, initialWorkflowState);
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <form action={action} className="bg-muted/50 mt-4 grid gap-3 rounded-xl p-4 sm:grid-cols-2">
       <input type="hidden" name="requestId" value={request.id} />
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`quote-quantity-${request.id}`}>{t.workflow.quantity}</Label>
+        <Label htmlFor={`quote-quantity-${request.id}`}>{t("workflow.quantity")}</Label>
         <Input
           id={`quote-quantity-${request.id}`}
           name="quantity"
@@ -38,7 +38,7 @@ export function QuoteForm({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`quote-price-${request.id}`}>{t.workflow.quotePrice}</Label>
+        <Label htmlFor={`quote-price-${request.id}`}>{t("workflow.quotePrice")}</Label>
         <Input
           id={`quote-price-${request.id}`}
           name="unitPrice"
@@ -50,7 +50,7 @@ export function QuoteForm({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`quote-transport-${request.id}`}>{t.workflow.transportFee}</Label>
+        <Label htmlFor={`quote-transport-${request.id}`}>{t("workflow.transportFee")}</Label>
         <Input
           id={`quote-transport-${request.id}`}
           name="transportFee"
@@ -61,11 +61,11 @@ export function QuoteForm({
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`quote-expiry-${request.id}`}>{t.workflow.reference}</Label>
+        <Label htmlFor={`quote-expiry-${request.id}`}>{t("workflow.reference")}</Label>
         <Input id={`quote-expiry-${request.id}`} name="expiresAt" type="date" />
       </div>
       <div className="flex flex-col gap-2 sm:col-span-2">
-        <Label htmlFor={`quote-note-${request.id}`}>{t.workflow.quoteNote}</Label>
+        <Label htmlFor={`quote-note-${request.id}`}>{t("workflow.quoteNote")}</Label>
         <textarea
           id={`quote-note-${request.id}`}
           name="note"
@@ -78,7 +78,7 @@ export function QuoteForm({
       <div className="flex flex-col gap-3 sm:col-span-2">
         <ActionFeedback state={state} />
         <Button type="submit" disabled={pending}>
-          {pending ? t.common.loading : t.workflow.sendQuote}
+          {pending ? t("common.loading") : t("workflow.sendQuote")}
         </Button>
       </div>
     </form>

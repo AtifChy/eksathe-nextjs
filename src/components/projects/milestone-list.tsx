@@ -1,6 +1,7 @@
 "use client";
 
-import { useLanguage } from "@/components/language-provider";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
+
 import { MilestoneStatusForm } from "@/components/projects/project-forms";
 import { StatusBadge } from "@/components/workflows/status-badge";
 
@@ -21,7 +22,9 @@ export function MilestoneList({
   owner?: boolean;
   provider?: boolean;
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   return (
     <div className="flex flex-col gap-2">
       {milestones.map((milestone) => (
@@ -36,7 +39,7 @@ export function MilestoneList({
             )}
             {milestone.assignedProvider && (
               <p className="text-muted-foreground mt-1 text-xs">
-                {t.workflow.assignedProvider}:{" "}
+                {t("workflow.assignedProvider")}:{" "}
                 {locale === "bn"
                   ? milestone.assignedProvider.nameBn
                   : milestone.assignedProvider.nameEn}
@@ -44,8 +47,11 @@ export function MilestoneList({
             )}
             {milestone.dueAt && (
               <p className="text-muted-foreground mt-1 text-xs">
-                {locale === "bn" ? "শেষ তারিখ" : "Due"}:{" "}
-                {new Date(milestone.dueAt).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}
+                {t("inline.due_1yneuku")}:{" "}
+                {formatter.dateTime(new Date(milestone.dueAt), {
+                  dateStyle: "medium",
+                  timeZone: "Asia/Dhaka",
+                })}
               </p>
             )}
           </div>

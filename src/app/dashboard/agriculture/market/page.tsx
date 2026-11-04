@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
-
 import { AgricultureMarketPage } from "@/components/agriculture/agriculture-market-page";
+import { getPageMetadata } from "@/i18n/metadata";
 
-export const metadata: Metadata = {
-  title: "Agriculture marketplace | EKsathe Bangladesh",
-  alternates: { canonical: "/agriculture/market" },
-};
+export function generateMetadata() {
+  return getPageMetadata("agricultureMarket", "/agriculture/market");
+}
 export const instant = false;
 
 export default async function DashboardAgricultureMarketPage({

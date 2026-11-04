@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 import { useActionState } from "react";
 
@@ -14,7 +15,6 @@ import {
   updateSectorCommissionRateAction,
 } from "@/app/actions/admin";
 import { AgricultureRequestsQueue } from "@/components/admin/agriculture-requests-queue";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,56 +26,56 @@ import { initialWorkflowState } from "@/lib/workflow-state";
 import type { AdminWorkspace as AdminWorkspaceData } from "@/lib/workspaces";
 
 export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const formatMoney = (value: string) =>
-    new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", {
+    formatter.number(Number(value), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(value));
+    });
   const operationsEnabled = data.access.operationSectors.length > 0;
   const agricultureOperationsEnabled = data.access.operationSectors.includes("agriculture-labor");
   const financeEnabled = data.access.financeSectors.length > 0;
 
   return (
     <WorkspaceNavigation
-      label={locale === "bn" ? "প্রশাসন নেভিগেশন" : "Administration navigation"}
+      label={t("inline.administration_navigation_13nz74t")}
       items={[
         ...(operationsEnabled
           ? [
-              { id: "provider-approvals", label: t.workflow.adminApprovals },
-              { id: "listing-moderation", label: locale === "bn" ? "তালিকা" : "Listings" },
-              { id: "requests", label: t.workflow.adminRequests },
-              { id: "disputes", label: locale === "bn" ? "বিরোধ" : "Disputes" },
+              { id: "provider-approvals", label: t("workflow.adminApprovals") },
+              { id: "listing-moderation", label: t("inline.listings_dq3ohu") },
+              { id: "requests", label: t("workflow.adminRequests") },
+              { id: "disputes", label: t("inline.disputes_r4wset") },
             ]
           : []),
         ...(agricultureOperationsEnabled
           ? [
               {
                 id: "agriculture-requests",
-                label: locale === "bn" ? "কৃষি অনুরোধ" : "Agriculture intake",
+                label: t("inline.agriculture_intake_11g2kyy"),
               },
             ]
           : []),
         ...(financeEnabled
           ? [
-              { id: "payment-mismatches", label: locale === "bn" ? "পেমেন্ট যাচাই" : "Payments" },
-              { id: "commission", label: locale === "bn" ? "কমিশন" : "Commissions" },
+              { id: "payment-mismatches", label: t("inline.payments_10ntxis") },
+              { id: "commission", label: t("inline.commissions_82zxsv") },
             ]
           : []),
         ...(data.access.isSuperAdmin
           ? [
-              { id: "commission-settings", label: locale === "bn" ? "কমিশন হার" : "Rates" },
-              { id: "staff-access", label: t.workflow.manageStaff },
+              { id: "commission-settings", label: t("inline.rates_1hw0rt3") },
+              { id: "staff-access", label: t("workflow.manageStaff") },
             ]
           : []),
       ]}
     >
       <div>
-        <p className="text-primary text-sm">
-          {locale === "bn" ? "প্ল্যাটফর্ম পরিচালনা" : "Platform operations"}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">{t.nav.admin}</h1>
+        <p className="text-primary text-sm">{t("inline.platform_operations_ddluvn")}</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight">{t("nav.admin")}</h1>
         <p className="text-muted-foreground mt-2 text-sm">
           {locale === "bn"
             ? `আপনার বিভাগ: ${[...new Set([...data.access.operationSectors, ...data.access.financeSectors])].join(", ") || "সমগ্র প্ল্যাটফর্ম"}`
@@ -86,7 +86,7 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
             href="/admin/agriculture/publishing"
             className="border-primary/30 text-primary hover:bg-primary/5 mt-3 inline-flex w-fit items-center rounded-lg border px-3 py-2 text-sm font-medium"
           >
-            {locale === "bn" ? "কৃষি বাজারদর ও আপডেট প্রকাশ" : "Publish agriculture prices and updates"}
+            {t("inline.publish_agriculture_prices_and_updates_1mknp4k")}
           </Link>
         )}
       </div>
@@ -94,9 +94,9 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
       {operationsEnabled && (
         <>
           <section id="provider-approvals" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">{t.workflow.adminApprovals}</h2>
+            <h2 className="text-xl font-bold">{t("workflow.adminApprovals")}</h2>
             {data.capabilities.length === 0 ? (
-              <Empty text={t.workflow.noRecords} />
+              <Empty text={t("workflow.noRecords")} />
             ) : (
               data.capabilities.map((capability) => (
                 <Card key={capability.id}>
@@ -118,7 +118,7 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
                       {locale === "bn" ? capability.bioBn : capability.bioEn}
                     </p>
                     <p className="text-sm">
-                      {t.workflow.district}: {capability.district}
+                      {t("workflow.district")}: {capability.district}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <CapabilityDecisionForm id={capability.id} decision="APPROVED" />
@@ -131,11 +131,9 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
           </section>
 
           <section id="listing-moderation" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">
-              {locale === "bn" ? "তালিকা পর্যালোচনা" : "Listing moderation"}
-            </h2>
+            <h2 className="text-xl font-bold">{t("inline.listing_moderation_24fime")}</h2>
             {data.listings.length === 0 ? (
-              <Empty text={t.workflow.noRecords} />
+              <Empty text={t("workflow.noRecords")} />
             ) : (
               data.listings.map((listing) => (
                 <Card key={listing.id}>
@@ -169,9 +167,9 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
           </section>
 
           <section id="requests" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">{t.workflow.adminRequests}</h2>
+            <h2 className="text-xl font-bold">{t("workflow.adminRequests")}</h2>
             {data.requests.length === 0 ? (
-              <Empty text={t.workflow.noRecords} />
+              <Empty text={t("workflow.noRecords")} />
             ) : (
               data.requests.map((request) => (
                 <Card key={request.id}>
@@ -203,17 +201,16 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
                     <p className="text-sm">
                       {request.district} · {request.quantity} {request.unit}
                       {request.requestedStart
-                        ? ` · ${locale === "bn" ? "শুরু" : "Starts"}: ${new Date(request.requestedStart).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}`
+                        ? ` · ${t("inline.starts_y2biwy")}: ${formatter.dateTime(new Date(request.requestedStart), { dateStyle: "medium", timeZone: "Asia/Dhaka" })}`
                         : ""}
                       {request.requestedEnd
-                        ? ` · ${locale === "bn" ? "শেষ" : "Ends"}: ${new Date(request.requestedEnd).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}`
+                        ? ` · ${t("inline.ends_lldl3n")}: ${formatter.dateTime(new Date(request.requestedEnd), { dateStyle: "medium", timeZone: "Asia/Dhaka" })}`
                         : ""}
                     </p>
                     {request.quote && (
                       <p className="text-sm">
-                        {locale === "bn" ? "দরপ্রস্তাব" : "Quote"}:{" "}
-                        {formatMoney(request.quote.unitPrice)} / {request.unit} ·{" "}
-                        {locale === "bn" ? "পরিবহন" : "Transport"}:{" "}
+                        {t("inline.quote_1x6t7ux")}: {formatMoney(request.quote.unitPrice)} /{" "}
+                        {request.unit} · {t("inline.transport_1fsvvgu")}:{" "}
                         {formatMoney(request.quote.transportFee)}
                       </p>
                     )}
@@ -221,7 +218,7 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
                       href={`/dashboard/${request.sectorSlug}/providers/${request.providerId}`}
                       className="text-primary w-fit text-sm font-medium hover:underline"
                     >
-                      {locale === "bn" ? "সেবাদাতার প্রোফাইল" : "View provider profile"}
+                      {t("inline.view_provider_profile_j41e4t")}
                     </Link>
                   </CardContent>
                 </Card>
@@ -230,9 +227,9 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
           </section>
 
           <section id="disputes" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">{locale === "bn" ? "বিরোধ নিষ্পত্তি" : "Disputes"}</h2>
+            <h2 className="text-xl font-bold">{t("inline.disputes_1tdlnrq")}</h2>
             {data.disputes.length === 0 ? (
-              <Empty text={t.workflow.noRecords} />
+              <Empty text={t("workflow.noRecords")} />
             ) : (
               data.disputes.map((dispute) => (
                 <Card key={dispute.id}>
@@ -271,11 +268,9 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
       {financeEnabled && (
         <>
           <section id="payment-mismatches" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">
-              {locale === "bn" ? "পেমেন্ট মিল যাচাই" : "Payment confirmations"}
-            </h2>
+            <h2 className="text-xl font-bold">{t("inline.payment_confirmations_mgyaiy")}</h2>
             {data.paymentMismatches.length === 0 ? (
-              <Empty text={t.workflow.noRecords} />
+              <Empty text={t("workflow.noRecords")} />
             ) : (
               data.paymentMismatches.map((payment) => (
                 <Card key={payment.id}>
@@ -302,7 +297,7 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
                         className="text-primary w-fit text-sm font-medium hover:underline"
                         href={`/api/orders/${payment.orderId}/payments/${payment.id}/receipt`}
                       >
-                        {t.workflow.viewReceipt}
+                        {t("workflow.viewReceipt")}
                       </a>
                     )}
                     <p className="text-muted-foreground text-xs">
@@ -318,9 +313,9 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
           </section>
 
           <section id="commission" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">{t.workflow.commissionsDue}</h2>
+            <h2 className="text-xl font-bold">{t("workflow.commissionsDue")}</h2>
             {data.commissions.length === 0 ? (
-              <Empty text={t.workflow.noRecords} />
+              <Empty text={t("workflow.noRecords")} />
             ) : (
               data.commissions.map((commission) => (
                 <Card key={commission.id}>
@@ -351,15 +346,13 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
       {data.access.isSuperAdmin && (
         <>
           <section id="commission-settings" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">
-              {locale === "bn" ? "বিভাগভিত্তিক কমিশন" : "Sector commission settings"}
-            </h2>
+            <h2 className="text-xl font-bold">{t("inline.sector_commission_settings_1p0mg0p")}</h2>
             {data.sectors.map((sector) => (
               <CommissionRateForm key={sector.slug} sector={sector} />
             ))}
           </section>
           <section id="staff-access" className="flex scroll-mt-24 flex-col gap-4">
-            <h2 className="text-xl font-bold">{t.workflow.manageStaff}</h2>
+            <h2 className="text-xl font-bold">{t("workflow.manageStaff")}</h2>
             <StaffGrantForm />
             {data.staffGrants.map((grant) => (
               <StaffGrantRow key={grant.id} grant={grant} />
@@ -382,7 +375,7 @@ function CapabilityDecisionForm({
     moderateProviderCapabilityAction,
     initialWorkflowState,
   );
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="id" value={id} />
@@ -395,10 +388,10 @@ function CapabilityDecisionForm({
         variant={decision === "APPROVED" ? "default" : "outline"}
       >
         {pending
-          ? t.common.loading
+          ? t("common.loading")
           : decision === "APPROVED"
-            ? t.workflow.approve
-            : t.workflow.reject}
+            ? t("workflow.approve")
+            : t("workflow.reject")}
       </Button>
     </form>
   );
@@ -406,7 +399,7 @@ function CapabilityDecisionForm({
 
 function ListingDecisionForm({ id, decision }: { id: string; decision: "APPROVED" | "REJECTED" }) {
   const [state, action, pending] = useActionState(moderateListingAction, initialWorkflowState);
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="id" value={id} />
@@ -419,42 +412,38 @@ function ListingDecisionForm({ id, decision }: { id: string; decision: "APPROVED
         variant={decision === "APPROVED" ? "default" : "outline"}
       >
         {pending
-          ? t.common.loading
+          ? t("common.loading")
           : decision === "APPROVED"
-            ? t.workflow.approve
-            : t.workflow.reject}
+            ? t("workflow.approve")
+            : t("workflow.reject")}
       </Button>
     </form>
   );
 }
 
 function DisputeResolutionForm({ orderId }: { orderId: string }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(resolveDisputeAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   return (
     <form action={action} className="grid gap-3 sm:grid-cols-[180px_minmax(0,1fr)_auto]">
       <input type="hidden" name="orderId" value={orderId} />
-      <Field id={`dispute-outcome-${orderId}`} label={locale === "bn" ? "সিদ্ধান্ত" : "Resolution"}>
+      <Field id={`dispute-outcome-${orderId}`} label={t("inline.resolution_m1aqc1")}>
         <select
           id={`dispute-outcome-${orderId}`}
           name="decision"
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          <option value="COMPLETE">
-            {locale === "bn" ? "সম্পন্ন হিসেবে চিহ্নিত" : "Mark completed"}
-          </option>
-          <option value="CANCEL">
-            {locale === "bn" ? "বাতিল ও মজুত ফেরত" : "Cancel and release stock"}
-          </option>
+          <option value="COMPLETE">{t("inline.mark_completed_1cdw36l")}</option>
+          <option value="CANCEL">{t("inline.cancel_and_release_stock_omouxg")}</option>
         </select>
       </Field>
-      <Field id={`dispute-note-${orderId}`} label={t.workflow.details}>
+      <Field id={`dispute-note-${orderId}`} label={t("workflow.details")}>
         <Input id={`dispute-note-${orderId}`} name="note" maxLength={1000} />
       </Field>
       <div className="flex flex-col gap-2 sm:justify-end">
         <ActionFeedback state={state} />
         <Button type="submit" disabled={pending}>
-          {pending ? t.common.loading : locale === "bn" ? "সিদ্ধান্ত সংরক্ষণ" : "Record decision"}
+          {pending ? t("common.loading") : t("inline.record_decision_uudhyi")}
         </Button>
       </div>
     </form>
@@ -466,17 +455,17 @@ function CommissionReceiptForm({ commissionId }: { commissionId: string }) {
     markCommissionCollectedAction,
     initialWorkflowState,
   );
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <form action={action} className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
       <input type="hidden" name="commissionId" value={commissionId} />
-      <Field id={`commission-reference-${commissionId}`} label={t.workflow.reference}>
+      <Field id={`commission-reference-${commissionId}`} label={t("workflow.reference")}>
         <Input id={`commission-reference-${commissionId}`} name="reference" maxLength={120} />
       </Field>
       <div className="flex flex-col gap-2 sm:justify-end">
         <ActionFeedback state={state} />
         <Button type="submit" disabled={pending}>
-          {pending ? t.common.loading : t.workflow.markCollected}
+          {pending ? t("common.loading") : t("workflow.markCollected")}
         </Button>
       </div>
     </form>
@@ -484,16 +473,16 @@ function CommissionReceiptForm({ commissionId }: { commissionId: string }) {
 }
 
 function RefundForm({ paymentId }: { paymentId: string }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(recordRefundAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   return (
     <details className="border-border/70 rounded-lg border p-3">
       <summary className="cursor-pointer text-sm font-medium">
-        {locale === "bn" ? "ফেরত নথিভুক্ত করুন" : "Record a refund"}
+        {t("inline.record_a_refund_nfyy7b")}
       </summary>
       <form action={action} className="mt-3 grid gap-3 sm:grid-cols-3">
         <input type="hidden" name="paymentId" value={paymentId} />
-        <Field id={`refund-amount-${paymentId}`} label={t.workflow.paymentAmount}>
+        <Field id={`refund-amount-${paymentId}`} label={t("workflow.paymentAmount")}>
           <Input
             id={`refund-amount-${paymentId}`}
             name="amount"
@@ -503,13 +492,13 @@ function RefundForm({ paymentId }: { paymentId: string }) {
             required
           />
         </Field>
-        <Field id={`refund-reference-${paymentId}`} label={t.workflow.reference}>
+        <Field id={`refund-reference-${paymentId}`} label={t("workflow.reference")}>
           <Input id={`refund-reference-${paymentId}`} name="reference" maxLength={120} />
         </Field>
         <div className="flex flex-col gap-2 sm:justify-end">
           <ActionFeedback state={state} />
           <Button type="submit" variant="outline" disabled={pending}>
-            {pending ? t.common.loading : locale === "bn" ? "ফেরত সংরক্ষণ" : "Record refund"}
+            {pending ? t("common.loading") : t("inline.record_refund_lpvpcy")}
           </Button>
         </div>
       </form>
@@ -518,11 +507,12 @@ function RefundForm({ paymentId }: { paymentId: string }) {
 }
 
 function CommissionRateForm({ sector }: { sector: AdminWorkspaceData["sectors"][number] }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(
     updateSectorCommissionRateAction,
     initialWorkflowState,
   );
-  const { locale, t } = useLanguage();
+  const locale = useLocale();
   return (
     <form
       action={action}
@@ -533,10 +523,7 @@ function CommissionRateForm({ sector }: { sector: AdminWorkspaceData["sectors"][
         <p className="font-semibold">{locale === "bn" ? sector.titleBn : sector.titleEn}</p>
         <p className="text-muted-foreground text-xs">{sector.slug}</p>
       </div>
-      <Field
-        id={`commission-rate-${sector.slug}`}
-        label={locale === "bn" ? "কমিশন হার (%)" : "Commission rate (%)"}
-      >
+      <Field id={`commission-rate-${sector.slug}`} label={t("inline.commission_rate_12xdjj1")}>
         <Input
           id={`commission-rate-${sector.slug}`}
           name="rate"
@@ -551,7 +538,7 @@ function CommissionRateForm({ sector }: { sector: AdminWorkspaceData["sectors"][
       <div className="flex flex-col gap-2 sm:justify-end">
         <ActionFeedback state={state} />
         <Button type="submit" disabled={pending}>
-          {pending ? t.common.loading : locale === "bn" ? "হালনাগাদ" : "Update"}
+          {pending ? t("common.loading") : t("inline.update_1raohb6")}
         </Button>
       </div>
     </form>
@@ -559,43 +546,41 @@ function CommissionRateForm({ sector }: { sector: AdminWorkspaceData["sectors"][
 }
 
 function StaffGrantForm() {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(grantStaffAccessAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   return (
     <form
       action={action}
       className="border-border/70 bg-card grid gap-3 rounded-xl border p-4 sm:grid-cols-3"
     >
-      <Field id="staff-email" label={t.workflow.staffEmail}>
+      <Field id="staff-email" label={t("workflow.staffEmail")}>
         <Input id="staff-email" name="email" type="email" required />
       </Field>
-      <Field id="staff-permission" label={t.workflow.staffPermission}>
+      <Field id="staff-permission" label={t("workflow.staffPermission")}>
         <select
           id="staff-permission"
           name="permission"
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          <option value="OPERATIONS">{locale === "bn" ? "পরিচালনা" : "Operations"}</option>
-          <option value="FINANCE">{locale === "bn" ? "অর্থনীতি" : "Finance"}</option>
+          <option value="OPERATIONS">{t("inline.operations_1t8z18")}</option>
+          <option value="FINANCE">{t("inline.finance_1rfbk3d")}</option>
         </select>
       </Field>
-      <Field id="staff-scope" label={t.workflow.staffScope}>
+      <Field id="staff-scope" label={t("workflow.staffScope")}>
         <select
           id="staff-scope"
           name="scope"
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          <option value="global">{locale === "bn" ? "সমগ্র প্ল্যাটফর্ম" : "Platform-wide"}</option>
-          <option value="agriculture-labor">
-            {locale === "bn" ? "কৃষি ও শ্রমিক" : "Agriculture & Labor"}
-          </option>
-          <option value="construction">{locale === "bn" ? "নির্মাণ" : "Construction"}</option>
+          <option value="global">{t("inline.platform_wide_10jjm12")}</option>
+          <option value="agriculture-labor">{t("inline.agriculture_labor_r0zc6k")}</option>
+          <option value="construction">{t("inline.construction_1bp2bxr")}</option>
         </select>
       </Field>
       <div className="flex flex-col gap-2 sm:col-span-3">
         <ActionFeedback state={state} />
         <Button type="submit" disabled={pending}>
-          {pending ? t.common.loading : locale === "bn" ? "প্রবেশাধিকার দিন" : "Grant access"}
+          {pending ? t("common.loading") : t("inline.grant_access_l6z9yb")}
         </Button>
       </div>
     </form>
@@ -603,8 +588,8 @@ function StaffGrantForm() {
 }
 
 function StaffGrantRow({ grant }: { grant: AdminWorkspaceData["staffGrants"][number] }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(revokeStaffAccessAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   return (
     <form
       action={action}
@@ -617,7 +602,7 @@ function StaffGrantRow({ grant }: { grant: AdminWorkspaceData["staffGrants"][num
       <div className="flex items-center gap-3">
         <ActionFeedback state={state} />
         <Button type="submit" size="sm" variant="outline" disabled={pending}>
-          {pending ? t.common.loading : locale === "bn" ? "সরান" : "Revoke"}
+          {pending ? t("common.loading") : t("inline.revoke_1pjpchz")}
         </Button>
       </div>
     </form>

@@ -2,10 +2,10 @@
 
 import { cn } from "cn";
 import { ArrowLeftIcon, ArrowRightIcon, SearchIcon, StarIcon } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { useLanguage } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,14 +31,16 @@ export function AgricultureMarket({
   filters: AgricultureMarketFilters;
   result: AgricultureMarketResult;
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const bn = locale === "bn";
   const formatMoney = (amount: string) =>
-    new Intl.NumberFormat(bn ? "bn-BD" : "en-BD", {
+    formatter.number(Number(amount), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(amount));
+    });
   function pageHref(page: number) {
     const params = new URLSearchParams();
     for (const key of ["q", "category", "district", "minPrice", "maxPrice", "sort"] as const) {
@@ -56,19 +58,17 @@ export function AgricultureMarket({
         className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm"
       >
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {bn ? "কৃষি সেবায় ফিরুন" : "Back to agriculture"}
+        {t("inline.back_to_agriculture_qogfrr")}
       </Link>
       <header>
         <p className="text-primary text-sm font-semibold">
-          {bn ? "কৃষি মার্কেটপ্লেস" : "Agriculture marketplace"}
+          {t("inline.agriculture_marketplace_1ufcijx")}
         </p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">
-          {bn ? "কৃষিপণ্য খুঁজুন" : "Find farm products"}
+          {t("inline.find_farm_products_1659zjw")}
         </h1>
         <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-          {bn
-            ? "বিক্রেতা, বিভাগ, জেলা ও দামের ভিত্তিতে তালিকা খুঁজুন। অনুরোধ পাঠানোর আগে সরবরাহকারীর সঙ্গে শর্ত মিলিয়ে নিন।"
-            : "Search listings by seller, category, district, and price. Confirm terms with the provider before accepting an offer."}
+          {t("inline.search_listings_by_seller_category_distric_tle0d8")}
         </p>
       </header>
       <form
@@ -85,16 +85,16 @@ export function AgricultureMarket({
             className="pl-9"
             name="q"
             defaultValue={filters.q}
-            placeholder={bn ? "পণ্য বা বিক্রেতা খুঁজুন" : "Search products or sellers"}
+            placeholder={t("inline.search_products_or_sellers_xino0q")}
           />
         </div>
         <select
           name="category"
           defaultValue={filters.category ?? ""}
-          aria-label={bn ? "বিভাগ" : "Category"}
+          aria-label={t("inline.category_s1i10e")}
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          <option value="">{bn ? "সব বিভাগ" : "All categories"}</option>
+          <option value="">{t("inline.all_categories_1fiilwv")}</option>
           {categoryOptions.map((item) => (
             <option key={item.value} value={item.value}>
               {bn ? item.bn : item.en}
@@ -104,10 +104,10 @@ export function AgricultureMarket({
         <select
           name="district"
           defaultValue={filters.district ?? ""}
-          aria-label={bn ? "জেলা" : "District"}
+          aria-label={t("inline.district_135um58")}
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          <option value="">{t.workflow.allDistricts}</option>
+          <option value="">{t("workflow.allDistricts")}</option>
           {result.districts.map((district) => (
             <option key={district} value={district}>
               {district}
@@ -120,8 +120,8 @@ export function AgricultureMarket({
           min="0"
           step="0.01"
           defaultValue={filters.minPrice}
-          aria-label={bn ? "সর্বনিম্ন দাম" : "Minimum price"}
-          placeholder={bn ? "সর্বনিম্ন ৳" : "Min BDT"}
+          aria-label={t("inline.minimum_price_m3t2c3")}
+          placeholder={t("inline.min_bdt_1qs33m3")}
         />
         <Input
           name="maxPrice"
@@ -129,23 +129,23 @@ export function AgricultureMarket({
           min="0"
           step="0.01"
           defaultValue={filters.maxPrice}
-          aria-label={bn ? "সর্বোচ্চ দাম" : "Maximum price"}
-          placeholder={bn ? "সর্বোচ্চ ৳" : "Max BDT"}
+          aria-label={t("inline.maximum_price_x46h1l")}
+          placeholder={t("inline.max_bdt_1kgb5of")}
         />
         <select
           name="sort"
           defaultValue={filters.sort ?? "newest"}
-          aria-label={bn ? "সাজান" : "Sort"}
+          aria-label={t("inline.sort_dj8kwt")}
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          <option value="newest">{bn ? "নতুন আগে" : "Newest"}</option>
-          <option value="price-asc">{bn ? "দাম: কম থেকে বেশি" : "Price: low to high"}</option>
-          <option value="price-desc">{bn ? "দাম: বেশি থেকে কম" : "Price: high to low"}</option>
+          <option value="newest">{t("inline.newest_1g4bhr8")}</option>
+          <option value="price-asc">{t("inline.price_low_to_high_186nc0k")}</option>
+          <option value="price-desc">{t("inline.price_high_to_low_1lcdsbe")}</option>
         </select>
         <input type="hidden" name="page" value="1" />
         <Button type="submit" className="lg:col-span-7">
           <SearchIcon data-icon="inline-start" />
-          {bn ? "খুঁজুন" : "Search"}
+          {t("inline.search_1n7yeyu")}
         </Button>
       </form>
       {result.unavailable ? (
@@ -153,18 +153,16 @@ export function AgricultureMarket({
           role="alert"
           className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border p-4 text-sm"
         >
-          {t.workflow.dataUnavailable}
+          {t("workflow.dataUnavailable")}
         </p>
       ) : (
         <>
           <p className="text-muted-foreground text-sm">
-            {result.total.toLocaleString(bn ? "bn-BD" : "en-BD")} {bn ? "টি তালিকা" : "listings"}
+            {formatter.number(result.total)} {t("inline.listings_17wuylw")}
           </p>
           {result.items.length === 0 ? (
             <p className="border-border text-muted-foreground rounded-2xl border border-dashed p-8 text-center text-sm">
-              {bn
-                ? "এই খোঁজে কোনো প্রকাশিত পণ্য নেই। ফিল্টার বদলে আবার চেষ্টা করুন।"
-                : "No published products match these filters. Adjust your search and try again."}
+              {t("inline.no_published_products_match_these_filters__12lylnw")}
             </p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -205,13 +203,13 @@ export function AgricultureMarket({
                         className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                         href={`${routeBase}/listings/${listing.id}`}
                       >
-                        {bn ? "বিস্তারিত" : "Details"}
+                        {t("inline.details_ccvazu")}
                       </Link>
                       <Link
                         className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
                         href={`${routeBase}/providers/${listing.providerId}`}
                       >
-                        {bn ? "বিক্রেতা" : "Seller"}
+                        {t("inline.seller_qlcxju")}
                       </Link>
                     </div>
                   </CardContent>
@@ -221,7 +219,7 @@ export function AgricultureMarket({
           )}
           {result.totalPages > 1 && (
             <nav
-              aria-label={bn ? "পৃষ্ঠা নেভিগেশন" : "Pagination"}
+              aria-label={t("inline.pagination_q63cg7")}
               className="flex flex-wrap items-center justify-center gap-3"
             >
               <Link
@@ -233,11 +231,11 @@ export function AgricultureMarket({
                 href={pageHref(Math.max(1, result.page - 1))}
               >
                 <ArrowLeftIcon data-icon="inline-start" />
-                {bn ? "আগের" : "Previous"}
+                {t("inline.previous_1rllagw")}
               </Link>
               <span className="text-muted-foreground text-sm">
-                {bn ? "পৃষ্ঠা" : "Page"} {result.page.toLocaleString(bn ? "bn-BD" : "en-BD")} /{" "}
-                {result.totalPages.toLocaleString(bn ? "bn-BD" : "en-BD")}
+                {t("inline.page_17ze4or")} {formatter.number(result.page)} /{" "}
+                {formatter.number(result.totalPages)}
               </span>
               <Link
                 aria-disabled={result.page >= result.totalPages}
@@ -247,7 +245,7 @@ export function AgricultureMarket({
                 )}
                 href={pageHref(Math.min(result.totalPages, result.page + 1))}
               >
-                {bn ? "পরের" : "Next"}
+                {t("inline.next_1vj0vil")}
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
             </nav>

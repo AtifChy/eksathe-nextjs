@@ -1,9 +1,9 @@
 "use client";
 
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import { useActionState } from "react";
 
 import { updateAgricultureServiceRequestAction } from "@/app/actions/agriculture";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,18 +27,13 @@ export function AgricultureRequestsQueue({
   staff: QueueStaff[];
   filters: AdminWorkspace["agricultureFilters"];
 }) {
-  const { locale } = useLanguage();
-  const english = locale === "en";
+  const t = useTranslations();
   return (
     <section id="agriculture-requests" className="flex scroll-mt-24 flex-col gap-4">
       <div>
-        <h2 className="text-xl font-bold">
-          {english ? "Agriculture service intake" : "কৃষি সেবা অনুরোধ"}
-        </h2>
+        <h2 className="text-xl font-bold">{t("inline.agriculture_service_intake_13v216g")}</h2>
         <p className="text-muted-foreground mt-1 text-sm">
-          {english
-            ? "Review requests, coordinate follow-up, and keep internal notes private."
-            : "অনুরোধ যাচাই, সমন্বয় এবং ব্যক্তিগত অভ্যন্তরীণ নোট সংরক্ষণ করুন।"}
+          {t("inline.review_requests_coordinate_follow_up_and_k_id40eo")}
         </p>
       </div>
       <form
@@ -46,49 +41,49 @@ export function AgricultureRequestsQueue({
         action="/admin#agriculture-requests"
         className="bg-card grid gap-3 rounded-xl border p-4 sm:grid-cols-2 lg:grid-cols-3"
       >
-        <Field id="ag-filter-service" label={english ? "Service" : "সেবা"}>
+        <Field id="ag-filter-service" label={t("inline.service_1m16zkb")}>
           <select
             id="ag-filter-service"
             name="agService"
             defaultValue={filters.serviceSlug ?? ""}
             className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
           >
-            <option value="">{english ? "All services" : "সব সেবা"}</option>
+            <option value="">{t("inline.all_services_1pdbxg7")}</option>
             {agricultureServiceRegistry.map((service) => (
               <option key={service.slug} value={service.slug}>
-                {english ? service.titleEn : service.titleBn}
+                {t(`agricultureServices.${service.slug}.title` as never)}
               </option>
             ))}
           </select>
         </Field>
-        <Field id="ag-filter-district" label={english ? "District" : "জেলা"}>
+        <Field id="ag-filter-district" label={t("inline.district_135um58")}>
           <Input id="ag-filter-district" name="agDistrict" defaultValue={filters.district ?? ""} />
         </Field>
-        <Field id="ag-filter-status" label={english ? "Status" : "অবস্থা"}>
+        <Field id="ag-filter-status" label={t("inline.status_qhepgk")}>
           <select
             id="ag-filter-status"
             name="agStatus"
             defaultValue={filters.status ?? ""}
             className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
           >
-            <option value="">{english ? "All statuses" : "সব অবস্থা"}</option>
+            <option value="">{t("inline.all_statuses_153nc2f")}</option>
             {["NEW", "REVIEWING", "ASSIGNED", "COMPLETED", "REJECTED", "CANCELLED"].map(
               (status) => (
                 <option key={status} value={status}>
-                  {statusLabel(status, english)}
+                  {statusLabel(status, t)}
                 </option>
               ),
             )}
           </select>
         </Field>
-        <Field id="ag-filter-assignee" label={english ? "Assignee" : "দায়িত্বপ্রাপ্ত"}>
+        <Field id="ag-filter-assignee" label={t("inline.assignee_1g6jeev")}>
           <select
             id="ag-filter-assignee"
             name="agAssignee"
             defaultValue={filters.assigneeId ?? ""}
             className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
           >
-            <option value="">{english ? "Anyone" : "সব কর্মী"}</option>
+            <option value="">{t("inline.anyone_itav5z")}</option>
             {staff.map((person) => (
               <option key={person.id} value={person.id}>
                 {person.name} · {person.email}
@@ -96,7 +91,7 @@ export function AgricultureRequestsQueue({
             ))}
           </select>
         </Field>
-        <Field id="ag-filter-from" label={english ? "From date" : "শুরুর তারিখ"}>
+        <Field id="ag-filter-from" label={t("inline.from_date_172hp5u")}>
           <Input
             id="ag-filter-from"
             name="agFrom"
@@ -104,26 +99,24 @@ export function AgricultureRequestsQueue({
             defaultValue={filters.dateFrom ?? ""}
           />
         </Field>
-        <Field id="ag-filter-to" label={english ? "To date" : "শেষ তারিখ"}>
+        <Field id="ag-filter-to" label={t("inline.to_date_8xio37")}>
           <Input id="ag-filter-to" name="agTo" type="date" defaultValue={filters.dateTo ?? ""} />
         </Field>
         <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
           <Button type="submit" variant="outline">
-            {english ? "Filter requests" : "অনুরোধ ফিল্টার করুন"}
+            {t("inline.filter_requests_12do0dv")}
           </Button>
           <a
             href="/admin#agriculture-requests"
             className="text-muted-foreground hover:bg-muted inline-flex h-9 items-center rounded-lg px-3 text-sm"
           >
-            {english ? "Clear" : "মুছুন"}
+            {t("inline.clear_193qb1d")}
           </a>
         </div>
       </form>
       {requests.length === 0 ? (
         <div className="text-muted-foreground rounded-xl border border-dashed p-6 text-sm">
-          {english
-            ? "No agriculture requests match these filters."
-            : "এই ফিল্টারে কোনো কৃষি অনুরোধ পাওয়া যায়নি।"}
+          {t("inline.no_agriculture_requests_match_these_filter_1wybrur")}
         </div>
       ) : (
         requests.map((request) => <RequestCard key={request.id} request={request} staff={staff} />)
@@ -133,11 +126,13 @@ export function AgricultureRequestsQueue({
 }
 
 function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueStaff[] }) {
+  const formatter = useFormatter();
+  const t = useTranslations();
   const [state, action, pending] = useActionState(
     updateAgricultureServiceRequestAction,
     initialWorkflowState,
   );
-  const { locale } = useLanguage();
+  const locale = useLocale();
   const english = locale === "en";
   const snapshot = request.fieldSnapshot as {
     fields?: Array<{
@@ -162,10 +157,14 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
           </CardDescription>
           <CardDescription>
             {request.createdAt
-              ? new Date(request.createdAt).toLocaleString(english ? "en-BD" : "bn-BD")
+              ? formatter.dateTime(new Date(request.createdAt), {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                  timeZone: "Asia/Dhaka",
+                })
               : ""}{" "}
-            · {english ? "Assignee" : "দায়িত্বপ্রাপ্ত"}:{" "}
-            {request.assignedTo?.name ?? (english ? "Not assigned" : "দায়িত্ব দেওয়া হয়নি")}
+            · {t("inline.assignee_1g6jeev")}:{" "}
+            {request.assignedTo?.name ?? t("inline.not_assigned_jyfmtj")}
           </CardDescription>
         </div>
         <StatusBadge status={request.status} />
@@ -175,7 +174,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
           <p className="text-sm font-medium">{request.details}</p>
           {request.budget && (
             <p className="text-muted-foreground mt-1 text-xs">
-              {english ? "Budget" : "বাজেট"}: ৳{request.budget}
+              {t("inline.budget_1cc4s4c")}: ৳{request.budget}
             </p>
           )}
         </div>
@@ -201,9 +200,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
         )}
         {request.attachments.length > 0 && (
           <div>
-            <p className="text-sm font-semibold">
-              {english ? "Private attachments" : "ব্যক্তিগত সংযুক্তি"}
-            </p>
+            <p className="text-sm font-semibold">{t("inline.private_attachments_fpiomb")}</p>
             {request.attachments.map((attachment) => (
               <a
                 key={attachment.id}
@@ -217,7 +214,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
         )}
         {request.marketplaceRequest && (
           <p className="text-sm">
-            {english ? "Marketplace match" : "মার্কেটপ্লেস সংযোগ"}:{" "}
+            {t("inline.marketplace_match_mo0a3k")}:{" "}
             {english
               ? request.marketplaceRequest.listing.titleEn
               : request.marketplaceRequest.listing.titleBn}
@@ -230,12 +227,8 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
           >
             <p className="text-muted-foreground mb-1 text-xs font-semibold">
               {update.visibility === "INTERNAL"
-                ? english
-                  ? "Internal note"
-                  : "অভ্যন্তরীণ নোট"
-                : english
-                  ? "Customer update"
-                  : "গ্রাহক আপডেট"}
+                ? t("inline.internal_note_na2msi")
+                : t("inline.customer_update_1i5e277")}
             </p>
             <p>
               {english
@@ -247,7 +240,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
         <form action={action} className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
           <input type="hidden" name="requestId" value={request.id} />
           <input type="hidden" name="locale" value={locale} />
-          <Field id={`ag-status-${request.id}`} label={english ? "Status" : "অবস্থা"}>
+          <Field id={`ag-status-${request.id}`} label={t("inline.status_qhepgk")}>
             <select
               id={`ag-status-${request.id}`}
               name="status"
@@ -256,15 +249,12 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
             >
               {choices.map((status) => (
                 <option key={status} value={status}>
-                  {statusLabel(status, english)}
+                  {statusLabel(status, t)}
                 </option>
               ))}
             </select>
           </Field>
-          <Field
-            id={`ag-assignee-${request.id}`}
-            label={english ? "Assign to staff" : "কর্মীকে দায়িত্ব দিন"}
-          >
+          <Field id={`ag-assignee-${request.id}`} label={t("inline.assign_to_staff_od32ej")}>
             <select
               id={`ag-assignee-${request.id}`}
               name="assignedToId"
@@ -281,11 +271,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
           </Field>
           <Field
             id={`ag-market-match-${request.id}`}
-            label={
-              english
-                ? "Matched marketplace request ID (optional)"
-                : "মিল থাকা মার্কেটপ্লেস অনুরোধ আইডি (ঐচ্ছিক)"
-            }
+            label={t("inline.matched_marketplace_request_id_optional_ek7ufe")}
           >
             <Input
               id={`ag-market-match-${request.id}`}
@@ -296,7 +282,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
           </Field>
           <Field
             id={`ag-public-message-${request.id}`}
-            label={english ? "Customer-visible update" : "গ্রাহকের জন্য আপডেট"}
+            label={t("inline.customer_visible_update_1ix5pp7")}
           >
             <Textarea
               id={`ag-public-message-${request.id}`}
@@ -305,10 +291,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
               rows={2}
             />
           </Field>
-          <Field
-            id={`ag-private-note-${request.id}`}
-            label={english ? "Private staff note" : "অভ্যন্তরীণ কর্মী নোট"}
-          >
+          <Field id={`ag-private-note-${request.id}`} label={t("inline.private_staff_note_84za12")}>
             <Textarea
               id={`ag-private-note-${request.id}`}
               name="privateNote"
@@ -319,13 +302,7 @@ function RequestCard({ request, staff }: { request: QueueRequest; staff: QueueSt
           <div className="flex flex-col gap-2 sm:col-span-2">
             <ActionFeedback state={state} />
             <Button type="submit" disabled={pending} className="w-fit">
-              {pending
-                ? english
-                  ? "Saving…"
-                  : "সংরক্ষণ হচ্ছে…"
-                : english
-                  ? "Save review"
-                  : "পর্যালোচনা সংরক্ষণ"}
+              {pending ? t("inline.saving_4kkf1l") : t("inline.save_review_2j822r")}
             </Button>
           </div>
         </form>
@@ -355,14 +332,7 @@ function allowedStatuses(status: string) {
   return transitions[status] ?? [status];
 }
 
-function statusLabel(status: string, english: boolean) {
-  const labels: Record<string, [string, string]> = {
-    NEW: ["New", "নতুন"],
-    REVIEWING: ["Under review", "পর্যালোচনাধীন"],
-    ASSIGNED: ["Assigned", "দায়িত্ব দেওয়া হয়েছে"],
-    COMPLETED: ["Completed", "সম্পন্ন"],
-    REJECTED: ["Rejected", "প্রত্যাখ্যাত"],
-    CANCELLED: ["Cancelled", "বাতিল"],
-  };
-  return labels[status]?.[english ? 0 : 1] ?? status;
+function statusLabel(status: string, t: ReturnType<typeof useTranslations>) {
+  const key = `statuses.${status}` as never;
+  return t.has(key) ? t(key) : status;
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { BellIcon, ChevronDownIcon, NewspaperIcon, PhoneCallIcon, UserIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 
-import { useLanguage } from "@/components/language-provider";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -21,13 +21,13 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeaderProps) {
-  const { t } = useLanguage();
+  const t = useTranslations();
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const [activeNotice, setActiveNotice] = useState<string | null>(null);
   const [role, setRole] = useState(userRole);
   const [roleOpen, setRoleOpen] = useState(false);
 
-  const displayRole = role === "admin" ? t.dashboard.adminRole : t.dashboard.guestRole;
+  const displayRole = role === "admin" ? t("dashboard.adminRole") : t("dashboard.guestRole");
 
   return (
     <>
@@ -38,7 +38,7 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
             href="/"
             className="flex shrink-0 items-center gap-1.5 font-bold tracking-tight text-[#0b5036] hover:opacity-90"
           >
-            <span className="text-sm font-bold sm:text-base">{t.common.brandName}</span>
+            <span className="text-sm font-bold sm:text-base">{t("common.brandName")}</span>
           </Link>
 
           {/* Action buttons matching the image */}
@@ -46,31 +46,31 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
             {/* News Feed */}
             <button
               type="button"
-              onClick={() => setActiveNotice(t.dashboard.newsFeed)}
+              onClick={() => setActiveNotice(t("dashboard.newsFeed"))}
               className="border-input/70 bg-card text-foreground/90 hover:bg-muted inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors sm:text-sm"
             >
               <NewspaperIcon className="text-muted-foreground size-4" />
-              <span className="hidden md:inline">{t.dashboard.newsFeed}</span>
+              <span className="hidden md:inline">{t("dashboard.newsFeed")}</span>
             </button>
 
             {/* Notifications */}
             <button
               type="button"
-              onClick={() => setActiveNotice(t.dashboard.notifications)}
+              onClick={() => setActiveNotice(t("dashboard.notifications"))}
               className="border-input/70 bg-card text-foreground/90 hover:bg-muted inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors sm:text-sm"
             >
               <BellIcon className="text-muted-foreground size-4" />
-              <span className="hidden md:inline">{t.dashboard.notifications}</span>
+              <span className="hidden md:inline">{t("dashboard.notifications")}</span>
             </button>
 
             {/* Profile */}
             <button
               type="button"
-              onClick={() => setActiveNotice(t.dashboard.profile)}
+              onClick={() => setActiveNotice(t("dashboard.profile"))}
               className="border-input/70 bg-card text-foreground/90 hover:bg-muted inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors sm:text-sm"
             >
               <UserIcon className="text-muted-foreground size-4" />
-              <span className="hidden md:inline">{t.dashboard.profile}</span>
+              <span className="hidden md:inline">{t("dashboard.profile")}</span>
             </button>
 
             {/* Emergency Call (Red button) */}
@@ -80,7 +80,7 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#dc2626] px-3 py-1.5 text-xs font-medium text-white shadow-xs transition-colors hover:bg-[#b91c1c] active:scale-95 sm:text-sm"
             >
               <PhoneCallIcon className="size-4 fill-white" />
-              <span>{t.dashboard.emergencyCall}</span>
+              <span>{t("dashboard.emergencyCall")}</span>
             </button>
 
             {/* Role selector dropdown */}
@@ -104,7 +104,7 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
                     }}
                     className="hover:bg-muted w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition-colors"
                   >
-                    {t.dashboard.adminRole}
+                    {t("dashboard.adminRole")}
                   </button>
                   <button
                     type="button"
@@ -114,7 +114,7 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
                     }}
                     className="hover:bg-muted w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition-colors"
                   >
-                    {t.dashboard.guestRole}
+                    {t("dashboard.guestRole")}
                   </button>
                 </div>
               )}
@@ -133,10 +133,10 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
       <Dialog open={emergencyOpen} onOpenChange={setEmergencyOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t.emergency.modalTitle}</DialogTitle>
-            <DialogDescription>{t.emergency.modalSubtitle}</DialogDescription>
+            <DialogTitle>{t("emergency.modalTitle")}</DialogTitle>
+            <DialogDescription>{t("emergency.modalSubtitle")}</DialogDescription>
           </DialogHeader>
-          <p className="text-muted-foreground text-sm">{t.emergency.modalDescription}</p>
+          <p className="text-muted-foreground text-sm">{t("emergency.modalDescription")}</p>
         </DialogContent>
       </Dialog>
 
@@ -145,7 +145,7 @@ export function DashboardHeader({ userName, userRole = "admin" }: DashboardHeade
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{activeNotice}</DialogTitle>
-            <DialogDescription>{t.dashboard.demoNotice}</DialogDescription>
+            <DialogDescription>{t("dashboard.demoNotice")}</DialogDescription>
           </DialogHeader>
           <p className="text-muted-foreground text-sm">
             {activeNotice} module is part of the prototype workspace. Interactive features and

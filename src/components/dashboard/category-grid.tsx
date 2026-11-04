@@ -1,25 +1,26 @@
 "use client";
 
 import { SearchIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { useLanguage } from "@/components/language-provider";
 import { Input } from "@/components/ui/input";
+import { sectors } from "@/lib/sectors";
 
 export function CategoryGrid() {
-  const { locale, t } = useLanguage();
-  const categories = t.dashboard.categories;
+  const t = useTranslations();
+  const categories = sectors;
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) return categories;
     return categories.filter((cat) => {
-      const haystack = `${cat.labelEn} ${cat.labelBn} ${cat.slug} ${cat.id}`.toLowerCase();
+      const haystack = `${t(`sectors.${cat.slug}` as never)} ${cat.slug} ${cat.id}`.toLowerCase();
       return haystack.includes(term);
     });
-  }, [categories, query]);
+  }, [categories, query, t]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -30,7 +31,7 @@ export function CategoryGrid() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.nav.search}
+            placeholder={t("nav.search")}
             className="bg-card/80 h-9 pr-8 pl-9 text-xs"
           />
           {query && (
@@ -44,18 +45,18 @@ export function CategoryGrid() {
           )}
         </div>
         <span className="text-muted-foreground hidden text-xs sm:inline">
-          {filtered.length} {locale === "bn" ? "টি বিভাগ" : "sectors"}
+          {t("categoryGrid.resultCount", { count: filtered.length })}
         </span>
       </div>
 
       {filtered.length === 0 ? (
         <div className="bg-card rounded-2xl border p-12 text-center">
-          <p className="text-muted-foreground text-sm">{t.nav.noResults}</p>
+          <p className="text-muted-foreground text-sm">{t("nav.noResults")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {filtered.map((cat) => {
-            const label = locale === "bn" ? cat.labelBn : cat.labelEn;
+            const label = t(`sectors.${cat.slug}` as never);
             return (
               <Link
                 key={cat.id}
@@ -80,7 +81,7 @@ export function CategoryGrid() {
                   {cat.id}
                 </span>
                 <span className="bg-muted text-muted-foreground mt-2 rounded-full px-2.5 py-1 text-[0.7rem] font-medium">
-                  {cat.status === "live" ? t.nav.live : t.home.comingSoon}
+                  {cat.status === "live" ? t("nav.live") : t("home.comingSoon")}
                 </span>
               </Link>
             );

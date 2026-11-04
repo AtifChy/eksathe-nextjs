@@ -1,10 +1,10 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useActionState } from "react";
 
 import { saveAgriculturePublicationAction } from "@/app/actions/agriculture-publishing";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -24,36 +24,33 @@ export function AgriculturePublishingWorkspace({
   data: AgriculturePublishingWorkspaceData;
   isSuperAdmin: boolean;
 }) {
-  const { locale } = useLanguage();
-  const english = locale === "en";
+  const t = useTranslations();
   return (
     <main className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-8 sm:px-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-primary text-sm font-semibold">
-            {english ? "Agriculture operations" : "কৃষি পরিচালনা"}
+            {t("inline.agriculture_operations_171enbn")}
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight">
-            {english ? "Publish prices and updates" : "বাজারদর ও আপডেট প্রকাশ"}
+            {t("inline.publish_prices_and_updates_1h3g253")}
           </h1>
           <p className="text-muted-foreground mt-2 max-w-3xl text-sm leading-6">
-            {english
-              ? "Review submitted information, add a source and observation date, then publish it for customers."
-              : "জমা দেওয়া তথ্য যাচাই করে উৎস ও পর্যবেক্ষণের তারিখ যোগ করে গ্রাহকদের জন্য প্রকাশ করুন।"}
+            {t("inline.review_submitted_information_add_a_source__1o8xi6a")}
           </p>
         </div>
         <Link href="/admin" className="text-primary text-sm font-medium hover:underline">
-          {english ? "Back to administration" : "প্রশাসনে ফিরে যান"}
+          {t("inline.back_to_administration_1395jov")}
         </Link>
       </header>
 
       <section className="flex flex-col gap-4" aria-labelledby="price-heading">
         <div>
           <h2 id="price-heading" className="text-xl font-bold">
-            {english ? "Market prices" : "বাজারদর"}
+            {t("inline.market_prices_1ahmufv")}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {english ? "Price submissions awaiting review" : "পর্যালোচনার অপেক্ষায় থাকা বাজারদরের অনুরোধ"}
+            {t("inline.price_submissions_awaiting_review_9p0z43")}
           </p>
         </div>
         {data.requests.length > 0 && (
@@ -65,7 +62,7 @@ export function AgriculturePublishingWorkspace({
                     {request.referenceCode ?? `#${request.id}`} · {request.district}
                   </CardTitle>
                   <CardDescription>
-                    {english ? "Submitted price information" : "জমা দেওয়া বাজারদরের তথ্য"}
+                    {t("inline.submitted_price_information_1vv4930")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -86,12 +83,10 @@ export function AgriculturePublishingWorkspace({
       <section className="flex flex-col gap-4" aria-labelledby="updates-heading">
         <div>
           <h2 id="updates-heading" className="text-xl font-bold">
-            {english ? "News, advice, and weather alerts" : "খবর, পরামর্শ ও আবহাওয়া সতর্কতা"}
+            {t("inline.news_advice_and_weather_alerts_vzz9rb")}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {english
-              ? "Weather alerts require an expiry date."
-              : "আবহাওয়া সতর্কতার মেয়াদ শেষের তারিখ দিতে হবে।"}
+            {t("inline.weather_alerts_require_an_expiry_date_13z2wta")}
           </p>
         </div>
         {data.updates.map((update) => (
@@ -112,15 +107,16 @@ function PriceForm({
   initial?: AgricultureMarketPriceRecord;
   requests: AgriculturePublishingWorkspaceData["requests"];
 }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(
     saveAgriculturePublicationAction,
     initialWorkflowState,
   );
-  const { locale } = useLanguage();
+  const locale = useLocale();
   const english = locale === "en";
   const prefix = `market-price-${initial?.id ?? "new"}`;
   const sourceOptions: [string, string][] = [
-    ["", english ? "No linked request" : "কোনো অনুরোধ নয়"],
+    ["", t("inline.no_linked_request_1s729f4")],
     ...requests.map(
       (request) =>
         [
@@ -135,7 +131,7 @@ function PriceForm({
   )
     sourceOptions.push([
       initial.sourceRequestId,
-      `${english ? "Linked request" : "যুক্ত অনুরোধ"} #${initial.sourceRequestId}`,
+      `${t("inline.linked_request_1rose97")} #${initial.sourceRequestId}`,
     ]);
   return (
     <Card>
@@ -145,9 +141,7 @@ function PriceForm({
             ? english
               ? `Edit ${initial.productEn}`
               : `${initial.productBn} সম্পাদনা`
-            : english
-              ? "Add market price"
-              : "নতুন বাজারদর যোগ করুন"}
+            : t("inline.add_market_price_aj2t35")}
         </CardTitle>
         <CardDescription>
           {english
@@ -163,42 +157,42 @@ function PriceForm({
             <TextField
               id={`${prefix}-product-bn`}
               name="productBn"
-              label={english ? "Product name (Bangla)" : "পণ্যের নাম (বাংলা)"}
+              label={t("inline.product_name_bangla_1ldtlug")}
               defaultValue={initial?.productBn}
               required
             />
             <TextField
               id={`${prefix}-product-en`}
               name="productEn"
-              label={english ? "Product name (English)" : "পণ্যের নাম (ইংরেজি)"}
+              label={t("inline.product_name_english_upxxr0")}
               defaultValue={initial?.productEn}
               required
             />
             <TextField
               id={`${prefix}-market`}
               name="market"
-              label={english ? "Market" : "বাজার"}
+              label={t("inline.market_hegs9l")}
               defaultValue={initial?.market}
               required
             />
             <TextField
               id={`${prefix}-district`}
               name="district"
-              label={english ? "District" : "জেলা"}
+              label={t("inline.district_135um58")}
               defaultValue={initial?.district}
               required
             />
             <TextField
               id={`${prefix}-unit`}
               name="unit"
-              label={english ? "Unit (e.g. kg)" : "একক (যেমন কেজি)"}
+              label={t("inline.unit_e_g_kg_im8c5r")}
               defaultValue={initial?.unit}
               required
             />
             <TextField
               id={`${prefix}-price`}
               name="price"
-              label={english ? "Price (BDT)" : "দাম (টাকা)"}
+              label={t("inline.price_bdt_swlqge")}
               type="number"
               min="0"
               step="0.01"
@@ -208,7 +202,7 @@ function PriceForm({
             <TextField
               id={`${prefix}-observed`}
               name="observedAt"
-              label={english ? "Observed on" : "পর্যবেক্ষণের তারিখ"}
+              label={t("inline.observed_on_19fm3vl")}
               type="date"
               defaultValue={initial?.observedAt}
               required
@@ -216,37 +210,31 @@ function PriceForm({
             <TextField
               id={`${prefix}-source`}
               name="source"
-              label={english ? "Source" : "তথ্যসূত্র"}
+              label={t("inline.source_1d36x5a")}
               defaultValue={initial?.source}
               required
             />
             <SelectField
               id={`${prefix}-status`}
               name="status"
-              label={english ? "Publication status" : "প্রকাশনার অবস্থা"}
+              label={t("inline.publication_status_1xsrx62")}
               defaultValue={initial?.status ?? "DRAFT"}
               options={[
-                ["DRAFT", english ? "Draft" : "খসড়া"],
-                ["PUBLISHED", english ? "Published" : "প্রকাশিত"],
+                ["DRAFT", t("inline.draft_1sgfgqc")],
+                ["PUBLISHED", t("inline.published_1fgctfu")],
               ]}
             />
             <SelectField
               id={`${prefix}-request`}
               name="sourceRequestId"
-              label={english ? "Link a price submission" : "বাজারদরের অনুরোধ যুক্ত করুন"}
+              label={t("inline.link_a_price_submission_1ux67p8")}
               defaultValue={initial?.sourceRequestId ?? ""}
               options={sourceOptions}
             />
           </FieldGroup>
           <FormFeedback state={state.status} />
           <Button type="submit" disabled={pending}>
-            {pending
-              ? english
-                ? "Saving…"
-                : "সংরক্ষণ হচ্ছে…"
-              : english
-                ? "Save market price"
-                : "বাজারদর সংরক্ষণ"}
+            {pending ? t("inline.saving_4kkf1l") : t("inline.save_market_price_71w75p")}
           </Button>
         </form>
       </CardContent>
@@ -255,11 +243,12 @@ function PriceForm({
 }
 
 function UpdateForm({ initial }: { initial?: AgricultureUpdateRecord }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(
     saveAgriculturePublicationAction,
     initialWorkflowState,
   );
-  const { locale } = useLanguage();
+  const locale = useLocale();
   const english = locale === "en";
   const prefix = `agriculture-update-${initial?.id ?? "new"}`;
   return (
@@ -270,9 +259,7 @@ function UpdateForm({ initial }: { initial?: AgricultureUpdateRecord }) {
             ? english
               ? `Edit ${initial.titleEn}`
               : `${initial.titleBn} সম্পাদনা`
-            : english
-              ? "Add an update"
-              : "নতুন আপডেট যোগ করুন"}
+            : t("inline.add_an_update_1b5oi8t")}
         </CardTitle>
         <CardDescription>
           {english
@@ -288,42 +275,42 @@ function UpdateForm({ initial }: { initial?: AgricultureUpdateRecord }) {
             <SelectField
               id={`${prefix}-kind`}
               name="kind"
-              label={english ? "Type" : "ধরন"}
+              label={t("inline.type_nja194")}
               defaultValue={initial?.kind ?? "NEWS"}
               options={[
-                ["NEWS", english ? "News" : "খবর"],
-                ["ADVICE", english ? "Advice" : "পরামর্শ"],
-                ["WEATHER_ALERT", english ? "Weather alert" : "আবহাওয়া সতর্কতা"],
+                ["NEWS", t("inline.news_330zsg")],
+                ["ADVICE", t("inline.advice_1ln74x8")],
+                ["WEATHER_ALERT", t("inline.weather_alert_j66p6a")],
               ]}
             />
             <SelectField
               id={`${prefix}-status`}
               name="status"
-              label={english ? "Publication status" : "প্রকাশনার অবস্থা"}
+              label={t("inline.publication_status_1xsrx62")}
               defaultValue={initial?.status ?? "DRAFT"}
               options={[
-                ["DRAFT", english ? "Draft" : "খসড়া"],
-                ["PUBLISHED", english ? "Published" : "প্রকাশিত"],
+                ["DRAFT", t("inline.draft_1sgfgqc")],
+                ["PUBLISHED", t("inline.published_1fgctfu")],
               ]}
             />
             <TextField
               id={`${prefix}-title-bn`}
               name="titleBn"
-              label={english ? "Title (Bangla)" : "শিরোনাম (বাংলা)"}
+              label={t("inline.title_bangla_iq0ud6")}
               defaultValue={initial?.titleBn}
               required
             />
             <TextField
               id={`${prefix}-title-en`}
               name="titleEn"
-              label={english ? "Title (English)" : "শিরোনাম (ইংরেজি)"}
+              label={t("inline.title_english_o28u0g")}
               defaultValue={initial?.titleEn}
               required
             />
             <TextField
               id={`${prefix}-published`}
               name="publishedAt"
-              label={english ? "Publication date" : "প্রকাশের তারিখ"}
+              label={t("inline.publication_date_e9a51j")}
               type="date"
               defaultValue={initial?.publishedAt}
               required
@@ -331,18 +318,14 @@ function UpdateForm({ initial }: { initial?: AgricultureUpdateRecord }) {
             <TextField
               id={`${prefix}-expiry`}
               name="expiresAt"
-              label={
-                english
-                  ? "Expiry date (required for weather alerts)"
-                  : "মেয়াদ শেষের তারিখ (আবহাওয়া সতর্কতার জন্য প্রয়োজন)"
-              }
+              label={t("inline.expiry_date_required_for_weather_alerts_104m02b")}
               type="date"
               defaultValue={initial?.expiresAt}
             />
             <TextField
               id={`${prefix}-source`}
               name="source"
-              label={english ? "Source" : "তথ্যসূত্র"}
+              label={t("inline.source_1d36x5a")}
               defaultValue={initial?.source}
               required
             />
@@ -350,7 +333,7 @@ function UpdateForm({ initial }: { initial?: AgricultureUpdateRecord }) {
               className="sm:col-span-2"
               id={`${prefix}-body-bn`}
               name="bodyBn"
-              label={english ? "Content (Bangla)" : "বিস্তারিত (বাংলা)"}
+              label={t("inline.content_bangla_12pipiu")}
               defaultValue={initial?.bodyBn}
               required
             />
@@ -358,20 +341,14 @@ function UpdateForm({ initial }: { initial?: AgricultureUpdateRecord }) {
               className="sm:col-span-2"
               id={`${prefix}-body-en`}
               name="bodyEn"
-              label={english ? "Content (English)" : "বিস্তারিত (ইংরেজি)"}
+              label={t("inline.content_english_1hmolki")}
               defaultValue={initial?.bodyEn}
               required
             />
           </FieldGroup>
           <FormFeedback state={state.status} />
           <Button type="submit" disabled={pending}>
-            {pending
-              ? english
-                ? "Saving…"
-                : "সংরক্ষণ হচ্ছে…"
-              : english
-                ? "Save update"
-                : "আপডেট সংরক্ষণ"}
+            {pending ? t("inline.saving_4kkf1l") : t("inline.save_update_kjovpe")}
           </Button>
         </form>
       </CardContent>
@@ -380,20 +357,17 @@ function UpdateForm({ initial }: { initial?: AgricultureUpdateRecord }) {
 }
 
 function SupportForm({ initial }: { initial: AgriculturePublishingWorkspaceData["support"] }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(
     saveAgriculturePublicationAction,
     initialWorkflowState,
   );
-  const { locale } = useLanguage();
-  const english = locale === "en";
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{english ? "Agriculture support contact" : "কৃষি সহায়তার যোগাযোগ"}</CardTitle>
+        <CardTitle>{t("inline.agriculture_support_contact_1q8h10x")}</CardTitle>
         <CardDescription>
-          {english
-            ? "These details appear publicly on the agriculture pages. Leave blank to remove a contact method."
-            : "এই তথ্য কৃষি পাতায় প্রকাশ্যে দেখা যাবে। যোগাযোগের কোনো মাধ্যম সরাতে ফাঁকা রাখুন।"}
+          {t("inline.these_details_appear_publicly_on_the_agric_1h7pwqe")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -403,40 +377,34 @@ function SupportForm({ initial }: { initial: AgriculturePublishingWorkspaceData[
             <TextField
               id="agriculture-support-phone"
               name="phone"
-              label={english ? "Phone" : "ফোন"}
+              label={t("inline.phone_huhfp5")}
               defaultValue={initial?.phone}
             />
             <TextField
               id="agriculture-support-email"
               name="email"
               type="email"
-              label={english ? "Email" : "ইমেইল"}
+              label={t("inline.email_1e0eytg")}
               defaultValue={initial?.email}
             />
             <TextAreaField
               className="sm:col-span-2"
               id="agriculture-support-bn"
               name="messageBn"
-              label={english ? "Support message (Bangla)" : "সহায়তার বার্তা (বাংলা)"}
+              label={t("inline.support_message_bangla_1oh3kqd")}
               defaultValue={initial?.messageBn}
             />
             <TextAreaField
               className="sm:col-span-2"
               id="agriculture-support-en"
               name="messageEn"
-              label={english ? "Support message (English)" : "সহায়তার বার্তা (ইংরেজি)"}
+              label={t("inline.support_message_english_1uayqe7")}
               defaultValue={initial?.messageEn}
             />
           </FieldGroup>
           <FormFeedback state={state.status} />
           <Button type="submit" disabled={pending}>
-            {pending
-              ? english
-                ? "Saving…"
-                : "সংরক্ষণ হচ্ছে…"
-              : english
-                ? "Save support details"
-                : "সহায়তার তথ্য সংরক্ষণ"}
+            {pending ? t("inline.saving_4kkf1l") : t("inline.save_support_details_fn4rh4")}
           </Button>
         </form>
       </CardContent>
@@ -537,7 +505,7 @@ function SelectField({
 }
 
 function FormFeedback({ state }: { state: "idle" | "success" | "error" }) {
-  const { locale } = useLanguage();
+  const t = useTranslations();
   if (state === "idle") return null;
   return (
     <p
@@ -546,12 +514,8 @@ function FormFeedback({ state }: { state: "idle" | "success" | "error" }) {
       className={state === "error" ? "text-destructive text-sm" : "text-primary text-sm"}
     >
       {state === "error"
-        ? locale === "en"
-          ? "Could not save. Check the fields and try again."
-          : "সংরক্ষণ করা যায়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।"
-        : locale === "en"
-          ? "Saved."
-          : "সংরক্ষিত হয়েছে।"}
+        ? t("inline.could_not_save_check_the_fields_and_try_ag_1qzk9yl")
+        : t("inline.saved_19x43w9")}
     </p>
   );
 }

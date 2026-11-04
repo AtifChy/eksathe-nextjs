@@ -2,12 +2,12 @@
 
 import { cn } from "cn";
 import { ArrowLeftIcon, MapPinIcon, StarIcon } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { useLanguage } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WorkspaceError } from "@/components/workflows/workspace-error";
@@ -25,7 +25,9 @@ export function ProviderProfile({
   unavailable: boolean;
   routeBase?: string;
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   if (unavailable)
     return (
       <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
@@ -34,11 +36,11 @@ export function ProviderProfile({
     );
   if (!provider) return null;
   const formatMoney = (value: string) =>
-    new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", {
+    formatter.number(Number(value), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(value));
+    });
   const base = routeBase ?? `/dashboard/${sector.slug}`;
 
   return (
@@ -48,7 +50,7 @@ export function ProviderProfile({
         className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm"
       >
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {t.nav.browse}
+        {t("nav.browse")}
       </Link>
       <Card>
         <div className="from-primary/10 via-secondary to-primary/20 relative h-40 overflow-hidden rounded-t-xl bg-gradient-to-br sm:h-56">
@@ -97,7 +99,7 @@ export function ProviderProfile({
               <span className="inline-flex items-center gap-1">
                 <StarIcon aria-hidden="true" className="size-4 fill-current text-amber-500" />
                 {provider.averageRating.toFixed(1)} · {provider.reviewCount}{" "}
-                {locale === "bn" ? "টি রিভিউ" : "reviews"}
+                {t("inline.reviews_265xd0")}
               </span>
             )}
           </CardDescription>
@@ -110,12 +112,10 @@ export function ProviderProfile({
       </Card>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-bold">
-          {locale === "bn" ? "সেবা ও তালিকা" : "Services and listings"}
-        </h2>
+        <h2 className="text-xl font-bold">{t("inline.services_and_listings_f1v32t")}</h2>
         {provider.listings.length === 0 ? (
           <p className="border-border text-muted-foreground rounded-xl border border-dashed p-6 text-sm">
-            {t.workflow.noRecords}
+            {t("workflow.noRecords")}
           </p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -150,7 +150,7 @@ export function ProviderProfile({
                       href={`${base}/listings/${listing.id}`}
                       className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                     >
-                      {locale === "bn" ? "বিস্তারিত" : "Details"}
+                      {t("inline.details_ccvazu")}
                     </Link>
                   </div>
                 </CardContent>
@@ -161,12 +161,10 @@ export function ProviderProfile({
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-bold">{locale === "bn" ? "গ্রাহক মতামত" : "Customer reviews"}</h2>
+        <h2 className="text-xl font-bold">{t("inline.customer_reviews_1gf1uai")}</h2>
         {provider.reviews.length === 0 ? (
           <p className="border-border text-muted-foreground rounded-xl border border-dashed p-6 text-sm">
-            {locale === "bn"
-              ? "সম্পন্ন অর্ডারে রিভিউ এলে এখানে দেখা যাবে।"
-              : "Reviews from completed orders will appear here."}
+            {t("inline.reviews_from_completed_orders_will_appear__1g9e5me")}
           </p>
         ) : (
           provider.reviews.map((review, index) => (
@@ -180,9 +178,10 @@ export function ProviderProfile({
                   {review.comment}
                 </p>
                 <p className="text-muted-foreground text-xs">
-                  {new Date(review.createdAt).toLocaleDateString(
-                    locale === "bn" ? "bn-BD" : "en-BD",
-                  )}
+                  {formatter.dateTime(new Date(review.createdAt), {
+                    dateStyle: "medium",
+                    timeZone: "Asia/Dhaka",
+                  })}
                 </p>
               </CardContent>
             </Card>

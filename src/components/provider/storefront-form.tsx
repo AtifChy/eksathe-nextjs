@@ -1,9 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { type FormEvent, useActionState, useEffect, useRef, useState } from "react";
 
 import { updateProviderStorefrontAction } from "@/app/actions/marketplace";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,11 +24,11 @@ export type StorefrontValues = {
 };
 
 export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(
     updateProviderStorefrontAction,
     initialWorkflowState,
   );
-  const { locale } = useLanguage();
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -97,7 +97,6 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
     }
   }
 
-  const bn = locale === "bn";
   return (
     <form
       ref={formRef}
@@ -106,7 +105,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
       className="border-border/70 flex flex-col gap-4 rounded-xl border p-4"
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="storefront-name-bn" label={bn ? "দোকানের নাম (বাংলা)" : "Store name (Bangla)"}>
+        <Field id="storefront-name-bn" label={t("inline.store_name_bangla_1iauw33")}>
           <Input
             id="storefront-name-bn"
             name="nameBn"
@@ -115,7 +114,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
             maxLength={100}
           />
         </Field>
-        <Field id="storefront-name-en" label={bn ? "দোকানের নাম (ইংরেজি)" : "Store name (English)"}>
+        <Field id="storefront-name-en" label={t("inline.store_name_english_xbvqo3")}>
           <Input
             id="storefront-name-en"
             name="nameEn"
@@ -124,7 +123,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
             maxLength={100}
           />
         </Field>
-        <Field id="storefront-district" label={bn ? "জেলা" : "District"}>
+        <Field id="storefront-district" label={t("inline.district_135um58")}>
           <Input
             id="storefront-district"
             name="district"
@@ -133,7 +132,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
             maxLength={80}
           />
         </Field>
-        <Field id="storefront-upazila" label={bn ? "উপজেলা" : "Upazila"}>
+        <Field id="storefront-upazila" label={t("inline.upazila_1am4ti5")}>
           <Input
             id="storefront-upazila"
             name="upazila"
@@ -142,7 +141,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
           />
         </Field>
       </div>
-      <Field id="storefront-bio-bn" label={bn ? "পরিচিতি (বাংলা)" : "About the store (Bangla)"}>
+      <Field id="storefront-bio-bn" label={t("inline.about_the_store_bangla_yoi7rq")}>
         <textarea
           id="storefront-bio-bn"
           name="bioBn"
@@ -152,7 +151,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
           className="border-input bg-background rounded-lg border px-3 py-2 text-sm"
         />
       </Field>
-      <Field id="storefront-bio-en" label={bn ? "পরিচিতি (ইংরেজি)" : "About the store (English)"}>
+      <Field id="storefront-bio-en" label={t("inline.about_the_store_english_1sljttu")}>
         <textarea
           id="storefront-bio-en"
           name="bioEn"
@@ -163,7 +162,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
         />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="storefront-profile-image" label={bn ? "প্রোফাইল ছবি" : "Profile photo"}>
+        <Field id="storefront-profile-image" label={t("inline.profile_photo_1exrcqq")}>
           <Input
             ref={profileFile}
             id="storefront-profile-image"
@@ -172,7 +171,7 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
             disabled={uploading || pending}
           />
         </Field>
-        <Field id="storefront-cover-image" label={bn ? "কভার ছবি" : "Cover photo"}>
+        <Field id="storefront-cover-image" label={t("inline.cover_photo_hatt38")}>
           <Input
             ref={coverFile}
             id="storefront-cover-image"
@@ -183,17 +182,10 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
         </Field>
       </div>
       <p className="text-muted-foreground text-xs">
-        {bn
-          ? "JPG, PNG বা WebP, সর্বোচ্চ ৫ এমবি। ফাঁকা রাখলে বর্তমান ছবি থাকবে।"
-          : "JPG, PNG or WebP, up to 5 MB. Leave blank to keep the current photo."}{" "}
-        ·{" "}
+        {t("inline.jpg_png_or_webp_up_to_5_mb_leave_blank_to__yke761")} ·{" "}
         {profile.hasProfileImage
-          ? bn
-            ? "প্রোফাইল ছবি আছে"
-            : "Profile photo set"
-          : bn
-            ? "প্রোফাইল ছবি নেই"
-            : "No profile photo"}
+          ? t("inline.profile_photo_set_1kznhvi")
+          : t("inline.no_profile_photo_1qv9bkr")}
       </p>
       {(
         [
@@ -209,20 +201,12 @@ export function StorefrontForm({ profile }: { profile: StorefrontValues }) {
       ))}
       {uploadError && (
         <p role="alert" className="text-destructive text-sm">
-          {bn
-            ? "ছবি আপলোড করা যায়নি। আবার চেষ্টা করুন।"
-            : "The image could not be uploaded. Please try again."}
+          {t("inline.the_image_could_not_be_uploaded_please_try_bnuvif")}
         </p>
       )}
       <ActionFeedback state={state} />
       <Button type="submit" disabled={pending || uploading}>
-        {uploading || pending
-          ? bn
-            ? "অপেক্ষা করুন…"
-            : "Saving…"
-          : bn
-            ? "স্টোরফ্রন্ট সংরক্ষণ"
-            : "Save storefront"}
+        {uploading || pending ? t("inline.saving_1s7ccbq") : t("inline.save_storefront_1k0d8u9")}
       </Button>
     </form>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { AgricultureServiceDetail } from "@/components/agriculture/agriculture-service-detail";
@@ -13,8 +14,9 @@ export async function generateMetadata({
   const { slug } = await params;
   const service = agricultureServiceRegistry.find((item) => item.slug === slug);
   if (!service) notFound();
+  const t = await getTranslations();
   return {
-    title: `${service.titleEn} | EKsathe Bangladesh`,
+    title: `${t(`agricultureServices.${service.slug}.title` as never)} | ${t("common.brandName")}`,
     alternates: { canonical: `/agriculture/services/${service.slug}` },
   };
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useLanguage } from "@/components/language-provider";
+import { useTranslations } from "next-intl";
 
 export function DashboardNotice() {
-  const { t } = useLanguage();
-  return <p className="text-muted-foreground mb-6 text-sm">{t.dashboard.demoNotice}</p>;
+  const t = useTranslations();
+  return <p className="text-muted-foreground mb-6 text-sm">{t("dashboard.demoNotice")}</p>;
 }

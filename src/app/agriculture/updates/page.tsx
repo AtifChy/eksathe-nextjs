@@ -1,13 +1,12 @@
-import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { AgriculturePublicInformationPage } from "@/components/agriculture/agriculture-public-information-page";
+import { getPageMetadata } from "@/i18n/metadata";
 import { getAgriculturePublicInfo } from "@/lib/agriculture/publishing";
 
-export const metadata: Metadata = {
-  title: "Agriculture updates | EKsathe Bangladesh",
-  alternates: { canonical: "/agriculture/updates" },
-};
+export function generateMetadata() {
+  return getPageMetadata("agricultureUpdates", "/agriculture/updates");
+}
 export const instant = false;
 
 export default async function AgricultureUpdatesPage() {

@@ -1,5 +1,39 @@
 import { expect, test } from "@playwright/test";
 
+test("locale preference defaults safely, survives reload, and preserves the current route and form state", async ({
+  page,
+  context,
+}) => {
+  await page.context().clearCookies();
+  await page.goto("/agriculture/market?q=rice");
+  await expect(page.locator("html")).toHaveAttribute("lang", "bn");
+
+  const search = page.getByRole("textbox", { name: "পণ্য বা বিক্রেতা খুঁজুন" });
+  await expect(search).toHaveValue("rice");
+  await search.fill("unsaved query");
+  await page.getByRole("button", { name: "EN", exact: true }).click();
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("textbox", { name: "Search products or sellers" })).toHaveValue(
+    "unsaved query",
+  );
+  await expect(page).toHaveURL(/\/agriculture\/market\?q=rice$/);
+  await expect
+    .poll(
+      async () => (await context.cookies()).find((cookie) => cookie.name === "NEXT_LOCALE")?.value,
+    )
+    .toBe("en");
+
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", { name: "Find farm products" })).toBeVisible();
+
+  await context.addCookies([{ name: "NEXT_LOCALE", value: "fr", url: "http://127.0.0.1:3100" }]);
+  await page.goto("/construction/market?type=CONSTRUCTION_MATERIAL");
+  await expect(page.locator("html")).toHaveAttribute("lang", "bn");
+  await expect(page.getByRole("heading", { name: "নির্মাণ সেবা ও সামগ্রী খুঁজুন" })).toBeVisible();
+});
+
 const sectors = [
   "family-household",
   "ecommerce-b2b",

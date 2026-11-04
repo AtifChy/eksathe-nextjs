@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
-
 import { ConstructionMarketPage } from "@/components/construction/construction-market-page";
+import { getPageMetadata } from "@/i18n/metadata";
 
-export const metadata: Metadata = {
-  title: "Construction marketplace | EKsathe Bangladesh",
-  alternates: { canonical: "/construction/market" },
-};
+export function generateMetadata() {
+  return getPageMetadata("constructionMarket", "/construction/market");
+}
 export const instant = false;
 
 export default function MarketPage({

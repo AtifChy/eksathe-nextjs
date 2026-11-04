@@ -10,12 +10,12 @@ import {
   UserRoundPlusIcon,
   XIcon,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 
 import { signOutAction } from "@/app/actions/session";
 import { BrandLogo } from "@/components/brand-logo";
-import { useLanguage } from "@/components/language-provider";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -27,7 +27,8 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHeaderProps) {
-  const { locale, t } = useLanguage();
+  const locale = useLocale();
+  const t = useTranslations();
   const [menuOpen, setMenuOpen] = useState(false);
   const [navigationOpen, setNavigationOpen] = useState(false);
 
@@ -50,13 +51,13 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
           href="/"
           onClick={() => setNavigationOpen(false)}
           className="flex min-w-0 items-center gap-3 leading-tight font-bold [&_img]:size-11"
-          aria-label={t.common.brandName}
+          aria-label={t("common.brandName")}
         >
           <BrandLogo />
           <span className="hidden flex-col gap-1 sm:flex">
-            <span className="text-sm sm:text-base">{t.common.brandName}</span>
+            <span className="text-sm sm:text-base">{t("common.brandName")}</span>
             <span className="hidden text-[0.65rem] font-normal text-white/70 sm:block">
-              {t.common.brandSlogan}
+              {t("common.brandSlogan")}
             </span>
           </span>
         </Link>
@@ -64,7 +65,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
         <nav
           id="site-navigation"
           className={`${navigationOpen ? "flex" : "hidden"} absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] flex-col gap-4 overflow-y-auto border-b border-white/20 bg-[#0b5036] p-4 shadow-lg xl:contents`}
-          aria-label={t.header.services}
+          aria-label={t("header.services")}
           onClick={(event) => {
             if ((event.target as HTMLElement).closest("a")) {
               setNavigationOpen(false);
@@ -77,19 +78,19 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
               href="/dashboard"
               className="inline-flex min-h-9 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10"
             >
-              {t.header.dashboard}
+              {t("header.dashboard")}
             </Link>
             <Link
               href="/agriculture"
               className="inline-flex min-h-9 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10"
             >
-              {t.home.agriculture}
+              {t("home.agriculture")}
             </Link>
             <Link
               href="/construction"
               className="inline-flex min-h-9 shrink-0 items-center rounded-lg px-2.5 py-2 text-sm font-semibold text-white/90 hover:bg-white/10"
             >
-              {t.home.construction}
+              {t("home.construction")}
             </Link>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-white/20 pt-3 xl:flex-nowrap xl:justify-self-end xl:border-0 xl:pt-0">
@@ -110,7 +111,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                   className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/10"
                 >
                   <UserRoundIcon aria-hidden="true" className="size-4" />
-                  <span className="max-w-32 truncate">{userName ?? t.auth.signIn}</span>
+                  <span className="max-w-32 truncate">{userName ?? t("auth.signIn")}</span>
                   <ChevronDownIcon aria-hidden="true" className="size-4" />
                 </button>
                 {menuOpen && (
@@ -125,7 +126,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                       className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
                     >
                       <UserRoundIcon aria-hidden="true" className="size-4" />
-                      {t.dashboard.profile}
+                      {t("dashboard.profile")}
                     </Link>
                     {canProvider && (
                       <Link
@@ -135,7 +136,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                         className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
                       >
                         <BriefcaseBusinessIcon aria-hidden="true" className="size-4" />
-                        {t.nav.provider}
+                        {t("nav.provider")}
                       </Link>
                     )}
                     {canAdmin && (
@@ -146,7 +147,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                         className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
                       >
                         <ShieldCheckIcon aria-hidden="true" className="size-4" />
-                        {t.nav.admin}
+                        {t("nav.admin")}
                       </Link>
                     )}
                     <form action={signOutAction}>
@@ -156,7 +157,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                         className="hover:bg-muted inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
                       >
                         <LogOutIcon aria-hidden="true" className="size-4" />
-                        {t.nav.signOut}
+                        {t("nav.signOut")}
                       </button>
                     </form>
                   </div>
@@ -168,14 +169,14 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                   href="/login"
                   className="inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold hover:bg-white/10"
                 >
-                  {t.header.login}
+                  {t("header.login")}
                 </Link>
                 <Link
                   href="/register"
                   className="inline-flex h-9 items-center gap-1 rounded-lg bg-white px-3 text-sm font-semibold text-[#0b5036] hover:bg-white/90"
                 >
                   <UserRoundPlusIcon aria-hidden="true" className="size-4" />
-                  {t.header.register}
+                  {t("header.register")}
                 </Link>
               </div>
             )}

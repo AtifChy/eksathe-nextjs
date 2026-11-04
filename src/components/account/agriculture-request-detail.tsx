@@ -1,10 +1,10 @@
 "use client";
 
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 import { useActionState } from "react";
 
 import { withdrawAgricultureServiceRequestAction } from "@/app/actions/agriculture";
-import { useLanguage } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActionFeedback } from "@/components/workflows/action-feedback";
@@ -15,7 +15,9 @@ import type { getCustomerAgricultureRequest } from "@/lib/workspaces";
 type RequestData = NonNullable<Awaited<ReturnType<typeof getCustomerAgricultureRequest>>>;
 
 export function AgricultureRequestDetail({ request }: { request: RequestData }) {
-  const { locale } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const english = locale === "en";
   const [state, action, pending] = useActionState(
     withdrawAgricultureServiceRequestAction,
@@ -37,7 +39,7 @@ export function AgricultureRequestDetail({ request }: { request: RequestData }) 
         href="/account#agriculture-requests"
         className="text-muted-foreground hover:text-foreground text-sm"
       >
-        ← {english ? "Back to account" : "অ্যাকাউন্টে ফিরে যান"}
+        ← {t("inline.back_to_account_k3epiu")}
       </Link>
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4">
@@ -52,7 +54,10 @@ export function AgricultureRequestDetail({ request }: { request: RequestData }) 
               <CardDescription className="mt-2">
                 {request.referenceCode ?? `AG-${request.id}`} · {request.district} ·{" "}
                 {request.createdAt
-                  ? new Date(request.createdAt).toLocaleDateString(english ? "en-BD" : "bn-BD")
+                  ? formatter.dateTime(new Date(request.createdAt), {
+                      dateStyle: "medium",
+                      timeZone: "Asia/Dhaka",
+                    })
                   : ""}
               </CardDescription>
             </div>
@@ -62,25 +67,23 @@ export function AgricultureRequestDetail({ request }: { request: RequestData }) 
         <CardContent className="flex flex-col gap-5">
           <div className="bg-muted/50 grid gap-3 rounded-xl p-4 sm:grid-cols-2">
             <p className="text-sm">
-              <span className="text-muted-foreground">{english ? "Contact" : "যোগাযোগ"}:</span>{" "}
+              <span className="text-muted-foreground">{t("inline.contact_kqf8cd")}:</span>{" "}
               {request.customerName} · {request.phone}
             </p>
             {request.budget && (
               <p className="text-sm">
-                <span className="text-muted-foreground">{english ? "Budget" : "বাজেট"}:</span> ৳
+                <span className="text-muted-foreground">{t("inline.budget_1cc4s4c")}:</span> ৳
                 {request.budget}
               </p>
             )}
             <p className="text-sm sm:col-span-2">
-              <span className="text-muted-foreground">{english ? "Requirement" : "প্রয়োজন"}:</span>{" "}
+              <span className="text-muted-foreground">{t("inline.requirement_14zq66t")}:</span>{" "}
               {request.details}
             </p>
           </div>
           {snapshot.fields?.some((field) => answers[field.name]) && (
             <section>
-              <h2 className="font-semibold">
-                {english ? "Submitted service details" : "জমা দেওয়া সেবার তথ্য"}
-              </h2>
+              <h2 className="font-semibold">{t("inline.submitted_service_details_1wb3h0i")}</h2>
               <dl className="mt-3 grid gap-2 sm:grid-cols-2">
                 {snapshot.fields
                   .filter((field) => answers[field.name])
@@ -103,9 +106,7 @@ export function AgricultureRequestDetail({ request }: { request: RequestData }) 
           )}
           {request.attachments.length > 0 && (
             <section>
-              <h2 className="font-semibold">
-                {english ? "Private attachments" : "ব্যক্তিগত সংযুক্তি"}
-              </h2>
+              <h2 className="font-semibold">{t("inline.private_attachments_fpiomb")}</h2>
               <ul className="mt-2 space-y-2">
                 {request.attachments.map((attachment) => (
                   <li key={attachment.id}>
@@ -124,10 +125,10 @@ export function AgricultureRequestDetail({ request }: { request: RequestData }) 
             </section>
           )}
           <section>
-            <h2 className="font-semibold">{english ? "Updates" : "আপডেট"}</h2>
+            <h2 className="font-semibold">{t("inline.updates_12jzrl0")}</h2>
             {request.updates.length === 0 ? (
               <p className="text-muted-foreground mt-2 text-sm">
-                {english ? "No updates yet." : "এখনো কোনো আপডেট নেই।"}
+                {t("inline.no_updates_yet_105bcq2")}
               </p>
             ) : (
               <ol className="mt-3 space-y-3 border-l pl-4">
@@ -141,7 +142,11 @@ export function AgricultureRequestDetail({ request }: { request: RequestData }) 
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">
                       {update.createdAt
-                        ? new Date(update.createdAt).toLocaleString(english ? "en-BD" : "bn-BD")
+                        ? formatter.dateTime(new Date(update.createdAt), {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                            timeZone: "Asia/Dhaka",
+                          })
                         : ""}
                     </p>
                   </li>
@@ -154,12 +159,12 @@ export function AgricultureRequestDetail({ request }: { request: RequestData }) 
               <input type="hidden" name="requestId" value={request.id} />
               <ActionFeedback state={state} />
               <Button type="submit" variant="outline" disabled={pending} className="w-fit">
-                {english ? "Withdraw request" : "অনুরোধ প্রত্যাহার করুন"}
+                {t("inline.withdraw_request_16j3pnu")}
               </Button>
             </form>
           )}
           <Link href="/agriculture" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-            {english ? "All agriculture services" : "সব কৃষিসেবা"}
+            {t("inline.all_agriculture_services_170e4nu")}
           </Link>
         </CardContent>
       </Card>

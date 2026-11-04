@@ -1,12 +1,12 @@
 "use client";
 
 import { ArrowLeftIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cloneElement, useId, useState, type FormEvent, type ReactElement } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { authClient } from "@/lib/auth-client";
 export type AuthMode = "login" | "register" | "forgot" | "reset" | "verify";
 
 export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string; token?: string }) {
-  const { t } = useLanguage();
+  const t = useTranslations();
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,14 +27,14 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
   const [busy, setBusy] = useState(false);
   const title =
     mode === "login"
-      ? t.auth.signIn
+      ? t("auth.signIn")
       : mode === "register"
-        ? t.auth.signUp
+        ? t("auth.signUp")
         : mode === "forgot"
-          ? t.auth.forgotPassword
+          ? t("auth.forgotPassword")
           : mode === "reset"
-            ? t.auth.resetPassword
-            : t.auth.verifyTitle;
+            ? t("auth.resetPassword")
+            : t("auth.verifyTitle");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,9 +44,9 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
 
     try {
       if (mode === "register") {
-        if (name.trim().length < 2) throw new Error(t.auth.nameError);
-        if (!/^[0-9+ ()-]{7,30}$/.test(phone.trim())) throw new Error(t.auth.phoneError);
-        if (password.length < 10) throw new Error(t.auth.passwordMin);
+        if (name.trim().length < 2) throw new Error(t("auth.nameError"));
+        if (!/^[0-9+ ()-]{7,30}$/.test(phone.trim())) throw new Error(t("auth.phoneError"));
+        if (password.length < 10) throw new Error(t("auth.passwordMin"));
         const { error: authError } = await authClient.signUp.email({
           name: name.trim(),
           email: email.trim().toLowerCase(),
@@ -55,7 +55,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           callbackURL: next,
         });
         if (authError) throw new Error(authError.message);
-        setNotice(t.auth.checkEmail);
+        setNotice(t("auth.checkEmail"));
       } else if (mode === "login") {
         const { error: authError } = await authClient.signIn.email({
           email: email.trim().toLowerCase(),
@@ -71,10 +71,10 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           redirectTo: "/reset-password",
         });
         if (authError) throw new Error(authError.message);
-        setNotice(t.auth.checkEmail);
+        setNotice(t("auth.checkEmail"));
       } else if (mode === "reset") {
-        if (!token) throw new Error(t.auth.genericError);
-        if (password.length < 10) throw new Error(t.auth.passwordMin);
+        if (!token) throw new Error(t("auth.genericError"));
+        if (password.length < 10) throw new Error(t("auth.passwordMin"));
         const { error: authError } = await authClient.resetPassword({
           newPassword: password,
           token,
@@ -88,10 +88,10 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           callbackURL: next,
         });
         if (authError) throw new Error(authError.message);
-        setNotice(t.auth.checkEmail);
+        setNotice(t("auth.checkEmail"));
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : t.auth.genericError);
+      setError(cause instanceof Error ? cause.message : t("auth.genericError"));
     } finally {
       setBusy(false);
     }
@@ -104,16 +104,16 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
         <CardTitle className="text-2xl">{title}</CardTitle>
         <CardDescription>
           {mode === "verify"
-            ? t.auth.verifyDescription
+            ? t("auth.verifyDescription")
             : mode === "register"
-              ? t.auth.termsNote
-              : t.common.brandName}
+              ? t("auth.termsNote")
+              : t("common.brandName")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="flex flex-col gap-4">
           {mode === "register" && (
-            <Field label={t.auth.name}>
+            <Field label={t("auth.name")}>
               <Input
                 autoComplete="name"
                 required
@@ -123,7 +123,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
             </Field>
           )}
           {(mode === "register" || mode === "login" || mode === "forgot" || mode === "verify") && (
-            <Field label={t.auth.email}>
+            <Field label={t("auth.email")}>
               <Input
                 type="email"
                 autoComplete="email"
@@ -134,7 +134,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
             </Field>
           )}
           {mode === "register" && (
-            <Field label={t.auth.phone}>
+            <Field label={t("auth.phone")}>
               <Input
                 type="tel"
                 autoComplete="tel"
@@ -148,7 +148,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
             </Field>
           )}
           {(mode === "register" || mode === "login" || mode === "reset") && (
-            <Field label={mode === "reset" ? t.auth.newPassword : t.auth.password}>
+            <Field label={mode === "reset" ? t("auth.newPassword") : t("auth.password")}>
               <Input
                 type="password"
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
@@ -177,22 +177,22 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           )}
           <Button type="submit" disabled={busy} className="w-full">
             {busy
-              ? t.common.loading
+              ? t("common.loading")
               : mode === "login"
-                ? t.auth.signIn
+                ? t("auth.signIn")
                 : mode === "register"
-                  ? t.auth.signUp
+                  ? t("auth.signUp")
                   : mode === "forgot"
-                    ? t.auth.submit
+                    ? t("auth.submit")
                     : mode === "reset"
-                      ? t.auth.resetPassword
-                      : t.auth.sendVerification}
+                      ? t("auth.resetPassword")
+                      : t("auth.sendVerification")}
           </Button>
         </form>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
           {mode === "login" && (
             <Link className="text-primary hover:underline" href="/forgot-password">
-              {t.auth.forgotPassword}
+              {t("auth.forgotPassword")}
             </Link>
           )}
           {(mode === "login" || mode === "register") && (
@@ -204,12 +204,12 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
                   : `/login?next=${encodeURIComponent(next)}`
               }
             >
-              {mode === "login" ? t.auth.createAccount : t.auth.existingAccount}
+              {mode === "login" ? t("auth.createAccount") : t("auth.existingAccount")}
             </Link>
           )}
           {mode === "reset" && (
             <Link className="text-primary hover:underline" href="/login">
-              {t.auth.signIn}
+              {t("auth.signIn")}
             </Link>
           )}
         </div>
@@ -220,7 +220,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm"
         >
           <ArrowLeftIcon aria-hidden="true" className="size-4" />
-          {t.nav.returnHome}
+          {t("nav.returnHome")}
         </Link>
       </div>
     </Card>

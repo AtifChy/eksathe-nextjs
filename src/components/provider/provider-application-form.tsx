@@ -1,9 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { applyProviderAction } from "@/app/actions/marketplace";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ const capabilityOptions = [
   ...agricultureListings.map((service) => ({
     sectorSlug: "agriculture-labor",
     kind: service.kind,
+    slug: service.slug,
     titleEn: service.titleEn,
     titleBn: service.titleBn,
     icon: service.icon,
@@ -22,6 +23,7 @@ const capabilityOptions = [
   ...constructionListings.map((service) => ({
     sectorSlug: "construction",
     kind: service.kind,
+    slug: service.slug,
     titleEn: service.titleEn,
     titleBn: service.titleBn,
     icon: service.icon,
@@ -41,12 +43,12 @@ export function ProviderApplicationForm({
     capabilities: string[];
   };
 }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(applyProviderAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   return (
     <form action={action} className="flex flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="provider-name-bn" label={t.workflow.providerNameBn}>
+        <Field id="provider-name-bn" label={t("workflow.providerNameBn")}>
           <Input
             id="provider-name-bn"
             name="nameBn"
@@ -55,7 +57,7 @@ export function ProviderApplicationForm({
             maxLength={100}
           />
         </Field>
-        <Field id="provider-name-en" label={t.workflow.providerNameEn}>
+        <Field id="provider-name-en" label={t("workflow.providerNameEn")}>
           <Input
             id="provider-name-en"
             name="nameEn"
@@ -64,7 +66,7 @@ export function ProviderApplicationForm({
             maxLength={100}
           />
         </Field>
-        <Field id="provider-district" label={t.workflow.district}>
+        <Field id="provider-district" label={t("workflow.district")}>
           <Input
             id="provider-district"
             name="district"
@@ -73,10 +75,7 @@ export function ProviderApplicationForm({
             maxLength={80}
           />
         </Field>
-        <Field
-          id="provider-upazila"
-          label={locale === "bn" ? "উপজেলা (ঐচ্ছিক)" : "Upazila (optional)"}
-        >
+        <Field id="provider-upazila" label={t("inline.upazila_optional_1sd5g73")}>
           <Input
             id="provider-upazila"
             name="upazila"
@@ -84,10 +83,7 @@ export function ProviderApplicationForm({
             maxLength={80}
           />
         </Field>
-        <Field
-          id="provider-bio-bn"
-          label={locale === "bn" ? "পরিচিতি (বাংলা)" : "Introduction (Bangla)"}
-        >
+        <Field id="provider-bio-bn" label={t("inline.introduction_bangla_1chcalt")}>
           <textarea
             id="provider-bio-bn"
             name="bioBn"
@@ -97,10 +93,7 @@ export function ProviderApplicationForm({
             className="border-input bg-background rounded-lg border px-3 py-2 text-sm"
           />
         </Field>
-        <Field
-          id="provider-bio-en"
-          label={locale === "bn" ? "পরিচিতি (ইংরেজি)" : "Introduction (English)"}
-        >
+        <Field id="provider-bio-en" label={t("inline.introduction_english_1b79c5l")}>
           <textarea
             id="provider-bio-en"
             name="bioEn"
@@ -112,7 +105,7 @@ export function ProviderApplicationForm({
         </Field>
       </div>
       <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-medium">{t.workflow.capabilities}</legend>
+        <legend className="text-sm font-medium">{t("workflow.capabilities")}</legend>
         {sectors
           .filter((sector) => sector.status === "live")
           .map((sector) => {
@@ -120,7 +113,7 @@ export function ProviderApplicationForm({
             return (
               <div key={sector.slug} className="border-border/70 rounded-xl border p-4">
                 <h3 className="mb-3 text-sm font-semibold">
-                  {locale === "bn" ? sector.labelBn : sector.labelEn}
+                  {t(`sectors.${sector.slug}` as never)}
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {options.map((option) => {
@@ -138,7 +131,7 @@ export function ProviderApplicationForm({
                           className="accent-primary size-4"
                         />
                         <span aria-hidden="true">{option.icon}</span>
-                        <span>{locale === "bn" ? option.titleBn : option.titleEn}</span>
+                        <span>{t(`marketplaceServices.${option.slug}` as never)}</span>
                       </label>
                     );
                   })}
@@ -149,7 +142,7 @@ export function ProviderApplicationForm({
       </fieldset>
       <ActionFeedback state={state} />
       <Button type="submit" disabled={pending}>
-        {pending ? t.common.loading : t.workflow.submitApplication}
+        {pending ? t("common.loading") : t("workflow.submitApplication")}
       </Button>
     </form>
   );

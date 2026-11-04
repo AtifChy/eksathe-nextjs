@@ -1,8 +1,8 @@
 "use client";
 
+import { useTranslations, useFormatter } from "next-intl";
 import { useState } from "react";
 
-import { useLanguage } from "@/components/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -10,35 +10,33 @@ import { Input } from "@/components/ui/input";
 import { estimateCommission } from "@/lib/commission-estimate";
 
 export function ConstructionCommissionCalculator({ ratePercent }: { ratePercent: string | null }) {
+  const formatter = useFormatter();
+  const t = useTranslations();
   const [amount, setAmount] = useState("100000");
   const [transport, setTransport] = useState("0");
-  const { locale } = useLanguage();
-  const english = locale === "en";
   const estimate = ratePercent === null ? null : estimateCommission(amount, transport, ratePercent);
   const format = (cents: number) =>
-    new Intl.NumberFormat(english ? "en-BD" : "bn-BD", {
+    formatter.number(cents / 100, {
       style: "currency",
       currency: "BDT",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(cents / 100);
+    });
 
   return (
     <Card>
       <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-semibold">
-            {english ? "Estimate a project transaction" : "প্রকল্পের লেনদেনের আনুমানিক হিসাব"}
-          </p>
+          <p className="font-semibold">{t("inline.estimate_a_project_transaction_46xmln")}</p>
           <Badge variant="secondary">
-            {english ? "Estimate" : "আনুমানিক"}
+            {t("inline.estimate_30h8pe")}
             {estimate ? ` · ${ratePercent}%` : ""}
           </Badge>
         </div>
         <FieldGroup className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor="construction-eligible-amount">
-              {english ? "Work or material amount (BDT)" : "কাজ বা সামগ্রীর মূল্য (টাকা)"}
+              {t("inline.work_or_material_amount_bdt_zxk6k3")}
             </FieldLabel>
             <Input
               id="construction-eligible-amount"
@@ -53,7 +51,7 @@ export function ConstructionCommissionCalculator({ ratePercent }: { ratePercent:
           </Field>
           <Field>
             <FieldLabel htmlFor="construction-transport-amount">
-              {english ? "Separate transport charge (BDT)" : "আলাদা পরিবহন খরচ (টাকা)"}
+              {t("inline.separate_transport_charge_bdt_wgejjp")}
             </FieldLabel>
             <Input
               id="construction-transport-amount"
@@ -68,30 +66,22 @@ export function ConstructionCommissionCalculator({ ratePercent }: { ratePercent:
           </Field>
         </FieldGroup>
         <p className="text-muted-foreground text-xs leading-5">
-          {english
-            ? "Transport is excluded from the commission calculation. Actual accepted terms determine the final amounts."
-            : "কমিশনের হিসাবে পরিবহন খরচ ধরা হয়নি। চূড়ান্ত অর্থ সম্মত শর্ত অনুযায়ী নির্ধারিত হবে।"}
+          {t("inline.transport_is_excluded_from_the_commission__el9w8u")}
         </p>
         {estimate ? (
           <div className="flex flex-col gap-3 border-t pt-4 text-sm">
             <Result
-              label={english ? "Estimated platform commission" : "প্ল্যাটফর্ম কমিশনের অনুমান"}
+              label={t("inline.estimated_platform_commission_kq60y6")}
               value={format(estimate.commissionCents)}
             />
             <Result
-              label={
-                english
-                  ? "Estimated provider amount, including transport"
-                  : "পরিবহনসহ সেবাদাতার আনুমানিক প্রাপ্য"
-              }
+              label={t("inline.estimated_provider_amount_including_transp_mxn5v4")}
               value={format(estimate.providerCents)}
             />
           </div>
         ) : (
           <p role="status" className="text-muted-foreground text-sm">
-            {english
-              ? "The construction commission rate is not available right now."
-              : "নির্মাণ খাতের কমিশনের হার এখন পাওয়া যাচ্ছে না।"}
+            {t("inline.the_construction_commission_rate_is_not_av_1sfmign")}
           </p>
         )}
       </CardContent>

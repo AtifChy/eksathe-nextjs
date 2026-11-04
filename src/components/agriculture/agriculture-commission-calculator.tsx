@@ -1,8 +1,8 @@
 "use client";
 
+import { useTranslations, useFormatter } from "next-intl";
 import { useState } from "react";
 
-import { useLanguage } from "@/components/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -10,36 +10,36 @@ import { Input } from "@/components/ui/input";
 import { estimateAgricultureCommission } from "@/lib/agriculture/commission-estimate";
 
 export function AgricultureCommissionCalculator({ ratePercent }: { ratePercent: string | null }) {
+  const formatter = useFormatter();
+  const t = useTranslations();
   const [amount, setAmount] = useState("1000");
   const [transport, setTransport] = useState("0");
-  const { locale } = useLanguage();
-  const english = locale === "en";
   const estimate =
     ratePercent === null ? null : estimateAgricultureCommission(amount, transport, ratePercent);
   const commissionCents = estimate?.commissionCents ?? null;
   const providerCents = estimate?.providerCents ?? null;
   const format = (cents: number) =>
-    new Intl.NumberFormat(english ? "en-BD" : "bn-BD", {
+    formatter.number(cents / 100, {
       style: "currency",
       currency: "BDT",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(cents / 100);
+    });
 
   return (
     <Card>
       <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-semibold">{english ? "Estimate the split" : "সম্ভাব্য হিসাব"}</p>
+          <p className="font-semibold">{t("inline.estimate_the_split_1fdkp00")}</p>
           <Badge variant="secondary">
-            {english ? "Estimate" : "আনুমানিক"}
+            {t("inline.estimate_30h8pe")}
             {estimate ? ` · ${ratePercent}%` : ""}
           </Badge>
         </div>
         <FieldGroup className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor="agriculture-eligible-amount">
-              {english ? "Goods or service amount (BDT)" : "পণ্য বা সেবার মূল্য (টাকা)"}
+              {t("inline.goods_or_service_amount_bdt_12cxtwr")}
             </FieldLabel>
             <Input
               id="agriculture-eligible-amount"
@@ -54,7 +54,7 @@ export function AgricultureCommissionCalculator({ ratePercent }: { ratePercent: 
           </Field>
           <Field>
             <FieldLabel htmlFor="agriculture-transport-amount">
-              {english ? "Separate transport charge (BDT)" : "আলাদা পরিবহন খরচ (টাকা)"}
+              {t("inline.separate_transport_charge_bdt_wgejjp")}
             </FieldLabel>
             <Input
               id="agriculture-transport-amount"
@@ -69,28 +69,20 @@ export function AgricultureCommissionCalculator({ ratePercent }: { ratePercent: 
           </Field>
         </FieldGroup>
         <p className="text-muted-foreground text-xs leading-5">
-          {english
-            ? "Transport is excluded from the commission calculation. Actual charges and agreed terms may differ."
-            : "কমিশনের হিসাবে পরিবহন খরচ ধরা হয়নি। প্রকৃত খরচ ও সম্মত শর্ত ভিন্ন হতে পারে।"}
+          {t("inline.transport_is_excluded_from_the_commission__xx0z4l")}
         </p>
         {commissionCents === null || providerCents === null ? (
           <p role="status" className="text-muted-foreground text-sm">
-            {english
-              ? "The agriculture commission rate is not available right now."
-              : "এখন কৃষি কমিশনের হার পাওয়া যাচ্ছে না।"}
+            {t("inline.the_agriculture_commission_rate_is_not_ava_w8ww1j")}
           </p>
         ) : (
           <div className="flex flex-col gap-3 border-t pt-4 text-sm">
             <Result
-              label={english ? "Estimated platform commission" : "সম্ভাব্য প্ল্যাটফর্ম কমিশন"}
+              label={t("inline.estimated_platform_commission_70e81d")}
               value={format(commissionCents)}
             />
             <Result
-              label={
-                english
-                  ? "Estimated provider amount, including transport"
-                  : "পরিবহনসহ সেবাদাতার সম্ভাব্য প্রাপ্য"
-              }
+              label={t("inline.estimated_provider_amount_including_transp_cv34i9")}
               value={format(providerCents)}
             />
           </div>

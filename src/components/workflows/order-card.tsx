@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import { type FormEvent, useActionState, useEffect, useRef, useState } from "react";
 
 import {
@@ -10,7 +11,6 @@ import {
   requestOrderCancellationAction,
   reviewOrderAction,
 } from "@/app/actions/marketplace";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -62,7 +62,9 @@ export function OrderCard({
   actorId: string;
   perspective: "buyer" | "provider";
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const total = Number(order.subtotal) + Number(order.transportFee);
   const confirmedPaid = order.payments.reduce(
     (sum, payment) =>
@@ -77,18 +79,22 @@ export function OrderCard({
   );
   const due = Math.max(0, total - recorded);
   const formatMoney = (value: number | string) =>
-    new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", {
+    formatter.number(Number(value), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(value));
+    });
   const startsAt = order.booking?.startsAt
-    ? new Date(order.booking.startsAt).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")
+    ? formatter.dateTime(new Date(order.booking.startsAt), {
+        dateStyle: "medium",
+        timeZone: "Asia/Dhaka",
+      })
     : null;
   const endsAt = order.booking?.endsAt
-    ? new Date(new Date(order.booking.endsAt).getTime() - 86_400_000).toLocaleDateString(
-        locale === "bn" ? "bn-BD" : "en-BD",
-      )
+    ? formatter.dateTime(new Date(new Date(order.booking.endsAt).getTime() - 86_400_000), {
+        dateStyle: "medium",
+        timeZone: "Asia/Dhaka",
+      })
     : null;
   const title = locale === "bn" ? order.listing.titleBn : order.listing.titleEn;
 
@@ -98,7 +104,7 @@ export function OrderCard({
         <div>
           <CardTitle className="text-lg">{title}</CardTitle>
           <CardDescription className="mt-1">
-            {locale === "bn" ? "অর্ডার" : "Order"} · {order.id}
+            {t("inline.order_116i1m4")} · {order.id}
           </CardDescription>
         </div>
         <StatusBadge status={order.status} />
@@ -106,54 +112,52 @@ export function OrderCard({
       <CardContent className="flex flex-col gap-5">
         <div className="bg-muted/50 grid gap-3 rounded-xl p-4 text-sm sm:grid-cols-2">
           <p>
-            {locale === "bn" ? "পরিমাণ" : "Quantity"}:{" "}
+            {t("inline.quantity_fuyc1w")}:{" "}
             <strong>
               {order.quantity} {order.unit}
             </strong>
           </p>
           <p>
-            {locale === "bn" ? "একক মূল্য" : "Unit price"}:{" "}
+            {t("inline.unit_price_1v7hlen")}:{" "}
             <strong>
               {formatMoney(order.unitPrice)} / {order.unit}
             </strong>
           </p>
           {order.buyerName && (
             <p>
-              {locale === "bn" ? "ক্রেতা" : "Customer"}: <strong>{order.buyerName}</strong>
+              {t("inline.customer_126xmgu")}: <strong>{order.buyerName}</strong>
             </p>
           )}
           {order.provider && (
             <p>
-              {locale === "bn" ? "সেবাদাতা" : "Provider"}:{" "}
+              {t("inline.provider_1jmkj9t")}:{" "}
               <strong>{locale === "bn" ? order.provider.nameBn : order.provider.nameEn}</strong>
             </p>
           )}
           {startsAt && (
             <p>
-              {t.workflow.startDate}:{" "}
+              {t("workflow.startDate")}:{" "}
               <strong>
                 {startsAt} – {endsAt}
               </strong>
             </p>
           )}
           <p>
-            {locale === "bn" ? "সেবা/পণ্যের মূল্য" : "Items or service"}:{" "}
-            <strong>{formatMoney(order.subtotal)}</strong>
+            {t("inline.items_or_service_9cbaqx")}: <strong>{formatMoney(order.subtotal)}</strong>
           </p>
           {Number(order.transportFee) > 0 && (
             <p>
-              {t.workflow.transportFee}: <strong>{formatMoney(order.transportFee)}</strong>
+              {t("workflow.transportFee")}: <strong>{formatMoney(order.transportFee)}</strong>
             </p>
           )}
           <p>
-            {locale === "bn" ? "মোট" : "Total"}: <strong>{formatMoney(total)}</strong>
+            {t("inline.total_bldkfh")}: <strong>{formatMoney(total)}</strong>
           </p>
           <p>
-            {locale === "bn" ? "পরিশোধিত" : "Confirmed paid"}:{" "}
-            <strong>{formatMoney(confirmedPaid)}</strong>
+            {t("inline.confirmed_paid_1skg95y")}: <strong>{formatMoney(confirmedPaid)}</strong>
           </p>
           <p>
-            {locale === "bn" ? "বাকি" : "Balance due"}: <strong>{formatMoney(due)}</strong>
+            {t("inline.balance_due_tadetd")}: <strong>{formatMoney(due)}</strong>
           </p>
         </div>
 
@@ -172,9 +176,7 @@ export function OrderCard({
         )}
         {order.payments.length > 0 && (
           <section className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold">
-              {locale === "bn" ? "পেমেন্টের নথি" : "Payment records"}
-            </h3>
+            <h3 className="text-sm font-semibold">{t("inline.payment_records_dd9a94")}</h3>
             {order.payments.map((payment) => (
               <div
                 key={payment.id}
@@ -190,17 +192,13 @@ export function OrderCard({
                       className="text-primary text-xs font-medium hover:underline"
                       href={`/api/orders/${order.id}/payments/${payment.id}/receipt`}
                     >
-                      {t.workflow.viewReceipt}
+                      {t("workflow.viewReceipt")}
                     </a>
                   )}
                   <span className="text-muted-foreground text-xs">
                     {payment.buyerConfirmedAt && payment.providerConfirmedAt
-                      ? locale === "bn"
-                        ? "উভয় পক্ষ নিশ্চিত করেছে"
-                        : "Confirmed by both parties"
-                      : locale === "bn"
-                        ? "নিশ্চিতকরণ বাকি"
-                        : "Awaiting confirmation"}
+                      ? t("inline.confirmed_by_both_parties_1xd4wdp")
+                      : t("inline.awaiting_confirmation_1m2idbp")}
                   </span>
                   {payment.submittedById !== actorId &&
                     ((perspective === "buyer" && !payment.buyerConfirmedAt) ||
@@ -216,8 +214,7 @@ export function OrderCard({
         {order.commission && (
           <div className="border-border/70 flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
             <span>
-              {locale === "bn" ? "প্ল্যাটফর্ম কমিশন" : "Platform commission"}:{" "}
-              {formatMoney(order.commission.amount)}
+              {t("inline.platform_commission_1lexk9r")}: {formatMoney(order.commission.amount)}
             </span>
             <StatusBadge status={order.commission.status} />
           </div>
@@ -233,7 +230,7 @@ export function OrderCard({
           <CancelOrderForm orderId={order.id} agree />
         ) : order.cancelRequestedById === actorId ? (
           <p className="bg-muted text-muted-foreground rounded-lg px-3 py-2 text-sm">
-            {t.workflow.cancellationPending}
+            {t("workflow.cancellationPending")}
           </p>
         ) : order.status !== "COMPLETED" &&
           order.status !== "CANCELLED" &&
@@ -257,28 +254,28 @@ function ProgressForm({
   intent: "start" | "submit" | "confirm";
 }) {
   const [state, action, pending] = useActionState(progressOrderAction, initialWorkflowState);
-  const { t } = useLanguage();
+  const t = useTranslations();
   const label =
     intent === "start"
-      ? t.workflow.requestInProgress
+      ? t("workflow.requestInProgress")
       : intent === "submit"
-        ? t.workflow.completeWork
-        : t.workflow.confirmComplete;
+        ? t("workflow.completeWork")
+        : t("workflow.confirmComplete");
   return (
     <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="orderId" value={orderId} />
       <input type="hidden" name="intent" value={intent} />
       <ActionFeedback state={state} />
       <Button type="submit" disabled={pending} className="w-fit">
-        {pending ? t.common.loading : label}
+        {pending ? t("common.loading") : label}
       </Button>
     </form>
   );
 }
 
 function PaymentForm({ orderId, due }: { orderId: string; due: number }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(recordPaymentAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   const [uploadError, setUploadError] = useState<"uploadFailed" | "invalidUpload" | null>(null);
   const [uploading, setUploading] = useState(false);
   const uploadedFile = useRef<File | null>(null);
@@ -332,7 +329,7 @@ function PaymentForm({ orderId, due }: { orderId: string; due: number }) {
       <input type="hidden" name="receiptKey" defaultValue="" />
       <input type="hidden" name="receiptContentType" defaultValue="" />
       <input type="hidden" name="receiptSizeBytes" defaultValue="" />
-      <Field id={`payment-amount-${orderId}`} label={`${t.workflow.paymentAmount} (BDT)`}>
+      <Field id={`payment-amount-${orderId}`} label={`${t("workflow.paymentAmount")} (BDT)`}>
         <Input
           id={`payment-amount-${orderId}`}
           name="amount"
@@ -343,22 +340,22 @@ function PaymentForm({ orderId, due }: { orderId: string; due: number }) {
           required
         />
       </Field>
-      <Field id={`payment-method-${orderId}`} label={t.workflow.paymentMethod}>
+      <Field id={`payment-method-${orderId}`} label={t("workflow.paymentMethod")}>
         <select
           id={`payment-method-${orderId}`}
           name="method"
           className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
         >
-          <option value="CASH">{locale === "bn" ? "নগদ" : "Cash"}</option>
-          <option value="BANK_TRANSFER">{locale === "bn" ? "ব্যাংক ট্রান্সফার" : "Bank transfer"}</option>
-          <option value="MOBILE_WALLET">{locale === "bn" ? "মোবাইল ওয়ালেট" : "Mobile wallet"}</option>
-          <option value="OTHER">{locale === "bn" ? "অন্যান্য" : "Other"}</option>
+          <option value="CASH">{t("inline.cash_1yvb5lv")}</option>
+          <option value="BANK_TRANSFER">{t("inline.bank_transfer_1wr4ny5")}</option>
+          <option value="MOBILE_WALLET">{t("inline.mobile_wallet_o4hwx8")}</option>
+          <option value="OTHER">{t("inline.other_meu6yg")}</option>
         </select>
       </Field>
-      <Field id={`payment-reference-${orderId}`} label={t.workflow.paymentReference}>
+      <Field id={`payment-reference-${orderId}`} label={t("workflow.paymentReference")}>
         <Input id={`payment-reference-${orderId}`} name="reference" maxLength={120} />
       </Field>
-      <Field id={`payment-receipt-${orderId}`} label={t.workflow.paymentReceipt}>
+      <Field id={`payment-receipt-${orderId}`} label={t("workflow.paymentReceipt")}>
         <Input
           ref={fileInput}
           id={`payment-receipt-${orderId}`}
@@ -380,18 +377,18 @@ function PaymentForm({ orderId, due }: { orderId: string; due: number }) {
         <ActionFeedback state={state} />
         {uploadError && (
           <p role="alert" className="text-destructive text-sm">
-            {t.workflow[uploadError]}
+            {t(`workflow.${uploadError}` as never)}
           </p>
         )}
         <Button type="submit" disabled={pending || uploading}>
-          {pending || uploading ? t.common.loading : t.workflow.submitPayment}
+          {pending || uploading ? t("common.loading") : t("workflow.submitPayment")}
         </Button>
       </div>
-      <p className="text-muted-foreground text-xs sm:col-span-2">{t.workflow.paymentReceiptHelp}</p>
       <p className="text-muted-foreground text-xs sm:col-span-2">
-        {locale === "bn"
-          ? "পেমেন্ট সরাসরি সেবাদাতাকে দিন। উভয় পক্ষ নিশ্চিত না করা পর্যন্ত এটি পরিশোধিত হিসেবে গণ্য হবে না।"
-          : "Pay the provider directly. The payment is not counted as confirmed until both parties verify it."}
+        {t("workflow.paymentReceiptHelp")}
+      </p>
+      <p className="text-muted-foreground text-xs sm:col-span-2">
+        {t("inline.pay_the_provider_directly_the_payment_is_n_4e9pq4")}
       </p>
     </form>
   );
@@ -399,29 +396,29 @@ function PaymentForm({ orderId, due }: { orderId: string; due: number }) {
 
 function PaymentConfirmationForm({ orderId, paymentId }: { orderId: string; paymentId: string }) {
   const [state, action, pending] = useActionState(confirmPaymentAction, initialWorkflowState);
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="orderId" value={orderId} />
       <input type="hidden" name="paymentId" value={paymentId} />
       <ActionFeedback state={state} />
       <Button size="sm" variant="outline" type="submit" disabled={pending}>
-        {pending ? t.common.loading : t.workflow.confirmPayment}
+        {pending ? t("common.loading") : t("workflow.confirmPayment")}
       </Button>
     </form>
   );
 }
 
 function ReviewForm({ orderId }: { orderId: string }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(reviewOrderAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   return (
     <form
       action={action}
       className="border-border/70 grid gap-3 rounded-xl border p-4 sm:grid-cols-[140px_minmax(0,1fr)_auto]"
     >
       <input type="hidden" name="orderId" value={orderId} />
-      <Field id={`review-rating-${orderId}`} label={t.workflow.reviewRating}>
+      <Field id={`review-rating-${orderId}`} label={t("workflow.reviewRating")}>
         <select
           id={`review-rating-${orderId}`}
           name="rating"
@@ -434,19 +431,17 @@ function ReviewForm({ orderId }: { orderId: string }) {
           ))}
         </select>
       </Field>
-      <Field id={`review-comment-${orderId}`} label={t.workflow.reviewText}>
+      <Field id={`review-comment-${orderId}`} label={t("workflow.reviewText")}>
         <Input id={`review-comment-${orderId}`} name="comment" maxLength={1200} />
       </Field>
       <div className="flex flex-col gap-2 sm:justify-end">
         <ActionFeedback state={state} />
         <Button type="submit" disabled={pending}>
-          {pending ? t.common.loading : t.workflow.submitReview}
+          {pending ? t("common.loading") : t("workflow.submitReview")}
         </Button>
       </div>
       <p className="text-muted-foreground text-xs sm:col-span-3">
-        {locale === "bn"
-          ? "প্রতি সম্পন্ন অর্ডারে একটি রিভিউ দেওয়া যাবে।"
-          : "You can leave one review for each completed order."}
+        {t("inline.you_can_leave_one_review_for_each_complete_1sswryh")}
       </p>
     </form>
   );
@@ -457,14 +452,14 @@ function CancelOrderForm({ orderId, agree = false }: { orderId: string; agree?: 
     requestOrderCancellationAction,
     initialWorkflowState,
   );
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <form action={action} className="border-border/70 flex flex-col gap-2 rounded-xl border p-4">
       <input type="hidden" name="orderId" value={orderId} />
       {agree ? (
         <input type="hidden" name="reason" value="Agreed to the cancellation" />
       ) : (
-        <Field id={`cancel-reason-${orderId}`} label={t.workflow.cancelOrder}>
+        <Field id={`cancel-reason-${orderId}`} label={t("workflow.cancelOrder")}>
           <textarea
             id={`cancel-reason-${orderId}`}
             name="reason"
@@ -477,7 +472,11 @@ function CancelOrderForm({ orderId, agree = false }: { orderId: string; agree?: 
       )}
       <ActionFeedback state={state} />
       <Button type="submit" disabled={pending} variant="outline" className="w-fit">
-        {pending ? t.common.loading : agree ? t.workflow.agreeCancellation : t.workflow.cancelOrder}
+        {pending
+          ? t("common.loading")
+          : agree
+            ? t("workflow.agreeCancellation")
+            : t("workflow.cancelOrder")}
       </Button>
     </form>
   );
@@ -485,13 +484,13 @@ function CancelOrderForm({ orderId, agree = false }: { orderId: string; agree?: 
 
 function DisputeForm({ orderId }: { orderId: string }) {
   const [state, action, pending] = useActionState(raiseDisputeAction, initialWorkflowState);
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <details className="border-border/70 rounded-xl border p-4">
-      <summary className="cursor-pointer text-sm font-medium">{t.workflow.raiseDispute}</summary>
+      <summary className="cursor-pointer text-sm font-medium">{t("workflow.raiseDispute")}</summary>
       <form action={action} className="mt-3 flex flex-col gap-3">
         <input type="hidden" name="orderId" value={orderId} />
-        <Field id={`dispute-reason-${orderId}`} label={t.workflow.dispute}>
+        <Field id={`dispute-reason-${orderId}`} label={t("workflow.dispute")}>
           <textarea
             id={`dispute-reason-${orderId}`}
             name="reason"
@@ -503,7 +502,7 @@ function DisputeForm({ orderId }: { orderId: string }) {
         </Field>
         <ActionFeedback state={state} />
         <Button type="submit" variant="outline" disabled={pending}>
-          {pending ? t.common.loading : t.workflow.raiseDispute}
+          {pending ? t("common.loading") : t("workflow.raiseDispute")}
         </Button>
       </form>
     </details>

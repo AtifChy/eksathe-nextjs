@@ -2,10 +2,10 @@
 
 import { cn } from "cn";
 import { ArrowLeftIcon, ArrowRightIcon, SearchIcon, StarIcon } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { useLanguage } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -21,7 +21,9 @@ export function ConstructionMarket({
   filters: ConstructionMarketFilters;
   result: ConstructionMarketResult;
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const bn = locale === "bn";
   const formAction = `${routeBase}/market`;
   const pageHref = (page: number) => {
@@ -37,11 +39,11 @@ export function ConstructionMarket({
     return `${formAction}${params.size ? `?${params.toString()}` : ""}`;
   };
   const formatMoney = (value: string) =>
-    new Intl.NumberFormat(bn ? "bn-BD" : "en-BD", {
+    formatter.number(Number(value), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(value));
+    });
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-7 px-4 py-8 sm:px-6 sm:py-10">
@@ -51,19 +53,17 @@ export function ConstructionMarket({
           className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm"
         >
           <ArrowLeftIcon aria-hidden="true" className="size-4" />
-          {bn ? "নির্মাণ সেবায় ফিরুন" : "Back to construction services"}
+          {t("inline.back_to_construction_services_12dfzks")}
         </Link>
         <div>
           <p className="text-primary text-sm font-semibold">
-            {bn ? "অনুমোদিত পেশাজীবী ও সরবরাহকারী" : "Approved professionals and suppliers"}
+            {t("inline.approved_professionals_and_suppliers_ufbjni")}
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight">
-            {bn ? "নির্মাণ সেবা ও সামগ্রী খুঁজুন" : "Find construction services and materials"}
+            {t("inline.find_construction_services_and_materials_1xpkogy")}
           </h1>
           <p className="text-muted-foreground mt-2 max-w-3xl text-sm leading-6">
-            {bn
-              ? "কাজের ধরন, অবস্থান ও মূল্য অনুযায়ী তালিকা দেখুন। প্রকল্প তৈরি করে একাধিক সেবাদাতার দরপ্রস্তাবও তুলনা করতে পারেন।"
-              : "Browse by work type, location, and price. Create a project when you want to compare quotes from several providers."}
+            {t("inline.browse_by_work_type_location_and_price_cre_1oeikx0")}
           </p>
         </div>
       </div>
@@ -76,7 +76,7 @@ export function ConstructionMarket({
         <FieldGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field className="lg:col-span-2">
             <FieldLabel htmlFor="construction-search">
-              {bn ? "সেবা, সামগ্রী বা সেবাদাতা খুঁজুন" : "Search services, materials, or providers"}
+              {t("inline.search_services_materials_or_providers_1wdv6r7")}
             </FieldLabel>
             <div className="relative">
               <SearchIcon
@@ -87,37 +87,35 @@ export function ConstructionMarket({
                 id="construction-search"
                 name="q"
                 defaultValue={filters.q}
-                placeholder={bn ? "যেমন: ইট, প্রকৌশলী, ঢাকা" : "e.g. bricks, engineer, Dhaka"}
+                placeholder={t("inline.e_g_bricks_engineer_dhaka_1mej99m")}
                 className="pl-9"
               />
             </div>
           </Field>
           <Field>
-            <FieldLabel htmlFor="construction-type">{bn ? "ধরন" : "Type"}</FieldLabel>
+            <FieldLabel htmlFor="construction-type">{t("inline.type_nja194")}</FieldLabel>
             <select
               id="construction-type"
               name="type"
               defaultValue={filters.kind ?? ""}
               className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
             >
-              <option value="">{bn ? "সব নির্মাণ তালিকা" : "All construction listings"}</option>
+              <option value="">{t("inline.all_construction_listings_12pacdx")}</option>
               <option value="CONSTRUCTION_SERVICE">
-                {bn ? "পেশাজীবী ও সেবা" : "Professionals & services"}
+                {t("inline.professionals_services_bc0tiy")}
               </option>
-              <option value="CONSTRUCTION_MATERIAL">
-                {bn ? "নির্মাণসামগ্রী" : "Building materials"}
-              </option>
+              <option value="CONSTRUCTION_MATERIAL">{t("inline.building_materials_j98vuw")}</option>
             </select>
           </Field>
           <Field>
-            <FieldLabel htmlFor="construction-category">{bn ? "ক্যাটাগরি" : "Category"}</FieldLabel>
+            <FieldLabel htmlFor="construction-category">{t("inline.category_nstxaj")}</FieldLabel>
             <select
               id="construction-category"
               name="category"
               defaultValue={filters.category ?? ""}
               className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
             >
-              <option value="">{bn ? "সব ক্যাটাগরি" : "All categories"}</option>
+              <option value="">{t("inline.all_categories_qpnbu")}</option>
               {result.categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -126,14 +124,14 @@ export function ConstructionMarket({
             </select>
           </Field>
           <Field>
-            <FieldLabel htmlFor="construction-district">{bn ? "জেলা" : "District"}</FieldLabel>
+            <FieldLabel htmlFor="construction-district">{t("inline.district_135um58")}</FieldLabel>
             <select
               id="construction-district"
               name="district"
               defaultValue={filters.district ?? ""}
               className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
             >
-              <option value="">{bn ? "সব জেলা" : "All districts"}</option>
+              <option value="">{t("inline.all_districts_1tgqg9q")}</option>
               {result.districts.map((district) => (
                 <option key={district} value={district}>
                   {district}
@@ -143,7 +141,7 @@ export function ConstructionMarket({
           </Field>
           <Field>
             <FieldLabel htmlFor="construction-min-price">
-              {bn ? "সর্বনিম্ন মূল্য" : "Minimum price"}
+              {t("inline.minimum_price_m0j9b")}
             </FieldLabel>
             <Input
               id="construction-min-price"
@@ -157,7 +155,7 @@ export function ConstructionMarket({
           </Field>
           <Field>
             <FieldLabel htmlFor="construction-max-price">
-              {bn ? "সর্বোচ্চ মূল্য" : "Maximum price"}
+              {t("inline.maximum_price_1emjoux")}
             </FieldLabel>
             <Input
               id="construction-max-price"
@@ -170,26 +168,26 @@ export function ConstructionMarket({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="construction-sort">{bn ? "সাজান" : "Sort by"}</FieldLabel>
+            <FieldLabel htmlFor="construction-sort">{t("inline.sort_by_18j78x6")}</FieldLabel>
             <select
               id="construction-sort"
               name="sort"
               defaultValue={filters.sort ?? "newest"}
               className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
             >
-              <option value="newest">{bn ? "সর্বশেষ" : "Newest"}</option>
-              <option value="price-asc">{bn ? "মূল্য: কম থেকে বেশি" : "Price: low to high"}</option>
-              <option value="price-desc">{bn ? "মূল্য: বেশি থেকে কম" : "Price: high to low"}</option>
+              <option value="newest">{t("inline.newest_j0ladc")}</option>
+              <option value="price-asc">{t("inline.price_low_to_high_katpc0")}</option>
+              <option value="price-desc">{t("inline.price_high_to_low_arcd6i")}</option>
             </select>
           </Field>
         </FieldGroup>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button type="submit">
             <SearchIcon data-icon="inline-start" />
-            {bn ? "খুঁজুন" : "Search"}
+            {t("inline.search_1n7yeyu")}
           </Button>
           <Link href={formAction} className={buttonVariants({ variant: "outline" })}>
-            {bn ? "ফিল্টার মুছুন" : "Clear filters"}
+            {t("inline.clear_filters_uzkp5g")}
           </Link>
         </div>
       </form>
@@ -197,16 +195,14 @@ export function ConstructionMarket({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-muted-foreground text-sm" aria-live="polite">
           {result.unavailable
-            ? bn
-              ? "তালিকা এখন পাওয়া যাচ্ছে না"
-              : "Listings are temporarily unavailable"
-            : `${result.total.toLocaleString(bn ? "bn-BD" : "en-BD")} ${bn ? "টি তালিকা" : "listings"}`}
+            ? t("inline.listings_are_temporarily_unavailable_m2brmt")
+            : `${formatter.number(result.total)} ${t("inline.listings_17wuylw")}`}
         </p>
         <Link
           href="/account/projects/new?service=contractors"
           className={buttonVariants({ variant: "outline", size: "sm" })}
         >
-          {bn ? "প্রকল্প তৈরি করে দরপ্রস্তাব নিন" : "Create a project to request quotes"}
+          {t("inline.create_a_project_to_request_quotes_uk9x33")}
           <ArrowRightIcon data-icon="inline-end" />
         </Link>
       </div>
@@ -216,13 +212,11 @@ export function ConstructionMarket({
           role="alert"
           className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border p-5 text-sm"
         >
-          {t.workflow.dataUnavailable}
+          {t("workflow.dataUnavailable")}
         </p>
       ) : result.items.length === 0 ? (
         <p className="text-muted-foreground rounded-2xl border border-dashed p-8 text-center text-sm">
-          {bn
-            ? "এই ফিল্টারে কোনো অনুমোদিত তালিকা নেই। ফিল্টার বদলে আবার চেষ্টা করুন।"
-            : "No approved listings match these filters. Adjust your search and try again."}
+          {t("inline.no_approved_listings_match_these_filters_a_m7cahq")}
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -260,13 +254,13 @@ export function ConstructionMarket({
                     className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                     href={`${routeBase}/listings/${listing.id}`}
                   >
-                    {bn ? "বিস্তারিত" : "Details"}
+                    {t("inline.details_ccvazu")}
                   </Link>
                   <Link
                     className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
                     href={`${routeBase}/providers/${listing.providerId}`}
                   >
-                    {bn ? "সেবাদাতা" : "Provider"}
+                    {t("inline.provider_1jmkj9t")}
                   </Link>
                 </div>
               </CardContent>
@@ -278,7 +272,7 @@ export function ConstructionMarket({
       {!result.unavailable && result.totalPages > 1 && (
         <nav
           className="flex items-center justify-center gap-3"
-          aria-label={bn ? "পৃষ্ঠা নেভিগেশন" : "Pagination"}
+          aria-label={t("inline.pagination_q63cg7")}
         >
           <Link
             href={pageHref(Math.max(1, result.page - 1))}
@@ -290,7 +284,7 @@ export function ConstructionMarket({
             )}
           >
             <ArrowLeftIcon data-icon="inline-start" />
-            {bn ? "আগের" : "Previous"}
+            {t("inline.previous_1rllagw")}
           </Link>
           <span className="text-muted-foreground text-sm">
             {bn
@@ -306,7 +300,7 @@ export function ConstructionMarket({
               result.page >= result.totalPages && "pointer-events-none opacity-50",
             )}
           >
-            <span>{bn ? "পরের" : "Next"}</span>
+            <span>{t("inline.next_1vj0vil")}</span>
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         </nav>

@@ -1,18 +1,17 @@
 "use client";
 
 import { cn } from "cn";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { useLanguage } from "@/components/language-provider";
-
 export function DashboardTabs() {
-  const { t } = useLanguage();
+  const t = useTranslations();
   const pathname = usePathname();
 
   const tabs = [
-    { label: t.dashboard.tabDashboard, href: "/dashboard" },
-    { label: t.dashboard.tabAdmin, href: "/dashboard/admin" },
+    { label: t("dashboard.tabDashboard"), href: "/dashboard" },
+    { label: t("dashboard.tabAdmin"), href: "/dashboard/admin" },
   ];
 
   return (

@@ -2,13 +2,13 @@
 
 import { cn } from "cn";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState } from "react";
 
 import { acceptQuoteAction } from "@/app/actions/marketplace";
 import { confirmProjectHandoverAction } from "@/app/actions/projects";
-import { useLanguage } from "@/components/language-provider";
 import { MilestoneList } from "@/components/projects/milestone-list";
 import {
   AddMilestoneForm,
@@ -35,7 +35,9 @@ export function ProjectDetail({
   listings: PublicListing[];
   listingsUnavailable: boolean;
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   if (!project)
     return (
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -43,16 +45,16 @@ export function ProjectDetail({
           role="alert"
           className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border p-5 text-sm"
         >
-          {t.workflow.permissionDenied}
+          {t("workflow.permissionDenied")}
         </p>
       </div>
     );
   const formatMoney = (value: string | number) =>
-    new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", {
+    formatter.number(Number(value), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(value));
+    });
   const milestoneProviders = [
     ...new Map(
       project.orders
@@ -76,7 +78,7 @@ export function ProjectDetail({
         className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm"
       >
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {locale === "bn" ? "আমার প্রকল্প" : "My projects"}
+        {t("inline.my_projects_1y5pp50")}
       </Link>
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
@@ -95,20 +97,16 @@ export function ProjectDetail({
           </p>
           <div className="bg-muted/50 grid gap-3 rounded-xl p-4 text-sm sm:grid-cols-3">
             <p>
-              {t.workflow.budget}:{" "}
+              {t("workflow.budget")}:{" "}
               <strong>
-                {project.budget
-                  ? formatMoney(project.budget)
-                  : locale === "bn"
-                    ? "উল্লেখ নেই"
-                    : "Not specified"}
+                {project.budget ? formatMoney(project.budget) : t("inline.not_specified_1i7krq7")}
               </strong>
             </p>
             <p>
-              {t.workflow.startDate}: <strong>{project.startsAt?.slice(0, 10) ?? "—"}</strong>
+              {t("workflow.startDate")}: <strong>{project.startsAt?.slice(0, 10) ?? "—"}</strong>
             </p>
             <p>
-              {t.workflow.endDate}: <strong>{project.targetEndsAt?.slice(0, 10) ?? "—"}</strong>
+              {t("workflow.endDate")}: <strong>{project.targetEndsAt?.slice(0, 10) ?? "—"}</strong>
             </p>
           </div>
         </CardContent>
@@ -117,13 +115,9 @@ export function ProjectDetail({
       {project.isOwner && project.status !== "COMPLETED" && project.status !== "CANCELLED" && (
         <section className="flex flex-col gap-3">
           <div>
-            <h2 className="text-xl font-bold">
-              {locale === "bn" ? "কাজের প্যাকেজ" : "Work packages"}
-            </h2>
+            <h2 className="text-xl font-bold">{t("inline.work_packages_9k9nnr")}</h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              {locale === "bn"
-                ? "প্রতিটি প্যাকেজের জন্য একাধিক দর তুলনা করুন। একটি দর গ্রহণের পর অতিরিক্ত কাজের জন্য নতুন প্যাকেজ তৈরি করুন।"
-                : "Compare several quotes per package. Create a new package for additional work after accepting a quote."}
+              {t("inline.compare_several_quotes_per_package_create__fpfw5a")}
             </p>
           </div>
           <CreateProjectPackageForm projectId={project.id} />
@@ -132,23 +126,13 @@ export function ProjectDetail({
 
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-bold">
-            {locale === "bn" ? "দরপ্রস্তাব ও কাজের প্যাকেজ" : "Quotes and work packages"}
-          </h2>
+          <h2 className="text-xl font-bold">{t("inline.quotes_and_work_packages_15oqs9u")}</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {locale === "bn"
-              ? "প্যাকেজের পরিধি, পরিমাণ, পরিবহন, মূল্য ও সময়সীমা তুলনা করুন।"
-              : "Compare scope, quantity, transport, price, and dates for each package."}
+            {t("inline.compare_scope_quantity_transport_price_and_9wp0fg")}
           </p>
         </div>
         {project.packages.length === 0 ? (
-          <Empty
-            text={
-              locale === "bn"
-                ? "দর চাওয়ার আগে একটি কাজের প্যাকেজ তৈরি করুন।"
-                : "Create a work package before inviting providers to quote."
-            }
-          />
+          <Empty text={t("inline.create_a_work_package_before_inviting_prov_qs0v6e")} />
         ) : (
           project.packages.map((workPackage) => {
             const requests = project.requests.filter(
@@ -187,9 +171,7 @@ export function ProjectDetail({
                 Number(left.id === workPackage.preferredListingId),
             );
             const localizedPackageLabel = service
-              ? locale === "bn"
-                ? service.titleBn
-                : service.titleEn
+              ? t(`marketplaceServices.${service.slug}` as never)
               : workPackage.label;
             return (
               <section
@@ -206,28 +188,16 @@ export function ProjectDetail({
                     )}
                     <p className="text-muted-foreground mt-1 text-xs">
                       {workPackage.kind === "CONSTRUCTION_MATERIAL"
-                        ? locale === "bn"
-                          ? "নির্মাণসামগ্রী"
-                          : "Building materials"
+                        ? t("inline.building_materials_j98vuw")
                         : workPackage.kind === "CONSTRUCTION_SERVICE"
-                          ? locale === "bn"
-                            ? "নির্মাণসেবা"
-                            : "Construction service"
-                          : locale === "bn"
-                            ? "নির্ধারিত কাজ"
-                            : "Defined work"}
+                          ? t("inline.construction_service_gx1wej")
+                          : t("inline.defined_work_fcku54")}
                     </p>
                   </div>
                   {acceptedOrder && <StatusBadge status={acceptedOrder.status} />}
                 </div>
                 {requests.length === 0 ? (
-                  <Empty
-                    text={
-                      locale === "bn"
-                        ? "এখনো কোনো দরপ্রস্তাবের আমন্ত্রণ পাঠানো হয়নি।"
-                        : "No provider invitations have been sent for this package yet."
-                    }
-                  />
+                  <Empty text={t("inline.no_provider_invitations_have_been_sent_for_1h88727")} />
                 ) : (
                   <div className="grid gap-3 xl:grid-cols-2">
                     {requests.map((request) => (
@@ -251,14 +221,11 @@ export function ProjectDetail({
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3">
                           <p className="text-muted-foreground text-sm">
-                            {request.details ||
-                              (locale === "bn"
-                                ? "অতিরিক্ত কাজের বিবরণ নেই।"
-                                : "No additional scope details.")}
+                            {request.details || t("inline.no_additional_scope_details_gxl1ia")}
                           </p>
                           {(request.requestedStart || request.requestedEnd) && (
                             <p className="text-sm">
-                              {t.workflow.startDate}: {request.requestedStart?.slice(0, 10)} –{" "}
+                              {t("workflow.startDate")}: {request.requestedStart?.slice(0, 10)} –{" "}
                               {request.requestedEnd?.slice(0, 10)}
                             </p>
                           )}
@@ -266,7 +233,7 @@ export function ProjectDetail({
                             <div className="border-border/70 bg-muted/30 grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
                               <div>
                                 <p className="text-muted-foreground text-xs">
-                                  {t.workflow.quantity}
+                                  {t("workflow.quantity")}
                                 </p>
                                 <p className="mt-1 font-semibold">
                                   {request.quote.quantity} {request.listing.unit}
@@ -274,7 +241,7 @@ export function ProjectDetail({
                               </div>
                               <div>
                                 <p className="text-muted-foreground text-xs">
-                                  {t.workflow.quotePrice}
+                                  {t("workflow.quotePrice")}
                                 </p>
                                 <p className="mt-1 font-semibold">
                                   {formatMoney(request.quote.unitPrice)} / {request.listing.unit}
@@ -282,7 +249,7 @@ export function ProjectDetail({
                               </div>
                               <div>
                                 <p className="text-muted-foreground text-xs">
-                                  {t.workflow.transportFee}
+                                  {t("workflow.transportFee")}
                                 </p>
                                 <p className="mt-1 font-semibold">
                                   {formatMoney(request.quote.transportFee)}
@@ -290,7 +257,7 @@ export function ProjectDetail({
                               </div>
                               <div>
                                 <p className="text-muted-foreground text-xs">
-                                  {locale === "bn" ? "মোট" : "Total"}
+                                  {t("inline.total_bldkfh")}
                                 </p>
                                 <p className="mt-1 font-semibold">
                                   {formatMoney(
@@ -306,7 +273,7 @@ export function ProjectDetail({
                                 </p>
                                 {request.quote.expiresAt && (
                                   <p className="text-muted-foreground mt-1 text-xs">
-                                    {locale === "bn" ? "মেয়াদ শেষ" : "Expires"}:{" "}
+                                    {t("inline.expires_w9jxxl")}:{" "}
                                     {request.quote.expiresAt.slice(0, 10)}
                                   </p>
                                 )}
@@ -319,9 +286,7 @@ export function ProjectDetail({
                             </div>
                           ) : (
                             <p className="text-muted-foreground text-sm">
-                              {locale === "bn"
-                                ? "সেবাদাতার দরপ্রস্তাবের অপেক্ষায়।"
-                                : "Waiting for a provider quote."}
+                              {t("inline.waiting_for_a_provider_quote_1bh4h77")}
                             </p>
                           )}
                         </CardContent>
@@ -331,18 +296,16 @@ export function ProjectDetail({
                 )}
                 {project.isOwner && !acceptedOrder && (
                   <div className="border-border/70 flex flex-col gap-3 border-t pt-4">
-                    <h4 className="font-semibold">
-                      {locale === "bn" ? "আরও সেবাদাতাকে আমন্ত্রণ জানান" : "Invite more providers"}
-                    </h4>
+                    <h4 className="font-semibold">{t("inline.invite_more_providers_6k9q6")}</h4>
                     {listingsUnavailable ? (
                       <p
                         role="alert"
                         className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border p-4 text-sm"
                       >
-                        {t.workflow.dataUnavailable}
+                        {t("workflow.dataUnavailable")}
                       </p>
                     ) : candidates.length === 0 ? (
-                      <Empty text={t.workflow.noRecords} />
+                      <Empty text={t("workflow.noRecords")} />
                     ) : (
                       <div className="grid gap-3 sm:grid-cols-2">
                         {candidates.map((listing) => (
@@ -369,7 +332,7 @@ export function ProjectDetail({
                               )}
                               href={`/construction/listings/${listing.id}?${new URLSearchParams({ projectId: project.id, packageId: workPackage.id }).toString()}`}
                             >
-                              {locale === "bn" ? "আমন্ত্রণ" : "Invite"}
+                              {t("inline.invite_1vsiiih")}
                               <ArrowRightIcon aria-hidden="true" className="size-4" />
                             </Link>
                           </div>
@@ -386,11 +349,9 @@ export function ProjectDetail({
 
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-bold">{t.workflow.milestones}</h2>
+          <h2 className="text-xl font-bold">{t("workflow.milestones")}</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {locale === "bn"
-              ? "সেবাদাতা অগ্রগতি পাঠালে আপনি ধাপ অনুমোদন করতে পারবেন।"
-              : "Providers submit progress for your approval."}
+            {t("inline.providers_submit_progress_for_your_approva_ac16we")}
           </p>
         </div>
         {project.milestones.length > 0 ? (
@@ -400,26 +361,22 @@ export function ProjectDetail({
             provider={!project.isOwner}
           />
         ) : (
-          <Empty text={t.workflow.noRecords} />
+          <Empty text={t("workflow.noRecords")} />
         )}
         {project.isOwner &&
           (milestoneProviders.length > 0 ? (
             <AddMilestoneForm projectId={project.id} providers={milestoneProviders} />
           ) : (
             <p className="border-border text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
-              {locale === "bn"
-                ? "প্রকল্পের ধাপ যোগ করতে আগে একজন নির্মাণসেবা পেশাজীবীর দর গ্রহণ করুন।"
-                : "Accept a construction service provider’s quote before assigning project milestones."}
+              {t("inline.accept_a_construction_service_provider_s_q_1s1mhp0")}
             </p>
           ))}
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-bold">
-          {locale === "bn" ? "নথিভুক্ত অর্ডার" : "Engaged providers and materials"}
-        </h2>
+        <h2 className="text-xl font-bold">{t("inline.engaged_providers_and_materials_1dmhtj6")}</h2>
         {project.orders.length === 0 ? (
-          <Empty text={t.workflow.noRecords} />
+          <Empty text={t("workflow.noRecords")} />
         ) : (
           project.orders.map((order) => (
             <Card key={order.id}>
@@ -432,7 +389,7 @@ export function ProjectDetail({
                     {locale === "bn" ? order.providerNameBn : order.providerNameEn} ·{" "}
                     {formatMoney(order.subtotal)}
                     {Number(order.transportFee) > 0
-                      ? ` + ${formatMoney(order.transportFee)} ${t.workflow.transportFee}`
+                      ? ` + ${formatMoney(order.transportFee)} ${t("workflow.transportFee")}`
                       : ""}
                   </CardDescription>
                 </div>
@@ -440,7 +397,7 @@ export function ProjectDetail({
               </CardHeader>
               {order.payments.length > 0 && (
                 <CardContent className="flex flex-col gap-2">
-                  <h3 className="text-sm font-semibold">{t.workflow.projectPaymentHistory}</h3>
+                  <h3 className="text-sm font-semibold">{t("workflow.projectPaymentHistory")}</h3>
                   {order.payments.map((payment) => (
                     <div
                       key={payment.id}
@@ -454,14 +411,10 @@ export function ProjectDetail({
                         </p>
                         <p className="text-muted-foreground text-xs">
                           {payment.confirmed
-                            ? locale === "bn"
-                              ? "উভয় পক্ষ নিশ্চিত করেছে"
-                              : "Confirmed by both parties"
-                            : locale === "bn"
-                              ? "নিশ্চিতকরণ বাকি"
-                              : "Awaiting confirmation"}
+                            ? t("inline.confirmed_by_both_parties_1xd4wdp")
+                            : t("inline.awaiting_confirmation_1m2idbp")}
                           {payment.refundAmount
-                            ? ` · ${locale === "bn" ? "ফেরত" : "Refunded"}: ${formatMoney(payment.refundAmount)}`
+                            ? ` · ${t("inline.refunded_61yfyo")}: ${formatMoney(payment.refundAmount)}`
                             : ""}
                         </p>
                       </div>
@@ -470,7 +423,7 @@ export function ProjectDetail({
                           className="text-primary text-xs font-medium hover:underline"
                           href={`/api/orders/${order.id}/payments/${payment.id}/receipt`}
                         >
-                          {t.workflow.viewReceipt}
+                          {t("workflow.viewReceipt")}
                         </a>
                       )}
                     </div>
@@ -487,24 +440,25 @@ export function ProjectDetail({
       )}
       {project.status === "COMPLETED" && project.handedOverAt && (
         <p className="border-primary/20 bg-primary/5 rounded-xl border p-4 text-sm">
-          {t.workflow.handoverConfirmed} ·{" "}
-          {new Date(project.handedOverAt).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}
+          {t("workflow.handoverConfirmed")} ·{" "}
+          {formatter.dateTime(new Date(project.handedOverAt), {
+            dateStyle: "medium",
+            timeZone: "Asia/Dhaka",
+          })}
         </p>
       )}
 
       {project.isOwner && (
         <section className="flex flex-col gap-4">
           <div>
-            <h2 className="text-xl font-bold">{t.workflow.expenses}</h2>
+            <h2 className="text-xl font-bold">{t("workflow.expenses")}</h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              {locale === "bn"
-                ? "এই তালিকা শুধু প্রকল্পের মালিক দেখতে পারবেন।"
-                : "These records are visible only to the project owner."}
+              {t("inline.these_records_are_visible_only_to_the_proj_3oruu6")}
             </p>
           </div>
           <div className="bg-muted/50 rounded-xl p-4 text-sm">
             <p>
-              {locale === "bn" ? "নথিভুক্ত মোট খরচ" : "Recorded project expenses"}:{" "}
+              {t("inline.recorded_project_expenses_gx0grz")}:{" "}
               <strong>
                 {formatMoney(
                   project.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0),
@@ -513,7 +467,7 @@ export function ProjectDetail({
             </p>
           </div>
           {project.expenses.length === 0 ? (
-            <Empty text={t.workflow.noRecords} />
+            <Empty text={t("workflow.noRecords")} />
           ) : (
             project.expenses.map((expense) => (
               <div
@@ -533,17 +487,11 @@ export function ProjectDetail({
 
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-xl font-bold">{t.workflow.projectDocuments}</h2>
-          <p className="text-muted-foreground mt-1 text-sm">{t.workflow.projectDocumentsHelp}</p>
+          <h2 className="text-xl font-bold">{t("workflow.projectDocuments")}</h2>
+          <p className="text-muted-foreground mt-1 text-sm">{t("workflow.projectDocumentsHelp")}</p>
         </div>
         {project.documents.length === 0 ? (
-          <Empty
-            text={
-              locale === "bn"
-                ? "এখনো কোনো প্রকল্প নথি যোগ হয়নি।"
-                : "No project files have been added yet."
-            }
-          />
+          <Empty text={t("inline.no_project_files_have_been_added_yet_10su81e")} />
         ) : (
           project.documents.map((document) => (
             <a
@@ -560,17 +508,11 @@ export function ProjectDetail({
 
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-xl font-bold">{t.workflow.projectPhotos}</h2>
-          <p className="text-muted-foreground mt-1 text-sm">{t.workflow.projectPhotosHelp}</p>
+          <h2 className="text-xl font-bold">{t("workflow.projectPhotos")}</h2>
+          <p className="text-muted-foreground mt-1 text-sm">{t("workflow.projectPhotosHelp")}</p>
         </div>
         {project.photos.length === 0 ? (
-          <Empty
-            text={
-              locale === "bn"
-                ? "এখনো কোনো প্রকল্পের ছবি যোগ হয়নি।"
-                : "No project photos have been added yet."
-            }
-          />
+          <Empty text={t("inline.no_project_photos_have_been_added_yet_615c8n")} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {project.photos.map((photo) => (
@@ -603,7 +545,7 @@ function ProjectHandoverForm({ projectId }: { projectId: string }) {
     confirmProjectHandoverAction,
     initialWorkflowState,
   );
-  const { t } = useLanguage();
+  const t = useTranslations();
   return (
     <form
       action={action}
@@ -611,31 +553,29 @@ function ProjectHandoverForm({ projectId }: { projectId: string }) {
     >
       <input type="hidden" name="projectId" value={projectId} />
       <div>
-        <h2 className="text-lg font-semibold">{t.workflow.confirmHandover}</h2>
-        <p className="text-muted-foreground mt-1 text-sm">{t.workflow.handoverBlocked}</p>
+        <h2 className="text-lg font-semibold">{t("workflow.confirmHandover")}</h2>
+        <p className="text-muted-foreground mt-1 text-sm">{t("workflow.handoverBlocked")}</p>
       </div>
       <ActionFeedback state={state} />
       <Button type="submit" disabled={pending}>
-        {pending ? t.common.loading : t.workflow.confirmHandover}
+        {pending ? t("common.loading") : t("workflow.confirmHandover")}
       </Button>
     </form>
   );
 }
 
 function AcceptQuoteForm({ requestId }: { requestId: string }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(acceptQuoteAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   return (
     <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="requestId" value={requestId} />
       <ActionFeedback state={state} />
       <p className="text-muted-foreground text-xs">
-        {locale === "bn"
-          ? "প্রকল্পের অনুরোধে একটি দরপ্রস্তাব গ্রহণ করা যাবে।"
-          : "Only one quote can be accepted for this work package."}
+        {t("inline.only_one_quote_can_be_accepted_for_this_wo_1yxvd9d")}
       </p>
       <Button type="submit" size="sm" disabled={pending}>
-        {pending ? t.common.loading : t.workflow.acceptQuote}
+        {pending ? t("common.loading") : t("workflow.acceptQuote")}
       </Button>
     </form>
   );

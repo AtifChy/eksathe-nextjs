@@ -1,12 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
 import { BrandLogo } from "@/components/brand-logo";
-import { useLanguage } from "@/components/language-provider";
 
 export function FooterContent({ year }: { year: number }) {
-  const { t } = useLanguage();
+  const t = useTranslations();
   const pathname = usePathname();
 
   if (pathname.startsWith("/dashboard")) {
@@ -19,10 +19,10 @@ export function FooterContent({ year }: { year: number }) {
         <div className="flex items-center gap-3">
           <BrandLogo className="size-20" />
           <span>
-            © {year} {t.common.brandName}
+            © {year} {t("common.brandName")}
           </span>
         </div>
-        <span>{t.footer.tagline}</span>
+        <span>{t("footer.tagline")}</span>
       </div>
     </footer>
   );

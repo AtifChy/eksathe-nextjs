@@ -1,9 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { type FormEvent, useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { createListingAction } from "@/app/actions/marketplace";
-import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,8 +19,8 @@ const services = [
 ];
 
 export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(createListingAction, initialWorkflowState);
-  const { locale, t } = useLanguage();
   const [sectorSlug, setSectorSlug] = useState(capabilities[0]?.sectorSlug ?? "agriculture-labor");
   const [uploadError, setUploadError] = useState<"uploadFailed" | "invalidUpload" | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -86,7 +86,7 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
       className="border-border/70 flex flex-col gap-4 rounded-xl border p-4"
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="listing-sector" label={locale === "bn" ? "সেবা বিভাগ" : "Service sector"}>
+        <Field id="listing-sector" label={t("inline.service_sector_1l9k566")}>
           <select
             id="listing-sector"
             name="sectorSlug"
@@ -96,12 +96,12 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
           >
             {sectorOptions.map((sector) => (
               <option key={sector} value={sector}>
-                {sector === "construction" ? t.home.construction : t.home.agriculture}
+                {sector === "construction" ? t("home.construction") : t("home.agriculture")}
               </option>
             ))}
           </select>
         </Field>
-        <Field id="listing-kind" label={t.workflow.category}>
+        <Field id="listing-kind" label={t("workflow.category")}>
           <select
             id="listing-kind"
             name="kind"
@@ -110,27 +110,25 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
           >
             {serviceOptions.map((service) => (
               <option key={service.kind} value={service.kind}>
-                {locale === "bn" ? service.titleBn : service.titleEn}
+                {t(`marketplaceServices.${service.slug}` as never)}
               </option>
             ))}
           </select>
         </Field>
-        <Field id="listing-title-bn" label={t.workflow.titleBn}>
+        <Field id="listing-title-bn" label={t("workflow.titleBn")}>
           <Input id="listing-title-bn" name="titleBn" required maxLength={120} />
         </Field>
-        <Field id="listing-title-en" label={t.workflow.titleEn}>
+        <Field id="listing-title-en" label={t("workflow.titleEn")}>
           <Input id="listing-title-en" name="titleEn" required maxLength={120} />
         </Field>
-        <Field id="listing-category" label={t.workflow.category}>
+        <Field id="listing-category" label={t("workflow.category")}>
           <Input
             id="listing-category"
             name="category"
             list="agriculture-category-options"
             required
             maxLength={80}
-            placeholder={
-              locale === "bn" ? "যেমন: সবজি, ইট, রাজমিস্ত্রি" : "e.g. vegetables, bricks, masonry"
-            }
+            placeholder={t("inline.e_g_vegetables_bricks_masonry_zjz3sh")}
           />
           <datalist id="agriculture-category-options">
             <option value="Grains / শস্য" />
@@ -142,19 +140,19 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
             <option value="Other / অন্যান্য" />
           </datalist>
         </Field>
-        <Field id="listing-district" label={t.workflow.district}>
+        <Field id="listing-district" label={t("workflow.district")}>
           <Input id="listing-district" name="district" required maxLength={80} />
         </Field>
-        <Field id="listing-unit" label={t.workflow.unit}>
+        <Field id="listing-unit" label={t("workflow.unit")}>
           <Input
             id="listing-unit"
             name="unit"
             required
             maxLength={30}
-            placeholder={locale === "bn" ? "কেজি, দিন, বস্তা" : "kg, day, bag"}
+            placeholder={t("inline.kg_day_bag_2nppii")}
           />
         </Field>
-        <Field id="listing-unit-price" label={t.workflow.price}>
+        <Field id="listing-unit-price" label={t("workflow.price")}>
           <Input
             id="listing-unit-price"
             name="unitPrice"
@@ -164,7 +162,7 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
             required
           />
         </Field>
-        <Field id="listing-stock" label={t.workflow.stock}>
+        <Field id="listing-stock" label={t("workflow.stock")}>
           <Input
             id="listing-stock"
             name="stock"
@@ -175,14 +173,11 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
             required
           />
         </Field>
-        <Field
-          id="listing-available-from"
-          label={locale === "bn" ? "উপলভ্যতার তারিখ" : "Available from (optional)"}
-        >
+        <Field id="listing-available-from" label={t("inline.available_from_optional_c5ahok")}>
           <Input id="listing-available-from" name="availableFrom" type="date" />
         </Field>
       </div>
-      <Field id="listing-description-bn" label={t.workflow.descriptionBn}>
+      <Field id="listing-description-bn" label={t("workflow.descriptionBn")}>
         <textarea
           id="listing-description-bn"
           name="descriptionBn"
@@ -191,7 +186,7 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
           className="border-input bg-background rounded-lg border px-3 py-2 text-sm"
         />
       </Field>
-      <Field id="listing-description-en" label={t.workflow.descriptionEn}>
+      <Field id="listing-description-en" label={t("workflow.descriptionEn")}>
         <textarea
           id="listing-description-en"
           name="descriptionEn"
@@ -200,7 +195,7 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
           className="border-input bg-background rounded-lg border px-3 py-2 text-sm"
         />
       </Field>
-      <Field id="listing-image" label={t.workflow.listingImage}>
+      <Field id="listing-image" label={t("workflow.listingImage")}>
         <Input
           ref={fileInput}
           id="listing-image"
@@ -218,24 +213,22 @@ export function ListingForm({ capabilities }: { capabilities: Capability[] }) {
           }}
         />
       </Field>
-      <p className="text-muted-foreground text-xs">{t.workflow.listingImageHelp}</p>
+      <p className="text-muted-foreground text-xs">{t("workflow.listingImageHelp")}</p>
       <p className="text-muted-foreground text-xs">
-        {locale === "bn"
-          ? "পণ্য বিক্রির জন্য মজুত দিন। শ্রমিক ও যন্ত্রপাতির তালিকায় মজুত ০ হতে পারে; বুকিংয়ের তারিখ অনুযায়ী উপলভ্যতা যাচাই হয়।"
-          : "Goods need stock to sell. Worker and machinery listings may use zero stock; booking dates determine availability."}
+        {t("inline.goods_need_stock_to_sell_worker_and_machin_j3xozu")}
       </p>
       <input type="hidden" name="imageKey" defaultValue="" />
       <input type="hidden" name="imageContentType" defaultValue="" />
       <input type="hidden" name="imageSizeBytes" defaultValue="" />
       {uploadError && (
         <p role="alert" className="text-destructive text-sm">
-          {t.workflow[uploadError]}
+          {t(`workflow.${uploadError}` as never)}
         </p>
       )}
-      <p className="text-muted-foreground text-xs">{t.workflow.pendingApproval}</p>
+      <p className="text-muted-foreground text-xs">{t("workflow.pendingApproval")}</p>
       <ActionFeedback state={state} />
       <Button type="submit" disabled={pending || uploading}>
-        {uploading || pending ? t.common.loading : t.workflow.addListing}
+        {uploading || pending ? t("common.loading") : t("workflow.addListing")}
       </Button>
     </form>
   );

@@ -1,6 +1,6 @@
-import type { Dictionary } from "@/dictionaries/types";
+import messages from "../../messages/en.json";
 
-export type WorkflowMessageKey = keyof Dictionary["workflow"];
+export type WorkflowMessageKey = keyof typeof messages.workflow;
 export type WorkflowState = {
   status: "idle" | "success" | "error";
   messageKey?: WorkflowMessageKey;

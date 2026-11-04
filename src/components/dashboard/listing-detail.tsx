@@ -9,10 +9,10 @@ import {
   StarIcon,
   UserRoundIcon,
 } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { useLanguage } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListingRequestForm } from "@/components/workflows/listing-request-form";
@@ -40,13 +40,15 @@ export function ListingDetail({
   packageLabel?: string;
   routeBase?: string;
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const price = (value: string) =>
-    new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-BD", {
+    formatter.number(Number(value), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(value));
+    });
   const base = routeBase ?? `/dashboard/${sector.slug}`;
   const scheduled = listing
     ? ["WORKER", "MACHINERY", "CONSTRUCTION_SERVICE"].includes(listing.kind)
@@ -62,14 +64,14 @@ export function ListingDetail({
           className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm"
         >
           <ArrowLeftIcon aria-hidden="true" className="size-4" />
-          {locale === "bn" ? "সব সেবা" : "All services"}
+          {t("inline.all_services_1pdbxg7")}
         </Link>
         {unavailable ? (
           <p
             role="alert"
             className="border-destructive/30 bg-destructive/5 text-destructive rounded-2xl border p-6 text-sm"
           >
-            {t.workflow.dataUnavailable}
+            {t("workflow.dataUnavailable")}
           </p>
         ) : listing ? (
           <Card>
@@ -100,7 +102,7 @@ export function ListingDetail({
                 <p className="inline-flex items-center gap-1 text-sm font-medium">
                   <StarIcon aria-hidden="true" className="size-4 fill-current text-amber-500" />
                   {listing.averageRating.toFixed(1)} · {listing.reviewCount}{" "}
-                  {locale === "bn" ? "টি পর্যালোচনা" : "reviews"}
+                  {t("inline.reviews_19obigh")}
                 </p>
               )}
             </CardHeader>
@@ -110,32 +112,26 @@ export function ListingDetail({
               </p>
               <div className="bg-muted/60 grid gap-3 rounded-xl p-4 sm:grid-cols-3">
                 <div>
-                  <p className="text-muted-foreground text-xs">{t.workflow.price}</p>
+                  <p className="text-muted-foreground text-xs">{t("workflow.price")}</p>
                   <p className="mt-1 font-semibold">
                     {price(listing.unitPrice)} / {listing.unit}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">
-                    {scheduled
-                      ? locale === "bn"
-                        ? "বুকিংয়ের উপলভ্যতা"
-                        : "Booking availability"
-                      : t.workflow.stock}
+                    {scheduled ? t("inline.booking_availability_1hl9oqa") : t("workflow.stock")}
                   </p>
                   <p className="mt-1 inline-flex items-center gap-1 font-semibold">
                     <PackageIcon aria-hidden="true" className="size-4" />
                     {scheduled
                       ? listing.availableFrom
-                        ? `${locale === "bn" ? "শুরু" : "From"} ${new Date(listing.availableFrom).toLocaleDateString(locale === "bn" ? "bn-BD" : "en-BD")}`
-                        : locale === "bn"
-                          ? "তারিখ অনুযায়ী যাচাই হবে"
-                          : "Checked for requested dates"
+                        ? `${t("inline.from_1vw3av5")} ${formatter.dateTime(new Date(listing.availableFrom), { dateStyle: "medium", timeZone: "Asia/Dhaka" })}`
+                        : t("inline.checked_for_requested_dates_1b2yoj9")
                       : `${listing.stock} ${listing.unit}`}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">{t.workflow.district}</p>
+                  <p className="text-muted-foreground text-xs">{t("workflow.district")}</p>
                   <p className="mt-1 font-semibold">{listing.district}</p>
                 </div>
               </div>
@@ -143,7 +139,7 @@ export function ListingDetail({
                 href={`${base}/providers/${listing.providerId}`}
                 className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit gap-2")}
               >
-                {locale === "bn" ? "সেবাদাতার পরিচিতি" : "Provider profile"}
+                {t("inline.provider_profile_8eqhmv")}
                 <ArrowRightIcon aria-hidden="true" className="size-4" />
               </Link>
               {sector.slug === "construction" && (
@@ -151,9 +147,7 @@ export function ListingDetail({
                   href={`/account/projects/new?listing=${encodeURIComponent(listing.id)}`}
                   className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit gap-2")}
                 >
-                  {locale === "bn"
-                    ? "এই সেবা দিয়ে প্রকল্প তৈরি করুন"
-                    : "Create a project with this listing"}
+                  {t("inline.create_a_project_with_this_listing_t0qko3")}
                   <ArrowRightIcon aria-hidden="true" className="size-4" />
                 </Link>
               )}
@@ -164,7 +158,7 @@ export function ListingDetail({
           <>
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">{locale === "bn" ? "বিক্রেতা" : "Seller"}</CardTitle>
+                <CardTitle className="text-xl">{t("inline.seller_qlcxju")}</CardTitle>
                 <CardDescription className="flex flex-wrap items-center gap-2">
                   {locale === "bn" ? provider.nameBn : provider.nameEn} · {provider.district}
                   {provider.averageRating !== null && (
@@ -183,16 +177,14 @@ export function ListingDetail({
                   href={`${base}/providers/${provider.id}`}
                   className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-2")}
                 >
-                  {locale === "bn" ? "দোকান দেখুন" : "Visit storefront"}
+                  {t("inline.visit_storefront_1vy0izi")}
                   <ArrowRightIcon aria-hidden="true" className="size-4" />
                 </Link>
               </CardContent>
             </Card>
             {provider.listings.filter((item) => item.id !== listing.id).length > 0 && (
               <section className="flex flex-col gap-4">
-                <h2 className="text-xl font-bold">
-                  {locale === "bn" ? "এই বিক্রেতার আরও পণ্য" : "More from this seller"}
-                </h2>
+                <h2 className="text-xl font-bold">{t("inline.more_from_this_seller_b6lkj7")}</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {provider.listings
                     .filter((item) => item.id !== listing.id)
@@ -218,9 +210,7 @@ export function ListingDetail({
         )}
         {listing && !unavailable && listing.reviews && listing.reviews.length > 0 && (
           <section className="flex flex-col gap-4">
-            <h2 className="text-xl font-bold">
-              {locale === "bn" ? "ক্রেতার পর্যালোচনা" : "Customer reviews"}
-            </h2>
+            <h2 className="text-xl font-bold">{t("inline.customer_reviews_yvgqrk")}</h2>
             {listing.reviews.map((review, index) => (
               <Card key={`${review.createdAt}-${index}`}>
                 <CardContent className="flex flex-col gap-2 p-4">
@@ -232,9 +222,10 @@ export function ListingDetail({
                     {review.comment}
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    {new Date(review.createdAt).toLocaleDateString(
-                      locale === "bn" ? "bn-BD" : "en-BD",
-                    )}
+                    {formatter.dateTime(new Date(review.createdAt), {
+                      dateStyle: "medium",
+                      timeZone: "Asia/Dhaka",
+                    })}
                   </p>
                 </CardContent>
               </Card>
@@ -243,23 +234,19 @@ export function ListingDetail({
         )}
         <div className="flex gap-3">
           <Link href={base} className={buttonVariants({ variant: "outline" })}>
-            {t.nav.browse}
+            {t("nav.browse")}
           </Link>
           <Link href="/dashboard" className={buttonVariants({ variant: "ghost" })}>
-            {locale === "bn" ? "সব বিভাগ" : "All sectors"}
+            {t("inline.all_sectors_14ogqu")}
           </Link>
         </div>
       </div>
       {listing && !unavailable && (
         <Card className="h-fit lg:sticky lg:top-24">
           <CardHeader>
-            <CardTitle className="text-xl">
-              {locale === "bn" ? "অনুরোধ পাঠান" : "Send a request"}
-            </CardTitle>
+            <CardTitle className="text-xl">{t("inline.send_a_request_ijms93")}</CardTitle>
             <CardDescription>
-              {locale === "bn"
-                ? "সেবাদাতা মূল্য ও শর্ত পাঠালে আপনি সিদ্ধান্ত নিতে পারবেন।"
-                : "The provider will send terms for you to review before confirming."}
+              {t("inline.the_provider_will_send_terms_for_you_to_re_oagz0m")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -273,18 +260,18 @@ export function ListingDetail({
               />
             ) : (
               <div className="flex flex-col gap-3">
-                <p className="text-muted-foreground text-sm">{t.workflow.signInToRequest}</p>
+                <p className="text-muted-foreground text-sm">{t("workflow.signInToRequest")}</p>
                 <Link
                   href={`/login?next=${encodeURIComponent(returnTo)}`}
                   className={cn(buttonVariants(), "w-full")}
                 >
-                  {t.auth.signIn}
+                  {t("auth.signIn")}
                 </Link>
                 <Link
                   href={`/register?next=${encodeURIComponent(returnTo)}`}
                   className={cn(buttonVariants({ variant: "outline" }), "w-full")}
                 >
-                  {t.auth.createAccount}
+                  {t("auth.createAccount")}
                 </Link>
               </div>
             )}
@@ -298,7 +285,7 @@ export function ListingDetail({
           onClick={() => window.location.reload()}
           className="h-fit"
         >
-          {locale === "bn" ? "আবার চেষ্টা করুন" : "Try again"}
+          {t("inline.try_again_o85pno")}
         </Button>
       )}
     </div>

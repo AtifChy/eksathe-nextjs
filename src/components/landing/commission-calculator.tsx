@@ -1,21 +1,24 @@
 "use client";
 
+import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { useLanguage } from "@/components/language-provider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-function formatMoney(value: number, locale: string) {
-  return `৳${value.toLocaleString(locale === "bn" ? "bn-BD" : "en-US", {
+function formatMoney(value: number, formatter: ReturnType<typeof useFormatter>) {
+  return formatter.number(value, {
+    style: "currency",
+    currency: "BDT",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  });
 }
 
 export function CommissionCalculator() {
   const [gross, setGross] = useState("1000");
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
 
   const amount = Math.max(0, Number(gross) || 0);
   const commission = amount * 0.1;
@@ -23,7 +26,7 @@ export function CommissionCalculator() {
 
   return (
     <div className="bg-card rounded-2xl border p-6 shadow-sm">
-      <Label htmlFor="grossAmount">{t.commission.amountLabel}</Label>
+      <Label htmlFor="grossAmount">{t("commission.amountLabel")}</Label>
       <Input
         id="grossAmount"
         type="number"
@@ -36,12 +39,12 @@ export function CommissionCalculator() {
 
       <div className="mt-5 space-y-3 text-sm">
         <div className="flex items-center justify-between gap-4">
-          <span className="text-muted-foreground">{t.commission.platformShare}</span>
-          <strong className="text-base">{formatMoney(commission, locale)}</strong>
+          <span className="text-muted-foreground">{t("commission.platformShare")}</span>
+          <strong className="text-base">{formatMoney(commission, formatter)}</strong>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <span className="text-muted-foreground">{t.commission.providerShare}</span>
-          <strong className="text-base">{formatMoney(provider, locale)}</strong>
+          <span className="text-muted-foreground">{t("commission.providerShare")}</span>
+          <strong className="text-base">{formatMoney(provider, formatter)}</strong>
         </div>
       </div>
     </div>

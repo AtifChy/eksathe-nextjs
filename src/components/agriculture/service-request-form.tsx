@@ -1,11 +1,11 @@
 "use client";
 
 import { cn } from "cn";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useActionState } from "react";
 
 import { createAgricultureServiceRequestAction } from "@/app/actions/agriculture";
-import { useLanguage } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,11 +26,11 @@ export function ServiceRequestForm({
   emailVerified: boolean;
   routeBase: string;
 }) {
+  const t = useTranslations();
   const [state, action, pending] = useActionState(
     createAgricultureServiceRequestAction,
     initialWorkflowState,
   );
-  const { locale, t } = useLanguage();
   const [photo, setPhoto] = useState<{
     key: string;
     contentType: string;
@@ -38,7 +38,6 @@ export function ServiceRequestForm({
   } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(false);
-  const english = locale === "en";
   const canSubmit = Boolean(customer && emailVerified);
   const returnTo = `${routeBase}/services/${service.slug}`;
 
@@ -77,9 +76,7 @@ export function ServiceRequestForm({
       {!canSubmit && (
         <div className="border-primary/20 bg-primary/5 flex flex-col gap-3 rounded-xl border p-4">
           <p className="text-sm leading-6">
-            {english
-              ? "Preview the fields below. Sign in and verify your email to send this request."
-              : "নিচে অনুরোধের তথ্যগুলো দেখুন। অনুরোধ পাঠাতে লগইন করে ইমেইল যাচাই করুন।"}
+            {t("inline.preview_the_fields_below_sign_in_and_verif_ttja")}
           </p>
           <div className="flex flex-wrap gap-2">
             {customer ? (
@@ -87,7 +84,7 @@ export function ServiceRequestForm({
                 href={`/verify?next=${encodeURIComponent(returnTo)}`}
                 className={buttonVariants({ size: "sm" })}
               >
-                {english ? "Verify email" : "ইমেইল যাচাই করুন"}
+                {t("inline.verify_email_lecgan")}
               </Link>
             ) : (
               <>
@@ -95,13 +92,13 @@ export function ServiceRequestForm({
                   href={`/login?next=${encodeURIComponent(returnTo)}`}
                   className={buttonVariants({ size: "sm" })}
                 >
-                  {english ? "Sign in" : "লগইন"}
+                  {t("inline.sign_in_hu4rdx")}
                 </Link>
                 <Link
                   href={`/register?next=${encodeURIComponent(returnTo)}`}
                   className={buttonVariants({ size: "sm", variant: "outline" })}
                 >
-                  {english ? "Create account" : "অ্যাকাউন্ট খুলুন"}
+                  {t("inline.create_account_1b7e6x3")}
                 </Link>
               </>
             )}
@@ -111,7 +108,7 @@ export function ServiceRequestForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           id="service-customer-name"
-          label={t.requestForm.fullName}
+          label={t("requestForm.fullName")}
           error={state.errors?.customerName?.[0]}
         >
           <Input
@@ -125,7 +122,7 @@ export function ServiceRequestForm({
         </Field>
         <Field
           id="service-customer-phone"
-          label={t.requestForm.phone}
+          label={t("requestForm.phone")}
           error={state.errors?.phone?.[0]}
         >
           <Input
@@ -140,7 +137,7 @@ export function ServiceRequestForm({
         </Field>
         <Field
           id="service-customer-district"
-          label={t.requestForm.district}
+          label={t("requestForm.district")}
           error={state.errors?.district?.[0]}
         >
           <Input
@@ -148,20 +145,20 @@ export function ServiceRequestForm({
             name="district"
             required
             maxLength={100}
-            placeholder={t.requestForm.districtPlaceholder}
+            placeholder={t("requestForm.districtPlaceholder")}
             disabled={!canSubmit}
           />
         </Field>
         <Field
           id="service-customer-budget"
-          label={t.requestForm.budget}
+          label={t("requestForm.budget")}
           error={state.errors?.budget?.[0]}
         >
           <Input
             id="service-customer-budget"
             name="budget"
             inputMode="decimal"
-            placeholder={t.requestForm.budgetPlaceholder}
+            placeholder={t("requestForm.budgetPlaceholder")}
             disabled={!canSubmit}
           />
         </Field>
@@ -174,12 +171,8 @@ export function ServiceRequestForm({
               <Field
                 key={field.name}
                 id={`answer-${field.name}`}
-                label={locale === "bn" ? field.labelBn : field.labelEn}
-                help={
-                  english
-                    ? "Optional · JPEG, PNG, or WebP up to 5 MB"
-                    : "ঐচ্ছিক · ৫ এমবির মধ্যে JPEG, PNG বা WebP"
-                }
+                label={t(`agricultureServices.${service.slug}.fields.${field.name}.label` as never)}
+                help={t("inline.optional_jpeg_png_or_webp_up_to_5_mb_mh8jo9")}
               >
                 <Input
                   id={`answer-${field.name}`}
@@ -190,20 +183,20 @@ export function ServiceRequestForm({
                 />
                 {uploading && (
                   <p className="text-muted-foreground text-xs">
-                    {english ? "Uploading private photo…" : "ব্যক্তিগত ছবি আপলোড হচ্ছে…"}
+                    {t("inline.uploading_private_photo_1pwwdgh")}
                   </p>
                 )}
-                {photo && (
-                  <p className="text-primary text-xs">{english ? "Photo ready" : "ছবি প্রস্তুত"}</p>
-                )}
+                {photo && <p className="text-primary text-xs">{t("inline.photo_ready_7n37mt")}</p>}
                 {uploadError && (
                   <p role="alert" className="text-destructive text-xs">
-                    {t.workflow.uploadFailed}
+                    {t("workflow.uploadFailed")}
                   </p>
                 )}
               </Field>
             );
-          const label = locale === "bn" ? field.labelBn : field.labelEn;
+          const label = t(
+            `agricultureServices.${service.slug}.fields.${field.name}.label` as never,
+          );
           const error = state.errors?.[field.name]?.[0];
           if (field.type === "select")
             return (
@@ -216,10 +209,12 @@ export function ServiceRequestForm({
                   disabled={!canSubmit}
                   className="border-input bg-background h-10 rounded-lg border px-3 text-sm"
                 >
-                  <option value="">{english ? "Choose an option" : "একটি নির্বাচন করুন"}</option>
-                  {field.options.map((option) => (
+                  <option value="">{t("inline.choose_an_option_5bc3rc")}</option>
+                  {field.options.map((option, index) => (
                     <option key={option.value} value={option.value}>
-                      {locale === "bn" ? option.labelBn : option.labelEn}
+                      {t(
+                        `agricultureServices.${service.slug}.fields.${field.name}.options.option_${index}.label` as never,
+                      )}
                     </option>
                   ))}
                 </select>
@@ -255,7 +250,7 @@ export function ServiceRequestForm({
 
       <Field
         id="service-request-details"
-        label={t.requestForm.details}
+        label={t("requestForm.details")}
         error={state.errors?.details?.[0]}
       >
         <Textarea
@@ -265,35 +260,31 @@ export function ServiceRequestForm({
           maxLength={5000}
           rows={4}
           required
-          placeholder={t.requestForm.detailsPlaceholder}
+          placeholder={t("requestForm.detailsPlaceholder")}
           disabled={!canSubmit}
         />
       </Field>
       <p className="text-muted-foreground text-xs leading-5">
-        {english
-          ? "Requesting coordination does not create an order, promise a provider, approve finance or insurance, or trigger a payment."
-          : "সমন্বয়ের অনুরোধে অর্ডার বা সেবাদাতা নিশ্চিত হয় না, অর্থায়ন বা বীমা অনুমোদিত হয় না এবং কোনো পেমেন্ট হয় না।"}
+        {t("inline.requesting_coordination_does_not_create_an_1lp8p66")}
       </p>
       <ActionFeedback state={state} />
       {state.status === "success" && state.entityId && (
         <div className="border-primary/20 bg-primary/5 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
           <div>
-            <p className="text-sm font-semibold">
-              {english ? "Request reference" : "অনুরোধের রেফারেন্স"}
-            </p>
+            <p className="text-sm font-semibold">{t("inline.request_reference_15i948e")}</p>
             <p className="text-primary mt-1 font-mono">{state.referenceCode}</p>
           </div>
           <Link
             href={`/account/agriculture-requests/${state.entityId}`}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
-            {english ? "Track request" : "অনুরোধের অবস্থা দেখুন"}
+            {t("inline.track_request_1fx82cp")}
           </Link>
         </div>
       )}
       {canSubmit && state.status !== "success" && (
         <Button type="submit" disabled={pending || uploading} className="w-fit">
-          {pending ? t.requestForm.submitting : t.requestForm.submit}
+          {pending ? t("requestForm.submitting") : t("requestForm.submit")}
         </Button>
       )}
     </form>

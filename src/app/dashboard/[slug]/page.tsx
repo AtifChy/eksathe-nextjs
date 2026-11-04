@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { SectorLanding } from "@/components/dashboard/sector-landing";
@@ -13,7 +14,14 @@ export async function generateMetadata({ params }: SectorPageProps): Promise<Met
   const { slug } = await params;
   const sector = getSector(slug);
   if (!sector) notFound();
-  return { title: `${sector.labelEn} | EKsathe Bangladesh` };
+  const [sectors, metadata] = await Promise.all([
+    getTranslations("sectors"),
+    getTranslations("metadata"),
+  ]);
+  return {
+    title: metadata("sectorTitle", { sector: sectors(slug as never) }),
+    description: metadata("sectorDescription"),
+  };
 }
 
 export default async function SectorPage({ params }: SectorPageProps) {

@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { ArrowRightIcon, SearchIcon } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -9,7 +10,6 @@ import { AgricultureCommissionCalculator } from "@/components/agriculture/agricu
 import { BrandLogo } from "@/components/brand-logo";
 import { ListingImage } from "@/components/dashboard/listing-image";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
-import { useLanguage } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,9 @@ export function AgricultureHome({
   unavailable: boolean;
   publicInfo: AgriculturePublicInfo;
 }) {
-  const { locale } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const english = locale === "en";
@@ -51,11 +53,11 @@ export function AgricultureHome({
     [normalizedQuery, category],
   );
   const formatMoney = (amount: string) =>
-    new Intl.NumberFormat(english ? "en-BD" : "bn-BD", {
+    formatter.number(Number(amount), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(amount));
+    });
 
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-14 px-4 py-8 sm:px-6 sm:py-12">
@@ -64,7 +66,7 @@ export function AgricultureHome({
           href="/dashboard"
           className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm font-medium"
         >
-          ← {english ? "Back to dashboard" : "ড্যাশবোর্ডে ফিরে যান"}
+          ← {t("inline.back_to_dashboard_2v17ca")}
         </Link>
       )}
 
@@ -74,32 +76,28 @@ export function AgricultureHome({
             <BrandLogo />
           </div>
           <p className="text-primary text-sm font-semibold tracking-wide uppercase">
-            {english ? "Agriculture services across Bangladesh" : "সারা বাংলাদেশের কৃষিসেবা"}
+            {t("inline.agriculture_services_across_bangladesh_g8at01")}
           </p>
           <h1 className="mt-3 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-            {english
-              ? "Grow, find support, and reach markets together."
-              : "একসাথে এগিয়ে যাক কৃষি, সহায়তা ও বাজার সংযোগ।"}
+            {t("inline.grow_find_support_and_reach_markets_togeth_1er5pts")}
           </h1>
           <p className="text-muted-foreground mt-4 max-w-2xl text-base leading-7">
-            {english
-              ? "Find farm products, workers, machinery, advice, and support in one place. Browse freely; verified accounts can send a request for the operations team to review."
-              : "কৃষিপণ্য, শ্রমিক, যন্ত্রপাতি, পরামর্শ ও সহায়তা এক জায়গায় খুঁজুন। সবাই সেবা দেখতে পারবেন; যাচাইকৃত অ্যাকাউন্ট থেকে অনুরোধ পাঠালে পরিচালনা দল তা পর্যালোচনা করবে।"}
+            {t("inline.find_farm_products_workers_machinery_advic_uc8tlf")}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="#marketplace" className={cn(buttonVariants({ size: "lg" }), "gap-2")}>
-              {english ? "Explore marketplace" : "বাজার দেখুন"}
+              {t("inline.explore_marketplace_fbjfqd")}
               <ArrowRightIcon data-icon="inline-end" />
             </Link>
             <Link href="#services" className={buttonVariants({ variant: "outline", size: "lg" })}>
-              {english ? "Browse all 30 services" : "৩০টি সেবা দেখুন"}
+              {t("inline.browse_all_30_services_1bctdan")}
             </Link>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {[
-            { icon: "🌾", title: english ? "Farm services" : "কৃষিসেবা", count: 30 },
-            { icon: "🛒", title: english ? "Marketplace" : "কৃষিপণ্যের বাজার", count: listings.length },
+            { icon: "🌾", title: t("inline.farm_services_1x1k32o"), count: 30 },
+            { icon: "🛒", title: t("inline.marketplace_rtfmqm"), count: listings.length },
           ].map((item) => (
             <Card key={item.title} className="min-h-36">
               <CardContent className="flex h-full flex-col justify-between p-5">
@@ -108,7 +106,7 @@ export function AgricultureHome({
                 </span>
                 <div>
                   <p className="text-2xl font-bold">
-                    {item.count.toLocaleString(english ? "en-BD" : "bn-BD")}
+                    {formatter.number(item.count)}
                     {item.icon === "🌾" ? "+" : ""}
                   </p>
                   <p className="text-muted-foreground text-sm">{item.title}</p>
@@ -123,17 +121,17 @@ export function AgricultureHome({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-primary text-sm font-semibold">
-              {english ? "Find products and providers" : "পণ্য ও সেবাদাতা খুঁজুন"}
+              {t("inline.find_products_and_providers_1rc7kvb")}
             </p>
             <h2 className="mt-1 text-2xl font-bold">
-              {english ? "Agriculture marketplace" : "কৃষি মার্কেটপ্লেস"}
+              {t("inline.agriculture_marketplace_1ufcijx")}
             </h2>
           </div>
           <Link
             href={`${routeBase}/market`}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            {english ? "View marketplace" : "সব তালিকা দেখুন"}
+            {t("inline.view_marketplace_11lxz73")}
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         </div>
@@ -142,16 +140,12 @@ export function AgricultureHome({
             role="alert"
             className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border p-4 text-sm"
           >
-            {english
-              ? "Marketplace listings could not be loaded. Please try again later."
-              : "মার্কেটপ্লেসের তালিকা লোড করা যায়নি। পরে আবার চেষ্টা করুন।"}
+            {t("inline.marketplace_listings_could_not_be_loaded_p_97902w")}
           </p>
         )}
         {!unavailable && listings.length === 0 ? (
           <div className="text-muted-foreground rounded-2xl border border-dashed p-6 text-sm">
-            {english
-              ? "No published listings yet. Please check back soon."
-              : "এখনো কোনো প্রকাশিত তালিকা নেই। পরে আবার দেখুন।"}
+            {t("inline.no_published_listings_yet_please_check_bac_11mj298")}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -192,15 +186,13 @@ export function AgricultureHome({
       <section id="services" className="flex scroll-mt-24 flex-col gap-5">
         <div>
           <p className="text-primary text-sm font-semibold">
-            {english ? "30 agriculture services" : "৩০টি কৃষিসেবা"}
+            {t("inline.30_agriculture_services_dczxdz")}
           </p>
           <h2 className="mt-1 text-2xl font-bold">
-            {english ? "What do you need help with?" : "কোন সেবাটি আপনার প্রয়োজন?"}
+            {t("inline.what_do_you_need_help_with_1h91swe")}
           </h2>
           <p className="text-muted-foreground mt-2 max-w-3xl text-sm leading-6">
-            {english
-              ? "Choose a service to see its details and request form. The agriculture operations team reviews and coordinates service requests."
-              : "সেবার বিবরণ ও অনুরোধের ফর্ম দেখতে একটি সেবা বেছে নিন। কৃষি পরিচালনা দল অনুরোধ যাচাই ও সমন্বয় করবে।"}
+            {t("inline.choose_a_service_to_see_its_details_and_re_8bsvex")}
           </p>
         </div>
         <div className="border-border/70 bg-card grid gap-3 rounded-2xl border p-4 sm:grid-cols-[minmax(0,1fr)_240px]">
@@ -212,28 +204,28 @@ export function AgricultureHome({
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={english ? "Search services" : "সেবা খুঁজুন"}
-              aria-label={english ? "Search services" : "সেবা খুঁজুন"}
+              placeholder={t("inline.search_services_8c7uub")}
+              aria-label={t("inline.search_services_8c7uub")}
               className="pl-9"
             />
           </div>
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
-            aria-label={english ? "Filter by category" : "ক্যাটাগরি অনুযায়ী দেখুন"}
+            aria-label={t("inline.filter_by_category_r4wwg6")}
             className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
           >
-            <option value="all">{english ? "All categories" : "সব ক্যাটাগরি"}</option>
+            <option value="all">{t("inline.all_categories_qpnbu")}</option>
             {agricultureServiceCategories.map((item) => (
               <option key={item.id} value={item.id}>
-                {english ? item.labelEn : item.labelBn}
+                {t(`agricultureCategories.${item.id}` as never)}
               </option>
             ))}
           </select>
         </div>
         {services.length === 0 ? (
           <p className="text-muted-foreground rounded-2xl border border-dashed p-8 text-center text-sm">
-            {english ? "No services match your search." : "আপনার অনুসন্ধানে কোনো সেবা পাওয়া যায়নি।"}
+            {t("inline.no_services_match_your_search_gb0nca")}
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -250,17 +242,17 @@ export function AgricultureHome({
                     </span>
                     <div>
                       <CardTitle className="text-base">
-                        {english ? service.titleEn : service.titleBn}
+                        {t(`agricultureServices.${service.slug}.title` as never)}
                       </CardTitle>
                       <CardDescription className="mt-2 line-clamp-2">
-                        {english ? service.descriptionEn : service.descriptionBn}
+                        {t(`agricultureServices.${service.slug}.description` as never)}
                       </CardDescription>
                     </div>
                   </CardHeader>
                   <CardContent className="text-muted-foreground flex items-center justify-between text-xs">
                     <span>
-                      {service.fields.length.toLocaleString(english ? "en-BD" : "bn-BD")}{" "}
-                      {english ? "service details" : "টি বিস্তারিত তথ্য"}
+                      {formatter.number(service.fields.length)}{" "}
+                      {t("inline.service_details_1a6x8nu")}
                     </span>
                     <ArrowRightIcon aria-hidden="true" className="size-4" />
                   </CardContent>
@@ -278,15 +270,13 @@ export function AgricultureHome({
       >
         <div>
           <p className="text-primary text-sm font-semibold">
-            {english ? "Commission calculator" : "কমিশন ক্যালকুলেটর"}
+            {t("inline.commission_calculator_1rnx2pf")}
           </p>
           <h2 className="mt-1 text-2xl font-bold">
-            {english ? "Estimate the platform fee" : "প্ল্যাটফর্ম ফি সম্পর্কে ধারণা নিন"}
+            {t("inline.estimate_the_platform_fee_uiwzmc")}
           </h2>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
-            {english
-              ? "This estimate uses the current agriculture rate. It does not include separately agreed transport costs."
-              : "এই হিসাবে কৃষির বর্তমান কমিশন হার ব্যবহার করা হয়। আলাদাভাবে নির্ধারিত পরিবহন খরচ এতে অন্তর্ভুক্ত নয়।"}
+            {t("inline.this_estimate_uses_the_current_agriculture_burysh")}
           </p>
         </div>
         <AgricultureCommissionCalculator ratePercent={publicInfo.commissionRate} />
@@ -294,17 +284,15 @@ export function AgricultureHome({
 
       <section className="bg-secondary/50 rounded-3xl border p-6 sm:p-8">
         <p className="text-primary text-sm font-semibold">
-          {english ? "Reviewed by the agriculture team" : "কৃষি পরিচালনা দলের যাচাইকৃত তথ্য"}
+          {t("inline.reviewed_by_the_agriculture_team_6bga3j")}
         </p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold">
-              {english ? "Market prices and agriculture updates" : "বাজারদর ও কৃষি আপডেট"}
+              {t("inline.market_prices_and_agriculture_updates_ndthf")}
             </h2>
             <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-              {english
-                ? "Market prices, news, advice, and weather alerts are published by staff with a source and date."
-                : "বাজারদর, খবর, পরামর্শ ও আবহাওয়া সতর্কতা পরিচালনা দলের মাধ্যমে উৎস ও তারিখসহ প্রকাশ করা হয়।"}
+              {t("inline.market_prices_news_advice_and_weather_aler_sgubuu")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -312,25 +300,23 @@ export function AgricultureHome({
               href={`${routeBase}/market-prices`}
               className={buttonVariants({ variant: "outline" })}
             >
-              {english ? "Market prices" : "বাজারদর"}
+              {t("inline.market_prices_1ahmufv")}
             </Link>
             <Link href={`${routeBase}/updates`} className={buttonVariants({ variant: "outline" })}>
-              {english ? "Updates" : "আপডেট"}
+              {t("inline.updates_12jzrl0")}
             </Link>
           </div>
         </div>
         {publicInfo.unavailable ? (
           <p role="alert" className="text-destructive mt-4 text-sm">
-            {english
-              ? "Published information is temporarily unavailable."
-              : "প্রকাশিত তথ্য সাময়িকভাবে পাওয়া যাচ্ছে না।"}
+            {t("inline.published_information_is_temporarily_unava_crkzxm")}
           </p>
         ) : (
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
-                  {english ? "Latest market prices" : "সর্বশেষ বাজারদর"}
+                  {t("inline.latest_market_prices_1nl26wh")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
@@ -343,31 +329,32 @@ export function AgricultureHome({
                   ))
                 ) : (
                   <p className="text-muted-foreground text-sm">
-                    {english ? "No published market prices yet." : "এখনো কোনো বাজারদর প্রকাশিত হয়নি।"}
+                    {t("inline.no_published_market_prices_yet_9l0zbp")}
                   </p>
                 )}
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
-                  {english ? "Recent updates" : "সাম্প্রতিক আপডেট"}
-                </CardTitle>
+                <CardTitle className="text-base">{t("inline.recent_updates_1jqm1ir")}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {publicInfo.updates.length ? (
                   publicInfo.updates.slice(0, 3).map((update) => (
                     <p key={update.id} className="text-sm">
                       <strong>{english ? update.titleEn : update.titleBn}</strong> ·{" "}
-                      {new Intl.DateTimeFormat(english ? "en-BD" : "bn-BD", {
-                        dateStyle: "medium",
+                      {formatter.dateTime(new Date(update.publishedAt), {
+                        ...{
+                          dateStyle: "medium",
+                          timeZone: "Asia/Dhaka",
+                        },
                         timeZone: "Asia/Dhaka",
-                      }).format(new Date(update.publishedAt))}
+                      })}
                     </p>
                   ))
                 ) : (
                   <p className="text-muted-foreground text-sm">
-                    {english ? "No current agriculture updates." : "বর্তমানে কোনো কৃষি আপডেট নেই।"}
+                    {t("inline.no_current_agriculture_updates_1q8ia7k")}
                   </p>
                 )}
               </CardContent>
@@ -381,11 +368,11 @@ export function AgricultureHome({
         className="rounded-2xl border p-5 sm:p-6"
       >
         <h2 id="agriculture-support-heading" className="text-lg font-bold">
-          {english ? "Agriculture support" : "কৃষি সহায়তা"}
+          {t("inline.agriculture_support_1yks74p")}
         </h2>
         {publicInfo.unavailable ? (
           <p className="text-muted-foreground mt-2 text-sm">
-            {english ? "Support information could not be loaded." : "সহায়তার তথ্য লোড করা যায়নি।"}
+            {t("inline.support_information_could_not_be_loaded_17qaam5")}
           </p>
         ) : publicInfo.support &&
           (publicInfo.support.phone ||
@@ -415,9 +402,7 @@ export function AgricultureHome({
           </div>
         ) : (
           <p className="text-muted-foreground mt-2 text-sm">
-            {english
-              ? "Support contact details have not been configured yet."
-              : "সহায়তার যোগাযোগের তথ্য এখনো নির্ধারণ করা হয়নি।"}
+            {t("inline.support_contact_details_have_not_been_conf_1i3gxk5")}
           </p>
         )}
       </section>

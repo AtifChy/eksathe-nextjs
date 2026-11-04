@@ -2,13 +2,13 @@
 
 import { cn } from "cn";
 import { ArrowRightIcon, Building2Icon, SearchIcon } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { ConstructionCommissionCalculator } from "@/components/construction/construction-commission-calculator";
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { useLanguage } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,9 @@ export function ConstructionHome({
   unavailable: boolean;
   commissionRate: string | null;
 }) {
-  const { locale } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const english = locale === "en";
@@ -49,11 +51,11 @@ export function ConstructionHome({
     [normalizedQuery, category],
   );
   const formatMoney = (amount: string) =>
-    new Intl.NumberFormat(english ? "en-BD" : "bn-BD", {
+    formatter.number(Number(amount), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(amount));
+    });
 
   return (
     <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-14 px-4 py-8 sm:px-6 sm:py-12">
@@ -62,7 +64,7 @@ export function ConstructionHome({
           href="/dashboard"
           className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm font-medium"
         >
-          ← {english ? "Back to dashboard" : "ড্যাশবোর্ডে ফিরে যান"}
+          ← {t("inline.back_to_dashboard_2v17ca")}
         </Link>
       )}
 
@@ -72,31 +74,27 @@ export function ConstructionHome({
             <BrandLogo />
           </div>
           <p className="text-primary text-sm font-semibold tracking-wide uppercase">
-            {english ? "Construction services across Bangladesh" : "সারা বাংলাদেশের নির্মাণসেবা"}
+            {t("inline.construction_services_across_bangladesh_sgrzhm")}
           </p>
           <h1 className="mt-3 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-            {english
-              ? "Plan your build and find the right people."
-              : "পরিকল্পনা করুন, সঠিক নির্মাণসেবা খুঁজে নিন।"}
+            {t("inline.plan_your_build_and_find_the_right_people_1u905pu")}
           </h1>
           <p className="text-muted-foreground mt-4 max-w-2xl text-base leading-7">
-            {english
-              ? "Find approved professionals and material suppliers, compare project quotes, and keep work, milestones, and payments together."
-              : "অনুমোদিত পেশাজীবী ও সামগ্রী সরবরাহকারী খুঁজুন, প্রকল্পের দরপ্রস্তাব তুলনা করুন এবং কাজ, মাইলফলক ও পেমেন্টের তথ্য একসাথে রাখুন।"}
+            {t("inline.find_approved_professionals_and_material_s_1of70ek")}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href={`${routeBase}/market`}
               className={cn(buttonVariants({ size: "lg" }), "gap-2")}
             >
-              {english ? "Explore construction marketplace" : "নির্মাণ মার্কেটপ্লেস দেখুন"}
+              {t("inline.explore_construction_marketplace_1210lvr")}
               <ArrowRightIcon data-icon="inline-end" />
             </Link>
             <Link
               href="/account/projects/new?service=contractors"
               className={buttonVariants({ variant: "outline", size: "lg" })}
             >
-              {english ? "Start a project" : "প্রকল্প শুরু করুন"}
+              {t("inline.start_a_project_1tk0yro")}
             </Link>
           </div>
         </div>
@@ -108,10 +106,10 @@ export function ConstructionHome({
               </span>
               <div>
                 <p className="text-2xl font-bold">
-                  {constructionServiceRegistry.length.toLocaleString(english ? "en-BD" : "bn-BD")}
+                  {formatter.number(constructionServiceRegistry.length)}
                 </p>
                 <p className="text-muted-foreground text-sm">
-                  {english ? "Construction service areas" : "নির্মাণ সেবার ধরন"}
+                  {t("inline.construction_service_areas_1fwvn52")}
                 </p>
               </div>
             </CardContent>
@@ -122,11 +120,9 @@ export function ConstructionHome({
                 🧱
               </span>
               <div>
-                <p className="text-2xl font-bold">
-                  {listings.length.toLocaleString(english ? "en-BD" : "bn-BD")}
-                </p>
+                <p className="text-2xl font-bold">{formatter.number(listings.length)}</p>
                 <p className="text-muted-foreground text-sm">
-                  {english ? "Published offers" : "প্রকাশিত তালিকা"}
+                  {t("inline.published_offers_181lve9")}
                 </p>
               </div>
             </CardContent>
@@ -138,17 +134,17 @@ export function ConstructionHome({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-primary text-sm font-semibold">
-              {english ? "Professionals and materials" : "পেশাজীবী ও নির্মাণসামগ্রী"}
+              {t("inline.professionals_and_materials_1d2igvn")}
             </p>
             <h2 className="mt-1 text-2xl font-bold">
-              {english ? "Construction marketplace" : "নির্মাণ মার্কেটপ্লেস"}
+              {t("inline.construction_marketplace_1d9og8y")}
             </h2>
           </div>
           <Link
             href={`${routeBase}/market`}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            {english ? "View all offers" : "সব তালিকা দেখুন"}
+            {t("inline.view_all_offers_jpb7ai")}
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         </div>
@@ -157,16 +153,12 @@ export function ConstructionHome({
             role="alert"
             className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border p-4 text-sm"
           >
-            {english
-              ? "Marketplace listings could not be loaded. Please try again later."
-              : "মার্কেটপ্লেসের তালিকা লোড করা যায়নি। পরে আবার চেষ্টা করুন।"}
+            {t("inline.marketplace_listings_could_not_be_loaded_p_97902w")}
           </p>
         )}
         {!unavailable && listings.length === 0 ? (
           <div className="text-muted-foreground rounded-2xl border border-dashed p-6 text-sm">
-            {english
-              ? "No approved construction listings yet. Please check back soon."
-              : "এখনো কোনো অনুমোদিত নির্মাণ তালিকা নেই। পরে আবার দেখুন।"}
+            {t("inline.no_approved_construction_listings_yet_plea_eqf7os")}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -207,15 +199,13 @@ export function ConstructionHome({
       <section id="services" className="flex scroll-mt-24 flex-col gap-5">
         <div>
           <p className="text-primary text-sm font-semibold">
-            {english ? "8 construction service areas" : "৮টি নির্মাণ সেবার ধরন"}
+            {t("inline.8_construction_service_areas_1jvofqa")}
           </p>
           <h2 className="mt-1 text-2xl font-bold">
-            {english ? "What do you need for your project?" : "আপনার প্রকল্পে কী ধরনের সহায়তা প্রয়োজন?"}
+            {t("inline.what_do_you_need_for_your_project_1u3al0")}
           </h2>
           <p className="text-muted-foreground mt-2 max-w-3xl text-sm leading-6">
-            {english
-              ? "Browse an approved provider or create a project to invite several professionals and compare their quotes."
-              : "অনুমোদিত সেবাদাতা দেখুন অথবা প্রকল্প তৈরি করে একাধিক পেশাজীবীকে দরপ্রস্তাবের জন্য আমন্ত্রণ জানান।"}
+            {t("inline.browse_an_approved_provider_or_create_a_pr_kxlufj")}
           </p>
         </div>
         <div className="border-border/70 bg-card grid gap-3 rounded-2xl border p-4 sm:grid-cols-[minmax(0,1fr)_240px]">
@@ -227,30 +217,28 @@ export function ConstructionHome({
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={english ? "Search construction services" : "নির্মাণসেবা খুঁজুন"}
-              aria-label={english ? "Search construction services" : "নির্মাণসেবা খুঁজুন"}
+              placeholder={t("inline.search_construction_services_1cd8gib")}
+              aria-label={t("inline.search_construction_services_1cd8gib")}
               className="pl-9"
             />
           </div>
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
-            aria-label={english ? "Filter by service area" : "সেবার ধরন অনুযায়ী দেখুন"}
+            aria-label={t("inline.filter_by_service_area_17ejr7w")}
             className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
           >
-            <option value="all">{english ? "All service areas" : "সব সেবার ধরন"}</option>
+            <option value="all">{t("inline.all_service_areas_1x8orpz")}</option>
             {constructionServiceCategories.map((item) => (
               <option key={item.id} value={item.id}>
-                {english ? item.labelEn : item.labelBn}
+                {t(`constructionCategories.${item.id}` as never)}
               </option>
             ))}
           </select>
         </div>
         {services.length === 0 ? (
           <p className="text-muted-foreground rounded-2xl border border-dashed p-8 text-center text-sm">
-            {english
-              ? "No service areas match your search."
-              : "আপনার অনুসন্ধানে কোনো সেবার ধরন পাওয়া যায়নি।"}
+            {t("inline.no_service_areas_match_your_search_1n05vd6")}
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -267,22 +255,18 @@ export function ConstructionHome({
                     </span>
                     <div>
                       <CardTitle className="text-base">
-                        {english ? service.titleEn : service.titleBn}
+                        {t(`constructionServices.${service.slug}.title` as never)}
                       </CardTitle>
                       <CardDescription className="mt-2 line-clamp-2">
-                        {english ? service.descriptionEn : service.descriptionBn}
+                        {t(`constructionServices.${service.slug}.description` as never)}
                       </CardDescription>
                     </div>
                   </CardHeader>
                   <CardContent className="text-muted-foreground flex items-center justify-between text-xs">
                     <span>
                       {service.kind === "CONSTRUCTION_MATERIAL"
-                        ? english
-                          ? "Materials"
-                          : "নির্মাণসামগ্রী"
-                        : english
-                          ? "Find professionals"
-                          : "পেশাজীবী দেখুন"}
+                        ? t("inline.materials_1i2zdwy")
+                        : t("inline.find_professionals_1svymkf")}
                     </span>
                     <ArrowRightIcon aria-hidden="true" className="size-4" />
                   </CardContent>
@@ -296,10 +280,10 @@ export function ConstructionHome({
       <section id="how" className="flex flex-col gap-5">
         <div>
           <p className="text-primary text-sm font-semibold">
-            {english ? "A clear way to organize your build" : "নির্মাণকাজ গুছিয়ে এগিয়ে নিন"}
+            {t("inline.a_clear_way_to_organize_your_build_11mvr7p")}
           </p>
           <h2 className="mt-1 text-2xl font-bold">
-            {english ? "How construction projects work" : "নির্মাণ প্রকল্প যেভাবে এগোয়"}
+            {t("inline.how_construction_projects_work_pdcpmd")}
           </h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -341,9 +325,7 @@ export function ConstructionHome({
                 >
                   {step.icon}
                 </span>
-                <p className="text-primary text-xs font-semibold">
-                  {(index + 1).toLocaleString(english ? "en-BD" : "bn-BD")}
-                </p>
+                <p className="text-primary text-xs font-semibold">{formatter.number(index + 1)}</p>
                 <h3 className="font-semibold">{english ? step.titleEn : step.titleBn}</h3>
                 <p className="text-muted-foreground text-sm leading-6">
                   {english ? step.bodyEn : step.bodyBn}
@@ -360,15 +342,13 @@ export function ConstructionHome({
       >
         <div>
           <p className="text-primary text-sm font-semibold">
-            {english ? "Commission calculator" : "কমিশন ক্যালকুলেটর"}
+            {t("inline.commission_calculator_1rnx2pf")}
           </p>
           <h2 className="mt-1 text-2xl font-bold">
-            {english ? "Estimate the platform fee" : "প্ল্যাটফর্ম ফি সম্পর্কে ধারণা নিন"}
+            {t("inline.estimate_the_platform_fee_uiwzmc")}
           </h2>
           <p className="text-muted-foreground mt-2 text-sm leading-6">
-            {english
-              ? "The estimate uses the current construction rate and excludes separately agreed transport charges."
-              : "এই হিসাবে নির্মাণ খাতের বর্তমান কমিশন হার ব্যবহার হয় এবং আলাদা পরিবহন খরচ অন্তর্ভুক্ত নয়।"}
+            {t("inline.the_estimate_uses_the_current_construction_1fxpsqc")}
           </p>
         </div>
         <ConstructionCommissionCalculator ratePercent={commissionRate} />
@@ -379,12 +359,10 @@ export function ConstructionHome({
           <Building2Icon aria-hidden="true" className="text-primary mt-1 size-8 shrink-0" />
           <div>
             <h2 className="text-xl font-bold">
-              {english ? "Keep your project in one place" : "প্রকল্পের তথ্য এক জায়গায় রাখুন"}
+              {t("inline.keep_your_project_in_one_place_r8vy6r")}
             </h2>
             <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-              {english
-                ? "Track providers, material orders, project milestones, private documents, expenses, and payment confirmations in your account."
-                : "আপনার অ্যাকাউন্ট থেকে সেবাদাতা, সামগ্রীর অর্ডার, প্রকল্পের মাইলফলক, ব্যক্তিগত নথি, খরচ ও পেমেন্ট নিশ্চিতকরণ দেখুন।"}
+              {t("inline.track_providers_material_orders_project_mi_fmixtg")}
             </p>
           </div>
         </div>
@@ -392,7 +370,7 @@ export function ConstructionHome({
           href="/account/projects/new?service=contractors"
           className={buttonVariants({ size: "lg" })}
         >
-          {english ? "Create a project" : "প্রকল্প তৈরি করুন"}
+          {t("inline.create_a_project_dhtxqj")}
           <ArrowRightIcon data-icon="inline-end" />
         </Link>
       </section>

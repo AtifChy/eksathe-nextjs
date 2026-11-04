@@ -2,10 +2,10 @@
 
 import { cn } from "cn";
 import { ArrowLeftIcon, ArrowRightIcon, MapPinIcon, StarIcon } from "lucide-react";
+import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Link from "next/link";
 
 import { ListingImage } from "@/components/dashboard/listing-image";
-import { useLanguage } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ConstructionService } from "@/lib/construction/service-registry";
@@ -20,7 +20,9 @@ export function ConstructionServiceDetail({
   routeBase: string;
   result: ConstructionMarketResult;
 }) {
-  const { locale, t } = useLanguage();
+  const formatter = useFormatter();
+  const t = useTranslations();
+  const locale = useLocale();
   const bn = locale === "bn";
   const projectHref = `/account/projects/new?service=${encodeURIComponent(service.slug)}`;
   const marketParams = new URLSearchParams({
@@ -28,11 +30,11 @@ export function ConstructionServiceDetail({
     q: service.searchTerms[0] ?? service.slug,
   });
   const formatMoney = (amount: string) =>
-    new Intl.NumberFormat(bn ? "bn-BD" : "en-BD", {
+    formatter.number(Number(amount), {
       style: "currency",
       currency: "BDT",
       maximumFractionDigits: 2,
-    }).format(Number(amount));
+    });
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
@@ -41,7 +43,7 @@ export function ConstructionServiceDetail({
         className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-2 text-sm"
       >
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {bn ? "সব নির্মাণসেবা" : "All construction services"}
+        {t("inline.all_construction_services_dtmafp")}
       </Link>
       <section className="border-primary/15 from-secondary/80 via-card to-card grid gap-6 rounded-[2rem] border bg-gradient-to-br p-6 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
@@ -49,25 +51,25 @@ export function ConstructionServiceDetail({
             {service.icon}
           </span>
           <p className="text-primary mt-4 text-sm font-semibold">
-            {bn ? "নির্মাণ সেবা" : "Construction service"}
+            {t("inline.construction_service_199i3gz")}
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
-            {bn ? service.titleBn : service.titleEn}
+            {t(`constructionServices.${service.slug}.title` as never)}
           </h1>
           <p className="text-muted-foreground mt-3 max-w-3xl text-sm leading-7">
-            {bn ? service.descriptionBn : service.descriptionEn}
+            {t(`constructionServices.${service.slug}.description` as never)}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link href={projectHref} className={buttonVariants({ size: "lg" })}>
-            {bn ? "এই সেবার প্রকল্প তৈরি করুন" : "Create a project for this service"}
+            {t("inline.create_a_project_for_this_service_1oz0kdq")}
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
           <Link
             href={`${routeBase}/market?${marketParams}`}
             className={buttonVariants({ variant: "outline", size: "lg" })}
           >
-            {bn ? "মার্কেটপ্লেস দেখুন" : "Browse marketplace"}
+            {t("inline.browse_marketplace_1v4g2rg")}
           </Link>
         </div>
       </section>
@@ -75,17 +77,21 @@ export function ConstructionServiceDetail({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-primary text-sm font-semibold">
-              {bn ? "অনুমোদিত নির্মাণসেবা" : "Approved construction listings"}
+              {t("inline.approved_construction_listings_vb7f0k")}
             </p>
             <h2 className="mt-1 text-2xl font-bold">
-              {bn ? "এই সেবার জন্য তালিকা" : `Listings for ${service.titleEn.toLocaleLowerCase()}`}
+              {t("constructionServices.listingsFor", {
+                service: t(
+                  `constructionServices.${service.slug}.title` as never,
+                ).toLocaleLowerCase(),
+              } as never)}
             </h2>
           </div>
           <Link
             href={`${routeBase}/market?${marketParams}`}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            {bn ? "সব ফলাফল" : "View all results"}
+            {t("inline.view_all_results_h55f6r")}
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         </div>
@@ -94,17 +100,15 @@ export function ConstructionServiceDetail({
             role="alert"
             className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border p-5 text-sm"
           >
-            {t.workflow.dataUnavailable}
+            {t("workflow.dataUnavailable")}
           </p>
         ) : result.items.length === 0 ? (
           <div className="rounded-2xl border border-dashed p-7">
             <p className="text-muted-foreground text-sm">
-              {bn
-                ? "এই সেবার কোনো অনুমোদিত তালিকা এখনো নেই। প্রকল্প তৈরি করে আপনার কাজের জন্য সেবাদাতাদের আমন্ত্রণ জানান।"
-                : "There are no approved listings for this service yet. Create a project to invite providers for your specific work."}
+              {t("inline.there_are_no_approved_listings_for_this_se_1ouvm32")}
             </p>
             <Link href={projectHref} className={cn(buttonVariants({ variant: "outline" }), "mt-4")}>
-              {bn ? "প্রকল্প তৈরি করুন" : "Create a project"}
+              {t("inline.create_a_project_dhtxqj")}
               <ArrowRightIcon data-icon="inline-end" />
             </Link>
           </div>
@@ -150,7 +154,7 @@ export function ConstructionServiceDetail({
                     href={`${routeBase}/listings/${listing.id}`}
                     className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4")}
                   >
-                    {bn ? "বিস্তারিত" : "Details"}
+                    {t("inline.details_ccvazu")}
                     <ArrowRightIcon data-icon="inline-end" />
                   </Link>
                 </CardContent>
