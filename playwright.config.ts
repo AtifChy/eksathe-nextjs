@@ -15,10 +15,12 @@ export default defineConfig({
     baseURL,
     trace: "retain-on-failure",
   },
-  webServer: process.env.PLAYWRIGHT_BASE_URL ? undefined : {
-    command: "bun run dev -- --hostname 127.0.0.1 --port 3100",
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : {
+        command: "bun run dev -- --hostname 127.0.0.1 --port 3100",
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 });

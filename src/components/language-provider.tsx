@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React, {
   createContext,
   useCallback,
@@ -8,13 +9,8 @@ import React, {
   useMemo,
   useSyncExternalStore,
 } from "react";
-import { useRouter } from "next/navigation";
 
-import {
-  dictionaries,
-  type Dictionary,
-  type Locale,
-} from "@/dictionaries";
+import { dictionaries, type Dictionary, type Locale } from "@/dictionaries";
 
 interface LanguageContextType {
   locale: Locale;
@@ -68,16 +64,9 @@ interface LanguageProviderProps {
   initialLocale?: Locale;
 }
 
-export function LanguageProvider({
-  children,
-  initialLocale = "bn",
-}: LanguageProviderProps) {
+export function LanguageProvider({ children, initialLocale = "bn" }: LanguageProviderProps) {
   const router = useRouter();
-  const locale = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    () => initialLocale,
-  );
+  const locale = useSyncExternalStore(subscribe, getSnapshot, () => initialLocale);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -113,11 +102,7 @@ export function LanguageProvider({
     [locale, setLocale, toggleLocale, t],
   );
 
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  );
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage(): LanguageContextType {

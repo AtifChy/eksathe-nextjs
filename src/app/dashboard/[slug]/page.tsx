@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
 import { SectorLanding } from "@/components/dashboard/sector-landing";
-import { getSector, agricultureListings, constructionListings } from "@/lib/sectors";
 import { getPublicListings } from "@/lib/listings";
+import { getSector, agricultureListings, constructionListings } from "@/lib/sectors";
 
 export const instant = false;
 
@@ -27,5 +28,12 @@ export default async function SectorPage({ params }: SectorPageProps) {
   const isAgriculture = slug === "agriculture-labor";
   const services = isAgriculture ? agricultureListings : constructionListings;
   const listingResult = await getPublicListings(slug);
-  return <SectorLanding sector={sector} listings={listingResult.items} unavailable={listingResult.unavailable} services={[...services]} />;
+  return (
+    <SectorLanding
+      sector={sector}
+      listings={listingResult.items}
+      unavailable={listingResult.unavailable}
+      services={[...services]}
+    />
+  );
 }

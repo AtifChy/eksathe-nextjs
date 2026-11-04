@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+
 import type { PublicListing } from "@/lib/listings";
 
 type ListingVisual = Pick<PublicListing, "id" | "kind" | "category" | "hasImage">;
@@ -23,7 +24,11 @@ function listingEmoji(listing: ListingVisual) {
   return "🌱";
 }
 
-export function ListingImage({ listing, alt, sizes }: {
+export function ListingImage({
+  listing,
+  alt,
+  sizes,
+}: {
   listing: ListingVisual;
   alt: string;
   sizes: string;
@@ -33,12 +38,29 @@ export function ListingImage({ listing, alt, sizes }: {
   const showPhoto = listing.hasImage && failedSource !== source;
 
   return (
-    <div data-slot="listing-image" className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-t-xl bg-secondary/50">
+    <div
+      data-slot="listing-image"
+      className="bg-secondary/50 relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-t-xl"
+    >
       {showPhoto ? (
-        <Image src={source} alt={alt} fill sizes={sizes} className="object-cover" unoptimized onError={() => setFailedSource(source)} />
+        <Image
+          src={source}
+          alt={alt}
+          fill
+          sizes={sizes}
+          className="object-cover"
+          unoptimized
+          onError={() => setFailedSource(source)}
+        />
       ) : (
-        <div role="img" aria-label={alt} className="flex size-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/15">
-          <span aria-hidden="true" className="select-none text-7xl">{listingEmoji(listing)}</span>
+        <div
+          role="img"
+          aria-label={alt}
+          className="from-primary/5 to-primary/15 flex size-full items-center justify-center bg-gradient-to-br"
+        >
+          <span aria-hidden="true" className="text-7xl select-none">
+            {listingEmoji(listing)}
+          </span>
         </div>
       )}
     </div>

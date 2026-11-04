@@ -1,8 +1,7 @@
 import "server-only";
-
 import type { RequestStatus } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
 import type { StaffAccess } from "@/lib/dal";
+import { prisma } from "@/lib/prisma";
 
 const decimal = (value: { toString(): string } | null | undefined) => value?.toString() ?? null;
 const iso = (value: Date | null | undefined) => value?.toISOString() ?? null;
@@ -13,7 +12,9 @@ export async function getCustomerWorkspace(userId: string) {
       where: { buyerId: userId },
       orderBy: { createdAt: "desc" },
       include: {
-        listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true, district: true } },
+        listing: {
+          select: { titleBn: true, titleEn: true, kind: true, unit: true, district: true },
+        },
         provider: { select: { nameBn: true, nameEn: true } },
         quote: true,
         order: { select: { id: true, status: true } },
@@ -36,9 +37,24 @@ export async function getCustomerWorkspace(userId: string) {
       orderBy: { updatedAt: "desc" },
       include: {
         milestones: { orderBy: { createdAt: "asc" } },
-        orders: { include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { nameBn: true, nameEn: true } }, payments: { orderBy: { createdAt: "desc" } } } },
-        requests: { include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { id: true, nameBn: true, nameEn: true } }, quote: true, order: { select: { id: true, status: true } } } },
-        documents: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
+        orders: {
+          include: {
+            listing: { select: { titleBn: true, titleEn: true, kind: true } },
+            provider: { select: { nameBn: true, nameEn: true } },
+            payments: { orderBy: { createdAt: "desc" } },
+          },
+        },
+        requests: {
+          include: {
+            listing: { select: { titleBn: true, titleEn: true, kind: true } },
+            provider: { select: { id: true, nameBn: true, nameEn: true } },
+            quote: true,
+            order: { select: { id: true, status: true } },
+          },
+        },
+        documents: {
+          select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true },
+        },
         expenses: { orderBy: { occurredAt: "desc" } },
       },
     }),
@@ -68,15 +84,17 @@ export async function getCustomerWorkspace(userId: string) {
       createdAt: iso(request.createdAt),
       listing: request.listing,
       provider: request.provider,
-      quote: request.quote ? {
-        id: request.quote.id,
-        status: request.quote.status,
-        quantity: request.quote.quantity.toString(),
-        unitPrice: request.quote.unitPrice.toString(),
-        transportFee: request.quote.transportFee.toString(),
-        note: request.quote.note,
-        expiresAt: iso(request.quote.expiresAt),
-      } : null,
+      quote: request.quote
+        ? {
+            id: request.quote.id,
+            status: request.quote.status,
+            quantity: request.quote.quantity.toString(),
+            unitPrice: request.quote.unitPrice.toString(),
+            transportFee: request.quote.transportFee.toString(),
+            note: request.quote.note,
+            expiresAt: iso(request.quote.expiresAt),
+          }
+        : null,
       order: request.order,
     })),
     orders: orders.map((order) => ({
@@ -93,7 +111,9 @@ export async function getCustomerWorkspace(userId: string) {
       cancelRequestedById: order.cancelRequestedById,
       listing: order.listing,
       provider: order.provider,
-      booking: order.booking ? { startsAt: iso(order.booking.startsAt), endsAt: iso(order.booking.endsAt) } : null,
+      booking: order.booking
+        ? { startsAt: iso(order.booking.startsAt), endsAt: iso(order.booking.endsAt) }
+        : null,
       payments: order.payments.map((payment) => ({
         id: payment.id,
         amount: payment.amount.toString(),
@@ -106,7 +126,9 @@ export async function getCustomerWorkspace(userId: string) {
         refundAmount: decimal(payment.refundAmount),
         hasReceipt: Boolean(payment.receiptKey),
       })),
-      commission: order.commission ? { status: order.commission.status, amount: order.commission.amount.toString() } : null,
+      commission: order.commission
+        ? { status: order.commission.status, amount: order.commission.amount.toString() }
+        : null,
       hasReview: Boolean(order.review),
     })),
     projects: projects.map((project) => ({
@@ -130,7 +152,15 @@ export async function getCustomerWorkspace(userId: string) {
         kind: order.listing.kind,
         providerNameBn: order.provider.nameBn,
         providerNameEn: order.provider.nameEn,
-        payments: order.payments.map((payment) => ({ id: payment.id, amount: payment.amount.toString(), method: payment.method, reference: payment.reference, refundAmount: decimal(payment.refundAmount), confirmed: Boolean(payment.buyerConfirmedAt && payment.providerConfirmedAt), hasReceipt: Boolean(payment.receiptKey) })),
+        payments: order.payments.map((payment) => ({
+          id: payment.id,
+          amount: payment.amount.toString(),
+          method: payment.method,
+          reference: payment.reference,
+          refundAmount: decimal(payment.refundAmount),
+          confirmed: Boolean(payment.buyerConfirmedAt && payment.providerConfirmedAt),
+          hasReceipt: Boolean(payment.receiptKey),
+        })),
       })),
       requests: project.requests.map((request) => ({
         id: request.id,
@@ -145,7 +175,17 @@ export async function getCustomerWorkspace(userId: string) {
         providerId: request.provider.id,
         providerNameBn: request.provider.nameBn,
         providerNameEn: request.provider.nameEn,
-        quote: request.quote ? { id: request.quote.id, quantity: request.quote.quantity.toString(), unitPrice: request.quote.unitPrice.toString(), transportFee: request.quote.transportFee.toString(), note: request.quote.note, status: request.quote.status, expiresAt: iso(request.quote.expiresAt) } : null,
+        quote: request.quote
+          ? {
+              id: request.quote.id,
+              quantity: request.quote.quantity.toString(),
+              unitPrice: request.quote.unitPrice.toString(),
+              transportFee: request.quote.transportFee.toString(),
+              note: request.quote.note,
+              status: request.quote.status,
+              expiresAt: iso(request.quote.expiresAt),
+            }
+          : null,
         order: request.order,
       })),
       milestones: project.milestones.map((milestone) => ({
@@ -156,8 +196,16 @@ export async function getCustomerWorkspace(userId: string) {
         dueAt: iso(milestone.dueAt),
         status: milestone.status,
       })),
-      documents: project.documents.map((document) => ({ ...document, createdAt: iso(document.createdAt) })),
-      expenses: project.expenses.map((expense) => ({ id: expense.id, description: expense.description, amount: expense.amount.toString(), occurredAt: iso(expense.occurredAt) })),
+      documents: project.documents.map((document) => ({
+        ...document,
+        createdAt: iso(document.createdAt),
+      })),
+      expenses: project.expenses.map((expense) => ({
+        id: expense.id,
+        description: expense.description,
+        amount: expense.amount.toString(),
+        occurredAt: iso(expense.occurredAt),
+      })),
     })),
     notifications: notifications.map((notification) => ({
       id: notification.id,
@@ -178,7 +226,12 @@ export async function getCustomerWorkspace(userId: string) {
       budget: decimal(request.budget),
       createdAt: iso(request.createdAt),
       service: request.serviceDefinition,
-      updates: request.updates.map((update) => ({ id: update.id, messageBn: update.messageBn, messageEn: update.messageEn, createdAt: iso(update.createdAt) })),
+      updates: request.updates.map((update) => ({
+        id: update.id,
+        messageBn: update.messageBn,
+        messageEn: update.messageEn,
+        createdAt: iso(update.createdAt),
+      })),
       attachments: request.attachments,
     })),
   };
@@ -198,7 +251,11 @@ export async function getProviderWorkspace(userId: string) {
     prisma.marketplaceRequest.findMany({
       where: { providerId: profile.id, status: { in: ["OPEN", "QUOTED"] } },
       orderBy: { createdAt: "desc" },
-      include: { buyer: { select: { name: true } }, listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true } }, quote: true },
+      include: {
+        buyer: { select: { name: true } },
+        listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true } },
+        quote: true,
+      },
     }),
     prisma.order.findMany({
       where: { providerId: profile.id },
@@ -232,7 +289,12 @@ export async function getProviderWorkspace(userId: string) {
       hasProfileImage: Boolean(profile.profileImageKey),
       hasCoverImage: Boolean(profile.coverImageKey),
     },
-    capabilities: profile.capabilities.map((capability) => ({ id: capability.id, sectorSlug: capability.sectorSlug, kind: capability.kind, status: capability.status })),
+    capabilities: profile.capabilities.map((capability) => ({
+      id: capability.id,
+      sectorSlug: capability.sectorSlug,
+      kind: capability.kind,
+      status: capability.status,
+    })),
     listings: profile.listings.map((listing) => ({
       id: listing.id,
       sectorSlug: listing.sectorSlug,
@@ -262,14 +324,16 @@ export async function getProviderWorkspace(userId: string) {
       requestedEnd: iso(request.requestedEnd),
       buyerName: request.buyer.name,
       listing: request.listing,
-      quote: request.quote ? {
-        id: request.quote.id,
-        status: request.quote.status,
-        quantity: request.quote.quantity.toString(),
-        unitPrice: request.quote.unitPrice.toString(),
-        transportFee: request.quote.transportFee.toString(),
-        note: request.quote.note,
-      } : null,
+      quote: request.quote
+        ? {
+            id: request.quote.id,
+            status: request.quote.status,
+            quantity: request.quote.quantity.toString(),
+            unitPrice: request.quote.unitPrice.toString(),
+            transportFee: request.quote.transportFee.toString(),
+            note: request.quote.note,
+          }
+        : null,
     })),
     orders: orders.map((order) => ({
       id: order.id,
@@ -283,7 +347,9 @@ export async function getProviderWorkspace(userId: string) {
       transportFee: order.transportFee.toString(),
       commissionAmount: order.commissionAmount.toString(),
       listing: order.listing,
-      booking: order.booking ? { startsAt: iso(order.booking.startsAt), endsAt: iso(order.booking.endsAt) } : null,
+      booking: order.booking
+        ? { startsAt: iso(order.booking.startsAt), endsAt: iso(order.booking.endsAt) }
+        : null,
       cancellationReason: order.cancellationReason,
       cancelRequestedById: order.cancelRequestedById,
       payments: order.payments.map((payment) => ({
@@ -297,7 +363,9 @@ export async function getProviderWorkspace(userId: string) {
         providerConfirmedAt: iso(payment.providerConfirmedAt),
         hasReceipt: Boolean(payment.receiptKey),
       })),
-      commission: order.commission ? { status: order.commission.status, amount: order.commission.amount.toString() } : null,
+      commission: order.commission
+        ? { status: order.commission.status, amount: order.commission.amount.toString() }
+        : null,
     })),
     notifications: notifications.map((notification) => ({
       id: notification.id,
@@ -308,7 +376,17 @@ export async function getProviderWorkspace(userId: string) {
       href: notification.href,
       createdAt: iso(notification.createdAt),
     })),
-    projectMilestones: projectMilestones.map((milestone) => ({ id: milestone.id, title: milestone.title, description: milestone.description, amount: decimal(milestone.amount), dueAt: iso(milestone.dueAt), status: milestone.status, projectId: milestone.project.id, projectTitle: milestone.project.title, district: milestone.project.district })),
+    projectMilestones: projectMilestones.map((milestone) => ({
+      id: milestone.id,
+      title: milestone.title,
+      description: milestone.description,
+      amount: decimal(milestone.amount),
+      dueAt: iso(milestone.dueAt),
+      status: milestone.status,
+      projectId: milestone.project.id,
+      projectTitle: milestone.project.title,
+      district: milestone.project.district,
+    })),
   };
 }
 
@@ -321,78 +399,185 @@ export type AgricultureAdminFilters = {
   dateTo?: string;
 };
 
-export async function getAdminWorkspace(access: StaffAccess, agricultureFilters: AgricultureAdminFilters = {}) {
+export async function getAdminWorkspace(
+  access: StaffAccess,
+  agricultureFilters: AgricultureAdminFilters = {},
+) {
   const sectorSlugs = Array.from(new Set([...access.operationSectors, ...access.financeSectors]));
-  const dateToExclusive = agricultureFilters.dateTo ? new Date(`${agricultureFilters.dateTo}T00:00:00.000Z`) : undefined;
+  const dateToExclusive = agricultureFilters.dateTo
+    ? new Date(`${agricultureFilters.dateTo}T00:00:00.000Z`)
+    : undefined;
   dateToExclusive?.setUTCDate(dateToExclusive.getUTCDate() + 1);
   const agricultureWhere = {
-    serviceDefinition: { sectorSlug: "agriculture-labor", ...(agricultureFilters.serviceSlug ? { slug: agricultureFilters.serviceSlug } : {}) },
-    ...(agricultureFilters.district ? { district: { contains: agricultureFilters.district, mode: "insensitive" as const } } : {}),
+    serviceDefinition: {
+      sectorSlug: "agriculture-labor",
+      ...(agricultureFilters.serviceSlug ? { slug: agricultureFilters.serviceSlug } : {}),
+    },
+    ...(agricultureFilters.district
+      ? { district: { contains: agricultureFilters.district, mode: "insensitive" as const } }
+      : {}),
     ...(agricultureFilters.status ? { status: agricultureFilters.status } : {}),
     ...(agricultureFilters.assigneeId ? { assignedToId: agricultureFilters.assigneeId } : {}),
-    ...((agricultureFilters.dateFrom || dateToExclusive) ? { createdAt: { ...(agricultureFilters.dateFrom ? { gte: new Date(`${agricultureFilters.dateFrom}T00:00:00.000Z`) } : {}), ...(dateToExclusive ? { lt: dateToExclusive } : {}) } } : {}),
+    ...(agricultureFilters.dateFrom || dateToExclusive
+      ? {
+          createdAt: {
+            ...(agricultureFilters.dateFrom
+              ? { gte: new Date(`${agricultureFilters.dateFrom}T00:00:00.000Z`) }
+              : {}),
+            ...(dateToExclusive ? { lt: dateToExclusive } : {}),
+          },
+        }
+      : {}),
   };
   const agricultureEnabled = access.operationSectors.includes("agriculture-labor");
-  const [capabilities, listings, requests, disputes, commissions, paymentMismatches, sectors, staffGrants, agricultureRequests, agricultureStaff] = await Promise.all([
-    access.operationSectors.length ? prisma.providerCapability.findMany({
-      where: { status: "PENDING", sectorSlug: { in: access.operationSectors } },
-      orderBy: { createdAt: "asc" },
-      include: { sector: { select: { titleBn: true, titleEn: true } }, provider: { include: { user: { select: { name: true, email: true, phone: true } } } } },
-    }) : Promise.resolve([]),
-    access.operationSectors.length ? prisma.marketplaceListing.findMany({
-      where: { moderationStatus: "PENDING", archivedAt: null, sectorSlug: { in: access.operationSectors } },
-      orderBy: { createdAt: "asc" },
-      include: { provider: { select: { nameBn: true, nameEn: true } } },
-    }) : Promise.resolve([]),
-    access.operationSectors.length ? prisma.marketplaceRequest.findMany({
-      where: { status: { in: ["OPEN", "QUOTED"] }, sectorSlug: { in: access.operationSectors } },
-      orderBy: { createdAt: "asc" },
-      include: {
-        buyer: { select: { name: true } },
-        listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true } },
-        provider: { select: { id: true, nameBn: true, nameEn: true } },
-        project: { select: { title: true } },
-        quote: { select: { quantity: true, unitPrice: true, transportFee: true } },
-      },
-    }) : Promise.resolve([]),
-    access.operationSectors.length ? prisma.order.findMany({
-      where: { status: "DISPUTED", request: { sectorSlug: { in: access.operationSectors } } },
-      orderBy: { updatedAt: "asc" },
-      include: { buyer: { select: { name: true } }, provider: { select: { nameBn: true, nameEn: true } }, listing: { select: { titleBn: true, titleEn: true } }, request: { select: { sectorSlug: true } } },
-    }) : Promise.resolve([]),
-    access.financeSectors.length ? prisma.commissionRecord.findMany({
-      where: { status: "DUE", order: { request: { sectorSlug: { in: access.financeSectors } } } },
-      orderBy: { order: { createdAt: "asc" } },
-      include: { order: { include: { buyer: { select: { name: true } }, provider: { select: { nameBn: true, nameEn: true } }, listing: { select: { titleBn: true, titleEn: true } }, request: { select: { sectorSlug: true } } } } },
-    }) : Promise.resolve([]),
-    access.financeSectors.length ? prisma.paymentRecord.findMany({
-      where: {
-        OR: [{ buyerConfirmedAt: null }, { providerConfirmedAt: null }],
-        order: { request: { sectorSlug: { in: access.financeSectors } } },
-      },
-      orderBy: { createdAt: "asc" },
-      include: { order: { include: { buyer: { select: { name: true } }, provider: { select: { nameBn: true, nameEn: true } }, listing: { select: { titleBn: true, titleEn: true } }, request: { select: { sectorSlug: true } } } } },
-    }) : Promise.resolve([]),
-    sectorSlugs.length ? prisma.sector.findMany({ where: { slug: { in: sectorSlugs } }, orderBy: { position: "asc" } }) : Promise.resolve([]),
-    access.isSuperAdmin ? prisma.staffGrant.findMany({ orderBy: [{ permission: "asc" }, { scopeKey: "asc" }], include: { user: { select: { name: true, email: true } } } }) : Promise.resolve([]),
-    agricultureEnabled ? prisma.serviceRequest.findMany({
-      where: agricultureWhere,
-      orderBy: { createdAt: "desc" },
-      take: 100,
-      include: {
-        serviceDefinition: { select: { slug: true, titleBn: true, titleEn: true, icon: true } },
-        user: { select: { id: true, name: true, email: true } },
-        assignedTo: { select: { id: true, name: true, email: true } },
-        updates: { orderBy: { createdAt: "desc" }, take: 10 },
-        attachments: { select: { id: true, filename: true, sizeBytes: true } },
-        marketplaceRequest: { select: { id: true, listing: { select: { titleBn: true, titleEn: true } } } },
-      },
-    }) : Promise.resolve([]),
-    agricultureEnabled ? prisma.user.findMany({
-      where: { status: "active", OR: [{ role: "super_admin" }, { staffGrants: { some: { permission: "OPERATIONS", scopeKey: { in: ["global", "agriculture-labor"] } } } }] },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: "asc" },
-    }) : Promise.resolve([]),
+  const [
+    capabilities,
+    listings,
+    requests,
+    disputes,
+    commissions,
+    paymentMismatches,
+    sectors,
+    staffGrants,
+    agricultureRequests,
+    agricultureStaff,
+  ] = await Promise.all([
+    access.operationSectors.length
+      ? prisma.providerCapability.findMany({
+          where: { status: "PENDING", sectorSlug: { in: access.operationSectors } },
+          orderBy: { createdAt: "asc" },
+          include: {
+            sector: { select: { titleBn: true, titleEn: true } },
+            provider: { include: { user: { select: { name: true, email: true, phone: true } } } },
+          },
+        })
+      : Promise.resolve([]),
+    access.operationSectors.length
+      ? prisma.marketplaceListing.findMany({
+          where: {
+            moderationStatus: "PENDING",
+            archivedAt: null,
+            sectorSlug: { in: access.operationSectors },
+          },
+          orderBy: { createdAt: "asc" },
+          include: { provider: { select: { nameBn: true, nameEn: true } } },
+        })
+      : Promise.resolve([]),
+    access.operationSectors.length
+      ? prisma.marketplaceRequest.findMany({
+          where: {
+            status: { in: ["OPEN", "QUOTED"] },
+            sectorSlug: { in: access.operationSectors },
+          },
+          orderBy: { createdAt: "asc" },
+          include: {
+            buyer: { select: { name: true } },
+            listing: { select: { titleBn: true, titleEn: true, kind: true, unit: true } },
+            provider: { select: { id: true, nameBn: true, nameEn: true } },
+            project: { select: { title: true } },
+            quote: { select: { quantity: true, unitPrice: true, transportFee: true } },
+          },
+        })
+      : Promise.resolve([]),
+    access.operationSectors.length
+      ? prisma.order.findMany({
+          where: { status: "DISPUTED", request: { sectorSlug: { in: access.operationSectors } } },
+          orderBy: { updatedAt: "asc" },
+          include: {
+            buyer: { select: { name: true } },
+            provider: { select: { nameBn: true, nameEn: true } },
+            listing: { select: { titleBn: true, titleEn: true } },
+            request: { select: { sectorSlug: true } },
+          },
+        })
+      : Promise.resolve([]),
+    access.financeSectors.length
+      ? prisma.commissionRecord.findMany({
+          where: {
+            status: "DUE",
+            order: { request: { sectorSlug: { in: access.financeSectors } } },
+          },
+          orderBy: { order: { createdAt: "asc" } },
+          include: {
+            order: {
+              include: {
+                buyer: { select: { name: true } },
+                provider: { select: { nameBn: true, nameEn: true } },
+                listing: { select: { titleBn: true, titleEn: true } },
+                request: { select: { sectorSlug: true } },
+              },
+            },
+          },
+        })
+      : Promise.resolve([]),
+    access.financeSectors.length
+      ? prisma.paymentRecord.findMany({
+          where: {
+            OR: [{ buyerConfirmedAt: null }, { providerConfirmedAt: null }],
+            order: { request: { sectorSlug: { in: access.financeSectors } } },
+          },
+          orderBy: { createdAt: "asc" },
+          include: {
+            order: {
+              include: {
+                buyer: { select: { name: true } },
+                provider: { select: { nameBn: true, nameEn: true } },
+                listing: { select: { titleBn: true, titleEn: true } },
+                request: { select: { sectorSlug: true } },
+              },
+            },
+          },
+        })
+      : Promise.resolve([]),
+    sectorSlugs.length
+      ? prisma.sector.findMany({
+          where: { slug: { in: sectorSlugs } },
+          orderBy: { position: "asc" },
+        })
+      : Promise.resolve([]),
+    access.isSuperAdmin
+      ? prisma.staffGrant.findMany({
+          orderBy: [{ permission: "asc" }, { scopeKey: "asc" }],
+          include: { user: { select: { name: true, email: true } } },
+        })
+      : Promise.resolve([]),
+    agricultureEnabled
+      ? prisma.serviceRequest.findMany({
+          where: agricultureWhere,
+          orderBy: { createdAt: "desc" },
+          take: 100,
+          include: {
+            serviceDefinition: { select: { slug: true, titleBn: true, titleEn: true, icon: true } },
+            user: { select: { id: true, name: true, email: true } },
+            assignedTo: { select: { id: true, name: true, email: true } },
+            updates: { orderBy: { createdAt: "desc" }, take: 10 },
+            attachments: { select: { id: true, filename: true, sizeBytes: true } },
+            marketplaceRequest: {
+              select: { id: true, listing: { select: { titleBn: true, titleEn: true } } },
+            },
+          },
+        })
+      : Promise.resolve([]),
+    agricultureEnabled
+      ? prisma.user.findMany({
+          where: {
+            status: "active",
+            OR: [
+              { role: "super_admin" },
+              {
+                staffGrants: {
+                  some: {
+                    permission: "OPERATIONS",
+                    scopeKey: { in: ["global", "agriculture-labor"] },
+                  },
+                },
+              },
+            ],
+          },
+          select: { id: true, name: true, email: true },
+          orderBy: { name: "asc" },
+        })
+      : Promise.resolve([]),
   ]);
 
   return {
@@ -447,11 +632,13 @@ export async function getAdminWorkspace(access: StaffAccess, agricultureFilters:
       requestedStart: iso(request.requestedStart),
       requestedEnd: iso(request.requestedEnd),
       createdAt: iso(request.createdAt),
-      quote: request.quote ? {
-        quantity: request.quote.quantity.toString(),
-        unitPrice: request.quote.unitPrice.toString(),
-        transportFee: request.quote.transportFee.toString(),
-      } : null,
+      quote: request.quote
+        ? {
+            quantity: request.quote.quantity.toString(),
+            unitPrice: request.quote.unitPrice.toString(),
+            transportFee: request.quote.transportFee.toString(),
+          }
+        : null,
     })),
     disputes: disputes.map((order) => ({
       id: order.id,
@@ -489,8 +676,19 @@ export async function getAdminWorkspace(access: StaffAccess, agricultureFilters:
       providerNameBn: payment.order.provider.nameBn,
       providerNameEn: payment.order.provider.nameEn,
     })),
-    sectors: sectors.map((sector) => ({ slug: sector.slug, titleBn: sector.titleBn, titleEn: sector.titleEn, commissionRate: sector.commissionRate.toString() })),
-    staffGrants: staffGrants.map((grant) => ({ id: grant.id, name: grant.user.name, email: grant.user.email, permission: grant.permission, scopeKey: grant.scopeKey })),
+    sectors: sectors.map((sector) => ({
+      slug: sector.slug,
+      titleBn: sector.titleBn,
+      titleEn: sector.titleEn,
+      commissionRate: sector.commissionRate.toString(),
+    })),
+    staffGrants: staffGrants.map((grant) => ({
+      id: grant.id,
+      name: grant.user.name,
+      email: grant.user.email,
+      permission: grant.permission,
+      scopeKey: grant.scopeKey,
+    })),
     agricultureRequests: agricultureRequests.map((request) => ({
       id: request.id,
       referenceCode: request.referenceCode,
@@ -507,7 +705,13 @@ export async function getAdminWorkspace(access: StaffAccess, agricultureFilters:
       fieldSnapshot: request.fieldSnapshot,
       assignedTo: request.assignedTo,
       userId: request.userId,
-      updates: request.updates.map((update) => ({ id: update.id, visibility: update.visibility, messageBn: update.messageBn, messageEn: update.messageEn, createdAt: iso(update.createdAt) })),
+      updates: request.updates.map((update) => ({
+        id: update.id,
+        visibility: update.visibility,
+        messageBn: update.messageBn,
+        messageEn: update.messageEn,
+        createdAt: iso(update.createdAt),
+      })),
       attachments: request.attachments,
       marketplaceRequest: request.marketplaceRequest,
     })),
@@ -523,7 +727,9 @@ export async function getCustomerAgricultureRequest(userId: string, requestId: n
     include: {
       serviceDefinition: { select: { slug: true, titleBn: true, titleEn: true, icon: true } },
       updates: { where: { visibility: "CUSTOMER" }, orderBy: { createdAt: "asc" } },
-      attachments: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
+      attachments: {
+        select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true },
+      },
     },
   });
   if (!request) return null;
@@ -540,22 +746,42 @@ export async function getCustomerAgricultureRequest(userId: string, requestId: n
     fieldSnapshot: request.fieldSnapshot,
     createdAt: iso(request.createdAt),
     service: request.serviceDefinition,
-    updates: request.updates.map((update) => ({ id: update.id, messageBn: update.messageBn, messageEn: update.messageEn, createdAt: iso(update.createdAt) })),
-    attachments: request.attachments.map((attachment) => ({ ...attachment, createdAt: iso(attachment.createdAt) })),
+    updates: request.updates.map((update) => ({
+      id: update.id,
+      messageBn: update.messageBn,
+      messageEn: update.messageEn,
+      createdAt: iso(update.createdAt),
+    })),
+    attachments: request.attachments.map((attachment) => ({
+      ...attachment,
+      createdAt: iso(attachment.createdAt),
+    })),
   };
 }
 
 export async function getProjectWorkspace(userId: string, projectId: string) {
-  const access = await prisma.constructionProject.findUnique({ where: { id: projectId }, select: { id: true, ownerId: true } });
+  const access = await prisma.constructionProject.findUnique({
+    where: { id: projectId },
+    select: { id: true, ownerId: true },
+  });
   if (!access) return null;
   const isOwner = access.ownerId === userId;
   let providerId: string | null = null;
   if (!isOwner) {
-    const profile = await prisma.providerProfile.findUnique({ where: { userId }, select: { id: true, status: true } });
+    const profile = await prisma.providerProfile.findUnique({
+      where: { userId },
+      select: { id: true, status: true },
+    });
     if (!profile || profile.status !== "APPROVED") return null;
     providerId = profile.id;
-    const invited = await prisma.marketplaceRequest.findFirst({ where: { projectId, providerId }, select: { id: true } });
-    const engaged = await prisma.order.findFirst({ where: { projectId, providerId }, select: { id: true } });
+    const invited = await prisma.marketplaceRequest.findFirst({
+      where: { projectId, providerId },
+      select: { id: true },
+    });
+    const engaged = await prisma.order.findFirst({
+      where: { projectId, providerId },
+      select: { id: true },
+    });
     if (!invited && !engaged) return null;
   }
 
@@ -577,20 +803,39 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       orders: {
         ...(isOwner ? {} : { where: { providerId: providerId ?? undefined } }),
         orderBy: { createdAt: "desc" },
-        include: { listing: { select: { titleBn: true, titleEn: true, kind: true } }, provider: { select: { id: true, nameBn: true, nameEn: true } }, projectPackage: { select: { id: true, label: true } }, payments: { orderBy: { createdAt: "desc" } } },
+        include: {
+          listing: { select: { titleBn: true, titleEn: true, kind: true } },
+          provider: { select: { id: true, nameBn: true, nameEn: true } },
+          projectPackage: { select: { id: true, label: true } },
+          payments: { orderBy: { createdAt: "desc" } },
+        },
       },
       packages: {
-        ...(isOwner ? {} : { where: { requests: { some: { providerId: providerId ?? undefined } } } }),
+        ...(isOwner
+          ? {}
+          : { where: { requests: { some: { providerId: providerId ?? undefined } } } }),
         orderBy: { createdAt: "asc" },
-        select: { id: true, label: true, description: true, kind: true, serviceSlug: true, preferredListingId: true, createdAt: true },
+        select: {
+          id: true,
+          label: true,
+          description: true,
+          kind: true,
+          serviceSlug: true,
+          preferredListingId: true,
+          createdAt: true,
+        },
       },
       milestones: {
         ...(isOwner ? {} : { where: { assignedProviderId: providerId ?? undefined } }),
         orderBy: { createdAt: "asc" },
         include: { assignedProvider: { select: { id: true, nameBn: true, nameEn: true } } },
       },
-      documents: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
-      photos: { select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true } },
+      documents: {
+        select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true },
+      },
+      photos: {
+        select: { id: true, filename: true, contentType: true, sizeBytes: true, createdAt: true },
+      },
       expenses: { orderBy: { occurredAt: "desc" } },
     },
   });
@@ -634,15 +879,17 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       providerId: request.provider.id,
       providerNameBn: request.provider.nameBn,
       providerNameEn: request.provider.nameEn,
-      quote: request.quote ? {
-        id: request.quote.id,
-        status: request.quote.status,
-        quantity: request.quote.quantity.toString(),
-        unitPrice: request.quote.unitPrice.toString(),
-        transportFee: request.quote.transportFee.toString(),
-        note: request.quote.note,
-        expiresAt: iso(request.quote.expiresAt),
-      } : null,
+      quote: request.quote
+        ? {
+            id: request.quote.id,
+            status: request.quote.status,
+            quantity: request.quote.quantity.toString(),
+            unitPrice: request.quote.unitPrice.toString(),
+            transportFee: request.quote.transportFee.toString(),
+            note: request.quote.note,
+            expiresAt: iso(request.quote.expiresAt),
+          }
+        : null,
       order: request.order,
     })),
     orders: project.orders.map((order) => ({
@@ -658,7 +905,15 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       packageLabel: order.projectPackage?.label ?? null,
       providerNameBn: order.provider.nameBn,
       providerNameEn: order.provider.nameEn,
-      payments: order.payments.map((payment) => ({ id: payment.id, amount: payment.amount.toString(), method: payment.method, reference: payment.reference, refundAmount: decimal(payment.refundAmount), confirmed: Boolean(payment.buyerConfirmedAt && payment.providerConfirmedAt), hasReceipt: Boolean(payment.receiptKey) })),
+      payments: order.payments.map((payment) => ({
+        id: payment.id,
+        amount: payment.amount.toString(),
+        method: payment.method,
+        reference: payment.reference,
+        refundAmount: decimal(payment.refundAmount),
+        confirmed: Boolean(payment.buyerConfirmedAt && payment.providerConfirmedAt),
+        hasReceipt: Boolean(payment.receiptKey),
+      })),
     })),
     milestones: project.milestones.map((milestone) => ({
       id: milestone.id,
@@ -668,15 +923,44 @@ export async function getProjectWorkspace(userId: string, projectId: string) {
       dueAt: iso(milestone.dueAt),
       status: milestone.status,
       assignedProviderId: milestone.assignedProviderId,
-      assignedProvider: milestone.assignedProvider ? { id: milestone.assignedProvider.id, nameBn: milestone.assignedProvider.nameBn, nameEn: milestone.assignedProvider.nameEn } : null,
+      assignedProvider: milestone.assignedProvider
+        ? {
+            id: milestone.assignedProvider.id,
+            nameBn: milestone.assignedProvider.nameBn,
+            nameEn: milestone.assignedProvider.nameEn,
+          }
+        : null,
     })),
-    documents: project.documents.map((document) => ({ id: document.id, filename: document.filename, contentType: document.contentType, sizeBytes: document.sizeBytes, createdAt: iso(document.createdAt) })),
-    photos: project.photos.map((photo) => ({ id: photo.id, filename: photo.filename, contentType: photo.contentType, sizeBytes: photo.sizeBytes, createdAt: iso(photo.createdAt) })),
-    expenses: isOwner ? project.expenses.map((expense) => ({ id: expense.id, description: expense.description, amount: expense.amount.toString(), occurredAt: iso(expense.occurredAt) })) : [],
+    documents: project.documents.map((document) => ({
+      id: document.id,
+      filename: document.filename,
+      contentType: document.contentType,
+      sizeBytes: document.sizeBytes,
+      createdAt: iso(document.createdAt),
+    })),
+    photos: project.photos.map((photo) => ({
+      id: photo.id,
+      filename: photo.filename,
+      contentType: photo.contentType,
+      sizeBytes: photo.sizeBytes,
+      createdAt: iso(photo.createdAt),
+    })),
+    expenses: isOwner
+      ? project.expenses.map((expense) => ({
+          id: expense.id,
+          description: expense.description,
+          amount: expense.amount.toString(),
+          occurredAt: iso(expense.occurredAt),
+        }))
+      : [],
   };
 }
 
-export async function getProjectPackageContext(userId: string, projectId: string, packageId: string) {
+export async function getProjectPackageContext(
+  userId: string,
+  projectId: string,
+  packageId: string,
+) {
   return prisma.projectPackage.findFirst({
     where: { id: packageId, projectId, project: { ownerId: userId } },
     select: { id: true, label: true, kind: true, serviceSlug: true },

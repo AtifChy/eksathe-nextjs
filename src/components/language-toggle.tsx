@@ -1,7 +1,8 @@
 "use client";
 
-import { useLanguage } from "@/components/language-provider";
 import { cn } from "cn";
+
+import { useLanguage } from "@/components/language-provider";
 
 interface LanguageToggleProps {
   /** "header" = white text on dark bg (landing header)

@@ -36,10 +36,10 @@ preserved on later runs.
 
 All three accounts use the local-only password `Demo-only-123!`.
 
-| Workspace | Email |
-| --- | --- |
-| Customer | `demo.buyer@example.com` |
-| Agriculture provider | `demo.farmer@example.com` |
+| Workspace             | Email                      |
+| --------------------- | -------------------------- |
+| Customer              | `demo.buyer@example.com`   |
+| Agriculture provider  | `demo.farmer@example.com`  |
 | Construction provider | `demo.builder@example.com` |
 
 The seed creates produce, worker, machinery, material and construction service

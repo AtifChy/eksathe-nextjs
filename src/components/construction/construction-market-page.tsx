@@ -1,4 +1,5 @@
 import { connection } from "next/server";
+
 import { ConstructionMarket } from "@/components/construction/construction-market";
 import { getConstructionMarketListings, type ConstructionMarketFilters } from "@/lib/listings";
 
@@ -14,7 +15,13 @@ function validPrice(value: string | undefined) {
   return value && /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(value) ? value : undefined;
 }
 
-export async function ConstructionMarketPage({ routeBase, searchParams }: { routeBase: string; searchParams: Promise<SearchParams> }) {
+export async function ConstructionMarketPage({
+  routeBase,
+  searchParams,
+}: {
+  routeBase: string;
+  searchParams: Promise<SearchParams>;
+}) {
   await connection();
   const query = await searchParams;
   const rawKind = first(query.type);
@@ -22,12 +29,20 @@ export async function ConstructionMarketPage({ routeBase, searchParams }: { rout
   const rawPage = first(query.page);
   const filters: ConstructionMarketFilters = {
     ...(first(query.q)?.trim() ? { q: first(query.q)!.trim().slice(0, 100) } : {}),
-    ...(rawKind && kinds.has(rawKind) ? { kind: rawKind as ConstructionMarketFilters["kind"] } : {}),
-    ...(first(query.category)?.trim() ? { category: first(query.category)!.trim().slice(0, 80) } : {}),
-    ...(first(query.district)?.trim() ? { district: first(query.district)!.trim().slice(0, 80) } : {}),
+    ...(rawKind && kinds.has(rawKind)
+      ? { kind: rawKind as ConstructionMarketFilters["kind"] }
+      : {}),
+    ...(first(query.category)?.trim()
+      ? { category: first(query.category)!.trim().slice(0, 80) }
+      : {}),
+    ...(first(query.district)?.trim()
+      ? { district: first(query.district)!.trim().slice(0, 80) }
+      : {}),
     ...(validPrice(first(query.minPrice)) ? { minPrice: validPrice(first(query.minPrice)) } : {}),
     ...(validPrice(first(query.maxPrice)) ? { maxPrice: validPrice(first(query.maxPrice)) } : {}),
-    ...(rawSort && sorts.has(rawSort) ? { sort: rawSort as ConstructionMarketFilters["sort"] } : {}),
+    ...(rawSort && sorts.has(rawSort)
+      ? { sort: rawSort as ConstructionMarketFilters["sort"] }
+      : {}),
     ...(rawPage && /^\d{1,6}$/.test(rawPage) ? { page: Math.max(1, Number(rawPage)) } : {}),
   };
   const result = await getConstructionMarketListings(filters);

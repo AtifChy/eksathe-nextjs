@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import type { ReactNode } from "react";
 
 import { LanguageProvider } from "@/components/language-provider";
 import { SiteFooter } from "@/components/site-footer";
@@ -28,11 +28,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const savedLocale = (await cookies()).get("NEXT_LOCALE")?.value;
   const initialLocale: Locale = savedLocale === "en" || savedLocale === "bn" ? savedLocale : "bn";
   return (
-    <html
-      lang={initialLocale}
-      suppressHydrationWarning
-      className="h-full antialiased"
-    >
+    <html lang={initialLocale} suppressHydrationWarning className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         <ThemeProvider
           attribute="class"

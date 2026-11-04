@@ -20,6 +20,10 @@ export function estimateCommission(amount: string, transport: string, ratePercen
   if (eligibleAmount === null || transportAmount === null || rateBasisPoints === null) return null;
   const whole = Math.floor(eligibleAmount / 10000);
   const remainder = eligibleAmount % 10000;
-  const commission = whole * rateBasisPoints + Math.floor((remainder * rateBasisPoints + 5000) / 10000);
-  return { commissionCents: commission, providerCents: eligibleAmount - commission + transportAmount };
+  const commission =
+    whole * rateBasisPoints + Math.floor((remainder * rateBasisPoints + 5000) / 10000);
+  return {
+    commissionCents: commission,
+    providerCents: eligibleAmount - commission + transportAmount,
+  };
 }

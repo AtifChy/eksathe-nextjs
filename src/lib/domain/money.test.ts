@@ -1,6 +1,11 @@
 import { describe, expect, it } from "bun:test";
+
 import { Prisma } from "@/generated/prisma/client";
-import { calculateCommission, calculateCommissionReduction, calculateRemainingPayment } from "@/lib/domain/money";
+import {
+  calculateCommission,
+  calculateCommissionReduction,
+  calculateRemainingPayment,
+} from "@/lib/domain/money";
 
 const decimal = (value: string) => new Prisma.Decimal(value);
 
@@ -15,7 +20,14 @@ describe("marketplace money rules", () => {
   });
 
   it("reduces commission proportionally when a refund includes transport", () => {
-    expect(calculateCommissionReduction(decimal("55"), decimal("100"), decimal("10"), decimal("10")).toFixed(2)).toBe("5.00");
+    expect(
+      calculateCommissionReduction(
+        decimal("55"),
+        decimal("100"),
+        decimal("10"),
+        decimal("10"),
+      ).toFixed(2),
+    ).toBe("5.00");
   });
 
   it("subtracts refunds from recorded payment totals", () => {
@@ -27,7 +39,9 @@ describe("marketplace money rules", () => {
   });
 
   it("never reports a negative remaining balance", () => {
-    const remaining = calculateRemainingPayment(decimal("10"), [{ amount: decimal("12"), refundAmount: null }]);
+    const remaining = calculateRemainingPayment(decimal("10"), [
+      { amount: decimal("12"), refundAmount: null },
+    ]);
     expect(remaining.toString()).toBe("0");
   });
 });

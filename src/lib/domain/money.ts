@@ -11,7 +11,9 @@ export function calculateCommissionReduction(
   rate: Prisma.Decimal,
 ) {
   const total = goodsSubtotal.plus(transportFee);
-  const goodsRefund = total.greaterThan(0) ? refundAmount.mul(goodsSubtotal).div(total) : new Prisma.Decimal(0);
+  const goodsRefund = total.greaterThan(0)
+    ? refundAmount.mul(goodsSubtotal).div(total)
+    : new Prisma.Decimal(0);
   return calculateCommission(goodsRefund, rate);
 }
 

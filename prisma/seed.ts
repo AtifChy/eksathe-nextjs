@@ -1,13 +1,12 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
+
 import { PrismaClient } from "../src/generated/prisma/client";
-import { sectors } from "../src/lib/sectors";
 import { agricultureServiceRegistry } from "../src/lib/agriculture/service-registry";
+import { sectors } from "../src/lib/sectors";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
-
-
 
 async function main() {
   for (const sector of sectors) {
@@ -49,7 +48,9 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${sectors.length} sectors and ${agricultureServiceRegistry.length} service definitions.`);
+  console.log(
+    `Seeded ${sectors.length} sectors and ${agricultureServiceRegistry.length} service definitions.`,
+  );
 }
 
 main()

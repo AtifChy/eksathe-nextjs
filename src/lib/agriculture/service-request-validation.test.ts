@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { parseAgricultureServiceAnswers, agricultureServiceRequestSchema } from "@/lib/validations/agriculture";
+
+import {
+  parseAgricultureServiceAnswers,
+  agricultureServiceRequestSchema,
+} from "@/lib/validations/agriculture";
 
 describe("agriculture request validation", () => {
   test("accepts numeric worker counts without using prototype digit limits as quantity limits", () => {
@@ -17,15 +21,36 @@ describe("agriculture request validation", () => {
 
     const date = new FormData();
     date.set("answer.machine_date", "not-a-date");
-    expect(parseAgricultureServiceAnswers("farm-machinery", date).errors.machine_date).toBeDefined();
+    expect(
+      parseAgricultureServiceAnswers("farm-machinery", date).errors.machine_date,
+    ).toBeDefined();
 
     const option = new FormData();
     option.set("answer.seed_kind", "anything");
-    expect(parseAgricultureServiceAnswers("seeds-seedlings", option).errors.seed_kind).toBeDefined();
+    expect(
+      parseAgricultureServiceAnswers("seeds-seedlings", option).errors.seed_kind,
+    ).toBeDefined();
   });
 
   test("requires contact details and accepts an optional decimal budget", () => {
-    expect(agricultureServiceRequestSchema.safeParse({ serviceSlug: "crop-farming", customerName: "", phone: "", district: "", details: "short" }).success).toBe(false);
-    expect(agricultureServiceRequestSchema.safeParse({ serviceSlug: "crop-farming", customerName: "A farmer", phone: "01712345678", district: "Dhaka", details: "Need help planning my crop this season.", budget: "1500.50" }).success).toBe(true);
+    expect(
+      agricultureServiceRequestSchema.safeParse({
+        serviceSlug: "crop-farming",
+        customerName: "",
+        phone: "",
+        district: "",
+        details: "short",
+      }).success,
+    ).toBe(false);
+    expect(
+      agricultureServiceRequestSchema.safeParse({
+        serviceSlug: "crop-farming",
+        customerName: "A farmer",
+        phone: "01712345678",
+        district: "Dhaka",
+        details: "Need help planning my crop this season.",
+        budget: "1500.50",
+      }).success,
+    ).toBe(true);
   });
 });

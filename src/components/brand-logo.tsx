@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { cn } from "cn";
+import Image from "next/image";
 
 export function BrandLogo({ className }: { className?: string }) {
   return (

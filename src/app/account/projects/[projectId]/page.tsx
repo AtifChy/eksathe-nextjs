@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
+
 import { ProjectDetail } from "@/components/projects/project-detail";
 import { WorkspaceError } from "@/components/workflows/workspace-error";
 import { requireUser } from "@/lib/dal";
 import { getPublicListings } from "@/lib/listings";
-import { getProjectWorkspace } from "@/lib/workspaces";
 import { logError } from "@/lib/logging";
+import { getProjectWorkspace } from "@/lib/workspaces";
 
 export const instant = false;
 
@@ -17,6 +18,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ projec
   });
   if (project === undefined) return <WorkspaceError />;
   if (!project) notFound();
-  const listingResult = project.isOwner ? await getPublicListings("construction") : { items: [], unavailable: false };
-  return <ProjectDetail project={project} listings={listingResult.items} listingsUnavailable={listingResult.unavailable} />;
+  const listingResult = project.isOwner
+    ? await getPublicListings("construction")
+    : { items: [], unavailable: false };
+  return (
+    <ProjectDetail
+      project={project}
+      listings={listingResult.items}
+      listingsUnavailable={listingResult.unavailable}
+    />
+  );
 }

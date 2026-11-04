@@ -1,24 +1,38 @@
 import { z } from "zod";
+
 import { agricultureServiceRegistry } from "@/lib/agriculture/service-registry";
 
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
-const optionalMoney = z.string().trim().max(20).refine((value) => value === "" || /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(value));
+const optionalMoney = z
+  .string()
+  .trim()
+  .max(20)
+  .refine((value) => value === "" || /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(value));
 
 export const agricultureServiceRequestSchema = z.strictObject({
   serviceSlug: requiredText(80),
   customerName: requiredText(150),
-  phone: z.string().trim().regex(/^[0-9+ ()-]{7,30}$/),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9+ ()-]{7,30}$/),
   district: requiredText(100),
   details: z.string().trim().min(10).max(5000),
   budget: optionalMoney.optional().default(""),
   diseasePhotoKey: z.string().trim().max(240).optional().default(""),
   diseasePhotoContentType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
-  diseasePhotoSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
+  diseasePhotoSizeBytes: z
+    .string()
+    .regex(/^\d{1,8}$/)
+    .optional(),
 });
 
 export type AgricultureServiceRequestBase = z.infer<typeof agricultureServiceRequestSchema>;
 
-export function parseAgricultureServiceAnswers(serviceSlug: string, formData: FormData): {
+export function parseAgricultureServiceAnswers(
+  serviceSlug: string,
+  formData: FormData,
+): {
   values: Record<string, string>;
   errors: Record<string, string[]>;
   snapshot: object;
@@ -36,7 +50,11 @@ export function parseAgricultureServiceAnswers(serviceSlug: string, formData: Fo
       if (field.required) errors[field.name] = ["This field is required."];
       continue;
     }
-    if ("maxLength" in field && typeof field.maxLength === "number" && value.length > field.maxLength) {
+    if (
+      "maxLength" in field &&
+      typeof field.maxLength === "number" &&
+      value.length > field.maxLength
+    ) {
       errors[field.name] = [`Use ${field.maxLength} characters or fewer.`];
       continue;
     }
@@ -50,7 +68,11 @@ export function parseAgricultureServiceAnswers(serviceSlug: string, formData: Fo
         ? /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/.test(value) && Number(value) > 0
         : /^\d+$/.test(value) && Number.isSafeInteger(Number(value)) && Number(value) > 0;
       if (!validNumber) {
-        errors[field.name] = [isAmount ? "Enter a positive amount with up to two decimals." : "Enter a positive whole number."];
+        errors[field.name] = [
+          isAmount
+            ? "Enter a positive amount with up to two decimals."
+            : "Enter a positive whole number.",
+        ];
         continue;
       }
     }

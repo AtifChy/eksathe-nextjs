@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { agricultureServiceCategories, agricultureServiceRegistry } from "@/lib/agriculture/service-registry";
+
+import {
+  agricultureServiceCategories,
+  agricultureServiceRegistry,
+} from "@/lib/agriculture/service-registry";
 
 describe("agriculture service registry", () => {
   test("contains all 30 stable prototype services with versioned structured fields", () => {
@@ -21,10 +25,20 @@ describe("agriculture service registry", () => {
   });
 
   test("preserves the prototype's numeric, date, select, and optional disease-photo fields", () => {
-    const service = (slug: string) => agricultureServiceRegistry.find((item) => item.slug === slug)!;
-    expect(service("farm-machinery").fields.find((field) => field.name === "machine_date")?.type).toBe("date");
-    expect(service("farm-labour").fields.find((field) => field.name === "labour_count")?.type).toBe("number");
-    expect(service("seeds-seedlings").fields.find((field) => field.name === "seed_kind")?.options?.length).toBe(3);
-    expect(service("pest-control").fields.find((field) => field.name === "disease_photo")).toMatchObject({ type: "file", required: false });
+    const service = (slug: string) =>
+      agricultureServiceRegistry.find((item) => item.slug === slug)!;
+    expect(
+      service("farm-machinery").fields.find((field) => field.name === "machine_date")?.type,
+    ).toBe("date");
+    expect(service("farm-labour").fields.find((field) => field.name === "labour_count")?.type).toBe(
+      "number",
+    );
+    expect(
+      service("seeds-seedlings").fields.find((field) => field.name === "seed_kind")?.options
+        ?.length,
+    ).toBe(3);
+    expect(
+      service("pest-control").fields.find((field) => field.name === "disease_photo"),
+    ).toMatchObject({ type: "file", required: false });
   });
 });

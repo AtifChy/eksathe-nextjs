@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+
 import { logError } from "@/lib/logging";
 
 function previewEmailInDevelopment(subject: string, url: string, reason: string) {

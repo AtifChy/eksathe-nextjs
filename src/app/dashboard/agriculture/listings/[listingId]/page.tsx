@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+
 import { ListingDetail } from "@/components/dashboard/listing-detail";
 import { getCurrentUser } from "@/lib/dal";
 import { getPublicListing, getPublicProviderProfile } from "@/lib/listings";
@@ -6,7 +7,10 @@ import { getSector } from "@/lib/sectors";
 
 export const instant = false;
 
-export default async function DashboardAgricultureListingPage({ params, searchParams }: {
+export default async function DashboardAgricultureListingPage({
+  params,
+  searchParams,
+}: {
   params: Promise<{ listingId: string }>;
   searchParams: Promise<{ projectId?: string | string[]; packageLabel?: string | string[] }>;
 }) {
@@ -16,6 +20,27 @@ export default async function DashboardAgricultureListingPage({ params, searchPa
   const [result, user] = await Promise.all([getPublicListing(listingId), getCurrentUser()]);
   if (result.listing && result.listing.sectorSlug !== sector.slug) notFound();
   if (!result.listing && !result.unavailable) notFound();
-  const providerResult = result.listing ? await getPublicProviderProfile(sector.slug, result.listing.providerId) : null;
-  return <ListingDetail sector={sector} routeBase="/dashboard/agriculture" listing={result.listing} provider={providerResult?.provider} unavailable={result.unavailable} signedIn={Boolean(user && user.status === "active")} projectId={typeof query.projectId === "string" && query.projectId.length <= 64 ? query.projectId : undefined} packageLabel={typeof query.packageLabel === "string" && query.packageLabel.length <= 80 ? query.packageLabel : undefined} />;
+  const providerResult = result.listing
+    ? await getPublicProviderProfile(sector.slug, result.listing.providerId)
+    : null;
+  return (
+    <ListingDetail
+      sector={sector}
+      routeBase="/dashboard/agriculture"
+      listing={result.listing}
+      provider={providerResult?.provider}
+      unavailable={result.unavailable}
+      signedIn={Boolean(user && user.status === "active")}
+      projectId={
+        typeof query.projectId === "string" && query.projectId.length <= 64
+          ? query.projectId
+          : undefined
+      }
+      packageLabel={
+        typeof query.packageLabel === "string" && query.packageLabel.length <= 80
+          ? query.packageLabel
+          : undefined
+      }
+    />
+  );
 }

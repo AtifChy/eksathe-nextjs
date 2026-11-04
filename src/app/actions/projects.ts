@@ -2,12 +2,31 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addProjectMilestone, attachProjectDocument, attachProjectPhoto, confirmProjectHandover, createConstructionProject, createProjectPackage, recordProjectExpense, updateProjectMilestone } from "@/lib/domain/projects";
-import { WorkflowError } from "@/lib/domain/marketplace";
+
 import { requireUser } from "@/lib/dal";
-import { attachProjectDocumentSchema, attachProjectPhotoSchema, createProjectPackageSchema, createProjectSchema, milestoneSchema, milestoneUpdateSchema, projectExpenseSchema, projectHandoverSchema } from "@/lib/validations/workflows";
-import type { WorkflowMessageKey, WorkflowState } from "@/lib/workflow-state";
+import { WorkflowError } from "@/lib/domain/marketplace";
+import {
+  addProjectMilestone,
+  attachProjectDocument,
+  attachProjectPhoto,
+  confirmProjectHandover,
+  createConstructionProject,
+  createProjectPackage,
+  recordProjectExpense,
+  updateProjectMilestone,
+} from "@/lib/domain/projects";
 import { logError } from "@/lib/logging";
+import {
+  attachProjectDocumentSchema,
+  attachProjectPhotoSchema,
+  createProjectPackageSchema,
+  createProjectSchema,
+  milestoneSchema,
+  milestoneUpdateSchema,
+  projectExpenseSchema,
+  projectHandoverSchema,
+} from "@/lib/validations/workflows";
+import type { WorkflowMessageKey, WorkflowState } from "@/lib/workflow-state";
 
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
@@ -15,7 +34,12 @@ function value(formData: FormData, key: string) {
 }
 
 function fail(error: unknown): WorkflowState {
-  if (error instanceof z.ZodError) return { status: "error", messageKey: "validationError", errors: z.flattenError(error).fieldErrors };
+  if (error instanceof z.ZodError)
+    return {
+      status: "error",
+      messageKey: "validationError",
+      errors: z.flattenError(error).fieldErrors,
+    };
   if (error instanceof WorkflowError) {
     const keys: Record<WorkflowError["code"], WorkflowMessageKey> = {
       notFound: "listingMissing",
@@ -32,7 +56,11 @@ function fail(error: unknown): WorkflowState {
   return { status: "error", messageKey: "requestFailed" };
 }
 
-async function run<T extends { id: string }>(operation: () => Promise<T>, key: WorkflowMessageKey, refresh: string[]): Promise<WorkflowState> {
+async function run<T extends { id: string }>(
+  operation: () => Promise<T>,
+  key: WorkflowMessageKey,
+  refresh: string[],
+): Promise<WorkflowState> {
   try {
     const result = await operation();
     refresh.forEach((path) => revalidatePath(path));
@@ -42,10 +70,17 @@ async function run<T extends { id: string }>(operation: () => Promise<T>, key: W
   }
 }
 
-export async function createProjectAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function createProjectAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const serviceSlug = value(formData, "serviceSlug");
   const listingId = value(formData, "listingId");
-  const next = listingId ? `/account/projects/new?listing=${encodeURIComponent(listingId)}` : serviceSlug ? `/account/projects/new?service=${encodeURIComponent(serviceSlug)}` : "/account/projects/new";
+  const next = listingId
+    ? `/account/projects/new?listing=${encodeURIComponent(listingId)}`
+    : serviceSlug
+      ? `/account/projects/new?service=${encodeURIComponent(serviceSlug)}`
+      : "/account/projects/new";
   const user = await requireUser(next);
   const rawBudget = value(formData, "budget");
   const rawStartsAt = value(formData, "startsAt");
@@ -63,10 +98,16 @@ export async function createProjectAction(_state: WorkflowState, formData: FormD
     ...(listingId ? { listingId } : {}),
   });
   if (!parsed.success) return fail(parsed.error);
-  return run(() => createConstructionProject(user.id, parsed.data), "projectCreated", ["/account", "/dashboard/construction"]);
+  return run(() => createConstructionProject(user.id, parsed.data), "projectCreated", [
+    "/account",
+    "/dashboard/construction",
+  ]);
 }
 
-export async function addMilestoneAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function addMilestoneAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const user = await requireUser("/account#projects");
   const rawAmount = value(formData, "amount");
   const rawDueAt = value(formData, "dueAt");
@@ -79,10 +120,16 @@ export async function addMilestoneAction(_state: WorkflowState, formData: FormDa
     ...(rawDueAt ? { dueAt: rawDueAt } : {}),
   });
   if (!parsed.success) return fail(parsed.error);
-  return run(() => addProjectMilestone(user.id, parsed.data), "milestoneAdded", ["/account", "/provider"]);
+  return run(() => addProjectMilestone(user.id, parsed.data), "milestoneAdded", [
+    "/account",
+    "/provider",
+  ]);
 }
 
-export async function createProjectPackageAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function createProjectPackageAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const projectId = value(formData, "projectId");
   const user = await requireUser(`/account/projects/${encodeURIComponent(projectId)}`);
   const parsed = createProjectPackageSchema.safeParse({
@@ -92,36 +139,56 @@ export async function createProjectPackageAction(_state: WorkflowState, formData
     kind: value(formData, "kind"),
   });
   if (!parsed.success) return fail(parsed.error);
-  return run(() => createProjectPackage(user.id, parsed.data), "packageCreated", ["/account", `/account/projects/${projectId}`]);
+  return run(() => createProjectPackage(user.id, parsed.data), "packageCreated", [
+    "/account",
+    `/account/projects/${projectId}`,
+  ]);
 }
 
-export async function confirmProjectHandoverAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function confirmProjectHandoverAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const projectId = value(formData, "projectId");
   const user = await requireUser(`/account/projects/${encodeURIComponent(projectId)}`);
   const parsed = projectHandoverSchema.safeParse({ projectId });
   if (!parsed.success) return fail(parsed.error);
   try {
     const result = await confirmProjectHandover(user.id, parsed.data.projectId);
-    for (const path of ["/account", `/account/projects/${projectId}`, "/provider"]) revalidatePath(path);
+    for (const path of ["/account", `/account/projects/${projectId}`, "/provider"])
+      revalidatePath(path);
     return { status: "success", messageKey: "handoverConfirmed", entityId: result.id };
   } catch (error) {
-    if (error instanceof WorkflowError && error.code === "invalidState") return { status: "error", messageKey: "handoverBlocked" };
+    if (error instanceof WorkflowError && error.code === "invalidState")
+      return { status: "error", messageKey: "handoverBlocked" };
     return fail(error);
   }
 }
 
-export async function updateMilestoneAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function updateMilestoneAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const user = await requireUser("/account#projects");
-  const parsed = milestoneUpdateSchema.safeParse({ milestoneId: value(formData, "milestoneId"), intent: value(formData, "intent") });
+  const parsed = milestoneUpdateSchema.safeParse({
+    milestoneId: value(formData, "milestoneId"),
+    intent: value(formData, "intent"),
+  });
   if (!parsed.success) return fail(parsed.error);
   return run(
-    () => updateProjectMilestone(user.id, parsed.data.milestoneId, parsed.data.intent).then(() => ({ id: parsed.data.milestoneId })),
+    () =>
+      updateProjectMilestone(user.id, parsed.data.milestoneId, parsed.data.intent).then(() => ({
+        id: parsed.data.milestoneId,
+      })),
     parsed.data.intent === "submit" ? "milestoneSubmitted" : "milestoneApproved",
     ["/account", "/provider"],
   );
 }
 
-export async function attachProjectDocumentAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function attachProjectDocumentAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const projectId = value(formData, "projectId");
   const user = await requireUser(`/account/projects/${encodeURIComponent(projectId)}`);
   const parsed = attachProjectDocumentSchema.safeParse({
@@ -131,10 +198,17 @@ export async function attachProjectDocumentAction(_state: WorkflowState, formDat
     sizeBytes: value(formData, "sizeBytes"),
   });
   if (!parsed.success) return fail(parsed.error);
-  return run(() => attachProjectDocument(user.id, parsed.data), "documentUploaded", ["/account", `/account/projects/${projectId}`, "/provider"]);
+  return run(() => attachProjectDocument(user.id, parsed.data), "documentUploaded", [
+    "/account",
+    `/account/projects/${projectId}`,
+    "/provider",
+  ]);
 }
 
-export async function attachProjectPhotoAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function attachProjectPhotoAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const projectId = value(formData, "projectId");
   const user = await requireUser(`/account/projects/${encodeURIComponent(projectId)}`);
   const parsed = attachProjectPhotoSchema.safeParse({
@@ -145,10 +219,17 @@ export async function attachProjectPhotoAction(_state: WorkflowState, formData: 
     sizeBytes: value(formData, "sizeBytes"),
   });
   if (!parsed.success) return fail(parsed.error);
-  return run(() => attachProjectPhoto(user.id, parsed.data), "projectPhotoUploaded", ["/account", `/account/projects/${projectId}`, "/provider"]);
+  return run(() => attachProjectPhoto(user.id, parsed.data), "projectPhotoUploaded", [
+    "/account",
+    `/account/projects/${projectId}`,
+    "/provider",
+  ]);
 }
 
-export async function recordProjectExpenseAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function recordProjectExpenseAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const projectId = value(formData, "projectId");
   const user = await requireUser(`/account/projects/${encodeURIComponent(projectId)}`);
   const rawDate = value(formData, "occurredAt");
@@ -159,5 +240,8 @@ export async function recordProjectExpenseAction(_state: WorkflowState, formData
     ...(rawDate ? { occurredAt: rawDate } : {}),
   });
   if (!parsed.success) return fail(parsed.error);
-  return run(() => recordProjectExpense(user.id, parsed.data), "expenseRecorded", ["/account", `/account/projects/${projectId}`]);
+  return run(() => recordProjectExpense(user.id, parsed.data), "expenseRecorded", [
+    "/account",
+    `/account/projects/${projectId}`,
+  ]);
 }

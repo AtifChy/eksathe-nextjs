@@ -1,5 +1,4 @@
 import "server-only";
-
 import { Prisma } from "@/generated/prisma/client";
 import { hasStaffPermission, type CurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
@@ -32,8 +31,12 @@ export async function createAgricultureServiceRequest(input: {
   fieldSnapshot: object;
   photo?: DiseasePhotoInput;
 }) {
-  const account = await prisma.user.findUnique({ where: { id: input.user.id }, select: { id: true, status: true, emailVerified: true } });
-  if (!account || account.status !== "active" || !account.emailVerified) throw new AgricultureRequestError("notAllowed");
+  const account = await prisma.user.findUnique({
+    where: { id: input.user.id },
+    select: { id: true, status: true, emailVerified: true },
+  });
+  if (!account || account.status !== "active" || !account.emailVerified)
+    throw new AgricultureRequestError("notAllowed");
   const service = await prisma.serviceDefinition.findFirst({
     where: { slug: input.serviceSlug, sectorSlug, isActive: true },
     select: { id: true, slug: true, formVersion: true },
@@ -42,11 +45,19 @@ export async function createAgricultureServiceRequest(input: {
   if (service.formVersion !== input.formVersion) throw new AgricultureRequestError("invalidState");
 
   if (input.photo) {
-    if (service.slug !== "pest-control" || !input.photo.key.startsWith(`agriculture-requests/${input.user.id}/`)) {
+    if (
+      service.slug !== "pest-control" ||
+      !input.photo.key.startsWith(`agriculture-requests/${input.user.id}/`)
+    ) {
       throw new AgricultureRequestError("notAllowed");
     }
     try {
-      await validateStoredObject(input.photo.key, input.photo.contentType, 5_000_000, input.photo.sizeBytes);
+      await validateStoredObject(
+        input.photo.key,
+        input.photo.contentType,
+        5_000_000,
+        input.photo.sizeBytes,
+      );
     } catch {
       throw new AgricultureRequestError("unavailable");
     }
@@ -71,7 +82,12 @@ export async function createAgricultureServiceRequest(input: {
     const referenceCode = `AG-${request.createdAt.getUTCFullYear()}-${String(request.id).padStart(6, "0")}`;
     await tx.serviceRequest.update({ where: { id: request.id }, data: { referenceCode } });
     if (input.photo) {
-      const extension = input.photo.contentType === "image/jpeg" ? "jpg" : input.photo.contentType === "image/png" ? "png" : "webp";
+      const extension =
+        input.photo.contentType === "image/jpeg"
+          ? "jpg"
+          : input.photo.contentType === "image/png"
+            ? "png"
+            : "webp";
       await tx.serviceRequestAttachment.create({
         data: {
           requestId: request.id,
@@ -92,7 +108,14 @@ export async function createAgricultureServiceRequest(input: {
         messageEn: "Your request has been received. Agriculture operations staff will review it.",
       },
     });
-    await tx.auditLog.create({ data: { userId: input.user.id, action: "agriculture_service_request.created", entityType: "ServiceRequest", entityId: BigInt(request.id) } });
+    await tx.auditLog.create({
+      data: {
+        userId: input.user.id,
+        action: "agriculture_service_request.created",
+        entityType: "ServiceRequest",
+        entityId: BigInt(request.id),
+      },
+    });
     return { id: request.id, referenceCode };
   });
 }
@@ -107,11 +130,26 @@ const allowedNext: Record<string, readonly string[]> = {
 };
 
 const statusCopy: Record<string, { messageBn: string; messageEn: string }> = {
-  REVIEWING: { messageBn: "আপনার অনুরোধ পর্যালোচনা করা হচ্ছে।", messageEn: "Your request is being reviewed." },
-  ASSIGNED: { messageBn: "আপনার অনুরোধটি সমন্বয়ের জন্য একজন কর্মীকে দেওয়া হয়েছে।", messageEn: "A staff member has been assigned to coordinate your request." },
-  COMPLETED: { messageBn: "আপনার অনুরোধের সমন্বয় সম্পন্ন হয়েছে।", messageEn: "Coordination for your request is complete." },
-  REJECTED: { messageBn: "দুঃখিত, আপনার অনুরোধটি এগিয়ে নেওয়া যাচ্ছে না।", messageEn: "We could not proceed with your request." },
-  CANCELLED: { messageBn: "আপনার অনুরোধটি বাতিল করা হয়েছে।", messageEn: "Your request has been cancelled." },
+  REVIEWING: {
+    messageBn: "আপনার অনুরোধ পর্যালোচনা করা হচ্ছে।",
+    messageEn: "Your request is being reviewed.",
+  },
+  ASSIGNED: {
+    messageBn: "আপনার অনুরোধটি সমন্বয়ের জন্য একজন কর্মীকে দেওয়া হয়েছে।",
+    messageEn: "A staff member has been assigned to coordinate your request.",
+  },
+  COMPLETED: {
+    messageBn: "আপনার অনুরোধের সমন্বয় সম্পন্ন হয়েছে।",
+    messageEn: "Coordination for your request is complete.",
+  },
+  REJECTED: {
+    messageBn: "দুঃখিত, আপনার অনুরোধটি এগিয়ে নেওয়া যাচ্ছে না।",
+    messageEn: "We could not proceed with your request.",
+  },
+  CANCELLED: {
+    messageBn: "আপনার অনুরোধটি বাতিল করা হয়েছে।",
+    messageEn: "Your request has been cancelled.",
+  },
 };
 
 export async function updateAgricultureServiceRequest(input: {
@@ -127,31 +165,72 @@ export async function updateAgricultureServiceRequest(input: {
 }) {
   const current = await prisma.serviceRequest.findFirst({
     where: { id: input.requestId, serviceDefinition: { sectorSlug } },
-    select: { id: true, userId: true, status: true, assignedToId: true, marketplaceRequestId: true },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      assignedToId: true,
+      marketplaceRequestId: true,
+    },
   });
   if (!current) throw new AgricultureRequestError("notFound");
   const nextStatus = input.status ?? current.status;
-  if (nextStatus !== current.status && !allowedNext[current.status].includes(nextStatus)) throw new AgricultureRequestError("invalidState");
+  if (nextStatus !== current.status && !allowedNext[current.status].includes(nextStatus))
+    throw new AgricultureRequestError("invalidState");
 
-  const assignedToId = input.assignedToId === undefined ? current.assignedToId : input.assignedToId || null;
+  const assignedToId =
+    input.assignedToId === undefined ? current.assignedToId : input.assignedToId || null;
   if (nextStatus === "ASSIGNED" && !assignedToId) throw new AgricultureRequestError("invalidState");
   if (assignedToId) {
-    const assignee = await prisma.user.findUnique({ where: { id: assignedToId }, select: { id: true, role: true, status: true, emailVerified: true } });
-    const authorized = assignee && (assignee.role === "super_admin" || await hasStaffPermission({ ...input.actor, id: assignee.id, role: assignee.role, status: assignee.status, emailVerified: assignee.emailVerified }, "OPERATIONS", sectorSlug));
-    if (!assignee || assignee.status !== "active" || !authorized) throw new AgricultureRequestError("notAllowed");
+    const assignee = await prisma.user.findUnique({
+      where: { id: assignedToId },
+      select: { id: true, role: true, status: true, emailVerified: true },
+    });
+    const authorized =
+      assignee &&
+      (assignee.role === "super_admin" ||
+        (await hasStaffPermission(
+          {
+            ...input.actor,
+            id: assignee.id,
+            role: assignee.role,
+            status: assignee.status,
+            emailVerified: assignee.emailVerified,
+          },
+          "OPERATIONS",
+          sectorSlug,
+        )));
+    if (!assignee || assignee.status !== "active" || !authorized)
+      throw new AgricultureRequestError("notAllowed");
   }
 
-  const marketplaceRequestId = input.marketplaceRequestId === undefined ? current.marketplaceRequestId : input.marketplaceRequestId || null;
+  const marketplaceRequestId =
+    input.marketplaceRequestId === undefined
+      ? current.marketplaceRequestId
+      : input.marketplaceRequestId || null;
   if (marketplaceRequestId) {
-    const match = await prisma.marketplaceRequest.findFirst({ where: { id: marketplaceRequestId, sectorSlug }, select: { id: true } });
+    const match = await prisma.marketplaceRequest.findFirst({
+      where: { id: marketplaceRequestId, sectorSlug },
+      select: { id: true },
+    });
     if (!match) throw new AgricultureRequestError("notFound");
-    const linked = await prisma.serviceRequest.findFirst({ where: { marketplaceRequestId, id: { not: current.id } }, select: { id: true } });
+    const linked = await prisma.serviceRequest.findFirst({
+      where: { marketplaceRequestId, id: { not: current.id } },
+      select: { id: true },
+    });
     if (linked) throw new AgricultureRequestError("invalidState");
   }
 
   const publicMessage = input.publicMessage?.trim() ?? "";
   const privateNote = input.privateNote?.trim() ?? "";
-  if (nextStatus === current.status && !assignedToId && !marketplaceRequestId && !publicMessage && !privateNote) throw new AgricultureRequestError("invalidState");
+  if (
+    nextStatus === current.status &&
+    !assignedToId &&
+    !marketplaceRequestId &&
+    !publicMessage &&
+    !privateNote
+  )
+    throw new AgricultureRequestError("invalidState");
 
   await prisma.$transaction(async (tx) => {
     const updated = await tx.serviceRequest.updateMany({
@@ -161,7 +240,15 @@ export async function updateAgricultureServiceRequest(input: {
     if (updated.count !== 1) throw new AgricultureRequestError("invalidState");
     if (nextStatus !== current.status && input.actor.id && current.userId) {
       const copy = statusCopy[nextStatus];
-      await tx.serviceRequestUpdate.create({ data: { requestId: current.id, authorId: input.actor.id, visibility: "CUSTOMER", messageBn: copy.messageBn, messageEn: copy.messageEn } });
+      await tx.serviceRequestUpdate.create({
+        data: {
+          requestId: current.id,
+          authorId: input.actor.id,
+          visibility: "CUSTOMER",
+          messageBn: copy.messageBn,
+          messageEn: copy.messageEn,
+        },
+      });
     }
     if (publicMessage) {
       await tx.serviceRequestUpdate.create({
@@ -169,7 +256,9 @@ export async function updateAgricultureServiceRequest(input: {
           requestId: current.id,
           authorId: input.actor.id,
           visibility: "CUSTOMER",
-          ...(input.publicLocale === "bn" ? { messageBn: publicMessage } : { messageEn: publicMessage }),
+          ...(input.publicLocale === "bn"
+            ? { messageBn: publicMessage }
+            : { messageEn: publicMessage }),
         },
       });
     }
@@ -179,13 +268,25 @@ export async function updateAgricultureServiceRequest(input: {
           requestId: current.id,
           authorId: input.actor.id,
           visibility: "INTERNAL",
-          ...(input.privateLocale === "bn" ? { messageBn: privateNote } : { messageEn: privateNote }),
+          ...(input.privateLocale === "bn"
+            ? { messageBn: privateNote }
+            : { messageEn: privateNote }),
         },
       });
     }
-    await tx.auditLog.create({ data: { userId: input.actor.id, action: `agriculture_service_request.updated:${current.status}->${nextStatus}`, entityType: "ServiceRequest", entityId: BigInt(current.id) } });
+    await tx.auditLog.create({
+      data: {
+        userId: input.actor.id,
+        action: `agriculture_service_request.updated:${current.status}->${nextStatus}`,
+        entityType: "ServiceRequest",
+        entityId: BigInt(current.id),
+      },
+    });
     if (current.userId && (nextStatus !== current.status || publicMessage)) {
-      const copy = statusCopy[nextStatus] ?? { messageBn: "আপনার অনুরোধে একটি আপডেট আছে।", messageEn: "There is an update to your request." };
+      const copy = statusCopy[nextStatus] ?? {
+        messageBn: "আপনার অনুরোধে একটি আপডেট আছে।",
+        messageEn: "There is an update to your request.",
+      };
       await tx.notification.create({
         data: {
           userId: current.userId,
@@ -204,13 +305,35 @@ export async function updateAgricultureServiceRequest(input: {
 }
 
 export async function withdrawAgricultureServiceRequest(userId: string, requestId: number) {
-  const current = await prisma.serviceRequest.findFirst({ where: { id: requestId, userId, serviceDefinition: { sectorSlug } }, select: { id: true, status: true } });
+  const current = await prisma.serviceRequest.findFirst({
+    where: { id: requestId, userId, serviceDefinition: { sectorSlug } },
+    select: { id: true, status: true },
+  });
   if (!current) throw new AgricultureRequestError("notFound");
-  if (current.status !== "NEW" && current.status !== "REVIEWING") throw new AgricultureRequestError("invalidState");
+  if (current.status !== "NEW" && current.status !== "REVIEWING")
+    throw new AgricultureRequestError("invalidState");
   await prisma.$transaction(async (tx) => {
-    const updated = await tx.serviceRequest.updateMany({ where: { id: current.id, userId, status: current.status }, data: { status: "CANCELLED" } });
+    const updated = await tx.serviceRequest.updateMany({
+      where: { id: current.id, userId, status: current.status },
+      data: { status: "CANCELLED" },
+    });
     if (updated.count !== 1) throw new AgricultureRequestError("invalidState");
-    await tx.serviceRequestUpdate.create({ data: { requestId: current.id, authorId: userId, visibility: "CUSTOMER", messageBn: "আপনি অনুরোধটি প্রত্যাহার করেছেন।", messageEn: "You withdrew this request." } });
-    await tx.auditLog.create({ data: { userId, action: "agriculture_service_request.withdrawn", entityType: "ServiceRequest", entityId: BigInt(current.id) } });
+    await tx.serviceRequestUpdate.create({
+      data: {
+        requestId: current.id,
+        authorId: userId,
+        visibility: "CUSTOMER",
+        messageBn: "আপনি অনুরোধটি প্রত্যাহার করেছেন।",
+        messageEn: "You withdrew this request.",
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        userId,
+        action: "agriculture_service_request.withdrawn",
+        entityType: "ServiceRequest",
+        entityId: BigInt(current.id),
+      },
+    });
   });
 }

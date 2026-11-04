@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+
 import { logError } from "@/lib/logging";
 
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
@@ -19,9 +20,10 @@ let requestCount = 0;
 function localLimit(key: string, max: number, windowSeconds: number): RateLimitResult {
   const now = Date.now();
   const current = localBuckets.get(key);
-  const bucket = !current || current.resetAt <= now
-    ? { count: 0, resetAt: now + windowSeconds * 1000 }
-    : current;
+  const bucket =
+    !current || current.resetAt <= now
+      ? { count: 0, resetAt: now + windowSeconds * 1000 }
+      : current;
   bucket.count += 1;
   localBuckets.set(key, bucket);
 
@@ -65,17 +67,19 @@ export async function enforceRateLimit(
   }
 }
 
-export const authSecondaryStorage = redis ? {
-  get: async (key: string) => redis.get<string>(key),
-  getAndDelete: async (key: string) => redis.getdel<string>(key),
-  increment: async (key: string, ttl: number) => {
-    const [count] = await redis.multi().incr(key).expire(key, ttl, "NX").exec();
-    return Number(count);
-  },
-  set: async (key: string, value: string, ttl?: number) => {
-    await redis.set(key, value, ttl ? { ex: ttl } : undefined);
-  },
-  delete: async (key: string) => {
-    await redis.del(key);
-  },
-} : undefined;
+export const authSecondaryStorage = redis
+  ? {
+      get: async (key: string) => redis.get<string>(key),
+      getAndDelete: async (key: string) => redis.getdel<string>(key),
+      increment: async (key: string, ttl: number) => {
+        const [count] = await redis.multi().incr(key).expire(key, ttl, "NX").exec();
+        return Number(count);
+      },
+      set: async (key: string, value: string, ttl?: number) => {
+        await redis.set(key, value, ttl ? { ex: ttl } : undefined);
+      },
+      delete: async (key: string) => {
+        await redis.del(key);
+      },
+    }
+  : undefined;

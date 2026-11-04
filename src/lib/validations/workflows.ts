@@ -1,11 +1,22 @@
 import { z } from "zod";
+
 import { agricultureListings, constructionListings } from "@/lib/sectors";
 
 const text = (max: number) => z.string().trim().max(max);
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
-const quantity = z.string().trim().regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/).refine((value) => Number(value) > 0);
-const stockAmount = z.string().trim().regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/);
-const money = z.string().trim().regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/);
+const quantity = z
+  .string()
+  .trim()
+  .regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/)
+  .refine((value) => Number(value) > 0);
+const stockAmount = z
+  .string()
+  .trim()
+  .regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/);
+const money = z
+  .string()
+  .trim()
+  .regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/);
 const optionalDate = z.iso.date().optional();
 
 export const capabilityOptions = [
@@ -25,7 +36,10 @@ export const providerApplicationSchema = z.strictObject({
 
 export const profileSchema = z.strictObject({
   name: requiredText(120),
-  phone: z.string().trim().regex(/^[0-9+ ()-]{7,30}$/),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9+ ()-]{7,30}$/),
 });
 
 const listingFields = {
@@ -43,20 +57,40 @@ const listingFields = {
   availableFrom: optionalDate,
   imageKey: text(240).optional(),
   imageContentType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
-  imageSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
+  imageSizeBytes: z
+    .string()
+    .regex(/^\d{1,8}$/)
+    .optional(),
 };
 
-function validateListing(value: z.infer<z.ZodObject<typeof listingFields>>, context: z.RefinementCtx) {
+function validateListing(
+  value: z.infer<z.ZodObject<typeof listingFields>>,
+  context: z.RefinementCtx,
+) {
   if (["PRODUCE", "CONSTRUCTION_MATERIAL"].includes(value.kind) && Number(value.stock) <= 0) {
-    context.addIssue({ code: "custom", path: ["stock"], message: "Goods must have stock greater than zero." });
+    context.addIssue({
+      code: "custom",
+      path: ["stock"],
+      message: "Goods must have stock greater than zero.",
+    });
   }
-  const imageFields = [value.imageKey, value.imageContentType, value.imageSizeBytes].filter(Boolean).length;
-  if (imageFields !== 0 && imageFields !== 3) context.addIssue({ code: "custom", path: ["imageKey"], message: "Upload all image details together." });
-  if (value.imageSizeBytes && Number(value.imageSizeBytes) > 5_000_000) context.addIssue({ code: "custom", path: ["imageSizeBytes"], message: "Image is too large." });
+  const imageFields = [value.imageKey, value.imageContentType, value.imageSizeBytes].filter(
+    Boolean,
+  ).length;
+  if (imageFields !== 0 && imageFields !== 3)
+    context.addIssue({
+      code: "custom",
+      path: ["imageKey"],
+      message: "Upload all image details together.",
+    });
+  if (value.imageSizeBytes && Number(value.imageSizeBytes) > 5_000_000)
+    context.addIssue({ code: "custom", path: ["imageSizeBytes"], message: "Image is too large." });
 }
 
 export const createListingSchema = z.strictObject(listingFields).superRefine(validateListing);
-export const updateListingSchema = z.strictObject({ ...listingFields, listingId: requiredText(64) }).superRefine(validateListing);
+export const updateListingSchema = z
+  .strictObject({ ...listingFields, listingId: requiredText(64) })
+  .superRefine(validateListing);
 export const archiveListingSchema = z.strictObject({ listingId: requiredText(64) });
 
 const storefrontFields = {
@@ -68,44 +102,85 @@ const storefrontFields = {
   upazila: text(80),
   profileImageKey: text(240).optional(),
   profileImageContentType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
-  profileImageSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
+  profileImageSizeBytes: z
+    .string()
+    .regex(/^\d{1,8}$/)
+    .optional(),
   coverImageKey: text(240).optional(),
   coverImageContentType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
-  coverImageSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
+  coverImageSizeBytes: z
+    .string()
+    .regex(/^\d{1,8}$/)
+    .optional(),
 };
 export const storefrontSchema = z.strictObject(storefrontFields).superRefine((value, context) => {
   for (const prefix of ["profileImage", "coverImage"] as const) {
-    const values = [value[`${prefix}Key`], value[`${prefix}ContentType`], value[`${prefix}SizeBytes`]];
+    const values = [
+      value[`${prefix}Key`],
+      value[`${prefix}ContentType`],
+      value[`${prefix}SizeBytes`],
+    ];
     const count = values.filter(Boolean).length;
-    if (count !== 0 && count !== 3) context.addIssue({ code: "custom", path: [`${prefix}Key`], message: "Upload all image details together." });
-    if (value[`${prefix}SizeBytes`] && Number(value[`${prefix}SizeBytes`]) > 5_000_000) context.addIssue({ code: "custom", path: [`${prefix}SizeBytes`], message: "Image is too large." });
+    if (count !== 0 && count !== 3)
+      context.addIssue({
+        code: "custom",
+        path: [`${prefix}Key`],
+        message: "Upload all image details together.",
+      });
+    if (value[`${prefix}SizeBytes`] && Number(value[`${prefix}SizeBytes`]) > 5_000_000)
+      context.addIssue({
+        code: "custom",
+        path: [`${prefix}SizeBytes`],
+        message: "Image is too large.",
+      });
   }
 });
 
-export const createRequestSchema = z.strictObject({
-  listingId: requiredText(64),
-  quantity,
-  district: requiredText(80),
-  details: text(2000),
-  requestedStart: optionalDate,
-  requestedEnd: optionalDate,
-  projectId: text(64).optional(),
-  packageId: text(64).optional(),
-}).superRefine((value, context) => {
-  if (Boolean(value.projectId) !== Boolean(value.packageId)) context.addIssue({ code: "custom", path: ["packageId"], message: "Project invitations need a work package." });
-  if (Boolean(value.requestedStart) !== Boolean(value.requestedEnd)) {
-    context.addIssue({ code: "custom", path: ["requestedEnd"], message: "Provide both booking dates." });
-  }
-  if (value.requestedStart && value.requestedEnd && value.requestedEnd <= value.requestedStart) {
-    context.addIssue({ code: "custom", path: ["requestedEnd"], message: "The end date must be after the start date." });
-  }
-});
+export const createRequestSchema = z
+  .strictObject({
+    listingId: requiredText(64),
+    quantity,
+    district: requiredText(80),
+    details: text(2000),
+    requestedStart: optionalDate,
+    requestedEnd: optionalDate,
+    projectId: text(64).optional(),
+    packageId: text(64).optional(),
+  })
+  .superRefine((value, context) => {
+    if (Boolean(value.projectId) !== Boolean(value.packageId))
+      context.addIssue({
+        code: "custom",
+        path: ["packageId"],
+        message: "Project invitations need a work package.",
+      });
+    if (Boolean(value.requestedStart) !== Boolean(value.requestedEnd)) {
+      context.addIssue({
+        code: "custom",
+        path: ["requestedEnd"],
+        message: "Provide both booking dates.",
+      });
+    }
+    if (value.requestedStart && value.requestedEnd && value.requestedEnd <= value.requestedStart) {
+      context.addIssue({
+        code: "custom",
+        path: ["requestedEnd"],
+        message: "The end date must be after the start date.",
+      });
+    }
+  });
 
 export const uploadPresignSchema = z.discriminatedUnion("purpose", [
   z.strictObject({
     purpose: z.literal("listing-image"),
     sectorSlug: z.enum(["agriculture-labor", "construction"]),
-    kind: z.enum(["PRODUCE", "WORKER", "MACHINERY", "CONSTRUCTION_MATERIAL", "CONSTRUCTION_SERVICE"]),
+    kind: z.enum([
+      "PRODUCE",
+      "WORKER",
+      "MACHINERY",
+      "CONSTRUCTION_MATERIAL",
+      "CONSTRUCTION_SERVICE",
+    ]),
     contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
     sizeBytes: z.number().int().positive().max(5_000_000),
   }),
@@ -144,7 +219,10 @@ export const attachProjectDocumentSchema = z.strictObject({
   projectId: requiredText(64),
   storageKey: requiredText(240),
   filename: requiredText(120),
-  sizeBytes: z.string().regex(/^\d{1,8}$/).refine((value) => Number(value) > 0 && Number(value) <= 10_000_000),
+  sizeBytes: z
+    .string()
+    .regex(/^\d{1,8}$/)
+    .refine((value) => Number(value) > 0 && Number(value) <= 10_000_000),
 });
 
 export const attachProjectPhotoSchema = z.strictObject({
@@ -152,7 +230,10 @@ export const attachProjectPhotoSchema = z.strictObject({
   storageKey: requiredText(240),
   filename: requiredText(120),
   contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
-  sizeBytes: z.string().regex(/^\d{1,8}$/).refine((value) => Number(value) > 0 && Number(value) <= 5_000_000),
+  sizeBytes: z
+    .string()
+    .regex(/^\d{1,8}$/)
+    .refine((value) => Number(value) > 0 && Number(value) <= 5_000_000),
 });
 
 export const createQuoteSchema = z.strictObject({
@@ -164,23 +245,34 @@ export const createQuoteSchema = z.strictObject({
   expiresAt: optionalDate,
 });
 
-export const createProjectSchema = z.strictObject({
-  title: requiredText(120),
-  projectType: requiredText(80),
-  district: requiredText(80),
-  description: requiredText(4000),
-  approximateArea: text(80),
-  budget: money.optional(),
-  startsAt: optionalDate,
-  targetEndsAt: optionalDate,
-  serviceSlug: text(80).optional(),
-  listingId: text(64).optional(),
-}).superRefine((value, context) => {
-  if (value.serviceSlug && value.listingId) context.addIssue({ code: "custom", path: ["listingId"], message: "Choose a service or a listing to start the project." });
-  if (value.startsAt && value.targetEndsAt && value.targetEndsAt < value.startsAt) {
-    context.addIssue({ code: "custom", path: ["targetEndsAt"], message: "The target date must follow the start date." });
-  }
-});
+export const createProjectSchema = z
+  .strictObject({
+    title: requiredText(120),
+    projectType: requiredText(80),
+    district: requiredText(80),
+    description: requiredText(4000),
+    approximateArea: text(80),
+    budget: money.optional(),
+    startsAt: optionalDate,
+    targetEndsAt: optionalDate,
+    serviceSlug: text(80).optional(),
+    listingId: text(64).optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.serviceSlug && value.listingId)
+      context.addIssue({
+        code: "custom",
+        path: ["listingId"],
+        message: "Choose a service or a listing to start the project.",
+      });
+    if (value.startsAt && value.targetEndsAt && value.targetEndsAt < value.startsAt) {
+      context.addIssue({
+        code: "custom",
+        path: ["targetEndsAt"],
+        message: "The target date must follow the start date.",
+      });
+    }
+  });
 
 export const createProjectPackageSchema = z.strictObject({
   projectId: requiredText(64),
@@ -214,19 +306,38 @@ export const milestoneUpdateSchema = z.strictObject({
 
 export const orderIdSchema = z.strictObject({ orderId: requiredText(64) });
 
-export const paymentSchema = z.strictObject({
-  orderId: requiredText(64),
-  amount: money.refine((value) => Number(value) > 0),
-  method: z.enum(["CASH", "BANK_TRANSFER", "MOBILE_WALLET", "OTHER"]),
-  reference: text(120),
-  receiptKey: text(240).optional(),
-  receiptContentType: z.enum(["image/jpeg", "image/png", "image/webp", "application/pdf"]).optional(),
-  receiptSizeBytes: z.string().regex(/^\d{1,8}$/).optional(),
-}).superRefine((value, context) => {
-  const fields = [value.receiptKey, value.receiptContentType, value.receiptSizeBytes].filter(Boolean).length;
-  if (fields !== 0 && fields !== 3) context.addIssue({ code: "custom", path: ["receiptKey"], message: "Upload all receipt details together." });
-  if (value.receiptSizeBytes && Number(value.receiptSizeBytes) > 10_000_000) context.addIssue({ code: "custom", path: ["receiptSizeBytes"], message: "Receipt is too large." });
-});
+export const paymentSchema = z
+  .strictObject({
+    orderId: requiredText(64),
+    amount: money.refine((value) => Number(value) > 0),
+    method: z.enum(["CASH", "BANK_TRANSFER", "MOBILE_WALLET", "OTHER"]),
+    reference: text(120),
+    receiptKey: text(240).optional(),
+    receiptContentType: z
+      .enum(["image/jpeg", "image/png", "image/webp", "application/pdf"])
+      .optional(),
+    receiptSizeBytes: z
+      .string()
+      .regex(/^\d{1,8}$/)
+      .optional(),
+  })
+  .superRefine((value, context) => {
+    const fields = [value.receiptKey, value.receiptContentType, value.receiptSizeBytes].filter(
+      Boolean,
+    ).length;
+    if (fields !== 0 && fields !== 3)
+      context.addIssue({
+        code: "custom",
+        path: ["receiptKey"],
+        message: "Upload all receipt details together.",
+      });
+    if (value.receiptSizeBytes && Number(value.receiptSizeBytes) > 10_000_000)
+      context.addIssue({
+        code: "custom",
+        path: ["receiptSizeBytes"],
+        message: "Receipt is too large.",
+      });
+  });
 
 export const paymentConfirmationSchema = z.strictObject({
   orderId: requiredText(64),
@@ -267,21 +378,37 @@ export const disputeResolutionSchema = z.strictObject({
 });
 
 export const staffGrantSchema = z.strictObject({
-  email: z.string().trim().pipe(z.email()).transform((email) => email.toLowerCase()),
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email())
+    .transform((email) => email.toLowerCase()),
   permission: z.enum(["OPERATIONS", "FINANCE"]),
-  scope: z.string().refine((value) => value === "global" || value === "agriculture-labor" || value === "construction"),
+  scope: z
+    .string()
+    .refine(
+      (value) => value === "global" || value === "agriculture-labor" || value === "construction",
+    ),
 });
 
-export const revokeStaffGrantSchema = z.strictObject({ id: z.string().regex(/^\d+$/).transform(Number) });
+export const revokeStaffGrantSchema = z.strictObject({
+  id: z.string().regex(/^\d+$/).transform(Number),
+});
 
 export const commissionRateSchema = z.strictObject({
   sectorSlug: z.enum(["agriculture-labor", "construction"]),
-  rate: z.string().regex(/^(?:0|[1-9]\d?)(?:\.\d{1,2})?$/).refine((value) => Number(value) <= 100),
+  rate: z
+    .string()
+    .regex(/^(?:0|[1-9]\d?)(?:\.\d{1,2})?$/)
+    .refine((value) => Number(value) <= 100),
 });
 
 export const stockUpdateSchema = z.strictObject({
   listingId: requiredText(64),
-  stock: z.string().trim().regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/),
+  stock: z
+    .string()
+    .trim()
+    .regex(/^(?:0|[1-9]\d{0,8})(?:\.\d{1,3})?$/),
 });
 
 export type ProviderApplicationInput = z.infer<typeof providerApplicationSchema>;

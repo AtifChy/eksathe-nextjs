@@ -1,6 +1,7 @@
 import "dotenv/config";
-import { hashPassword } from "better-auth/crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { hashPassword } from "better-auth/crypto";
+
 import { Prisma, PrismaClient } from "../src/generated/prisma/client";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -85,8 +86,16 @@ async function main() {
     { providerId: farmProfile.id, sectorSlug: "agriculture-labor", kind: "PRODUCE" as const },
     { providerId: farmProfile.id, sectorSlug: "agriculture-labor", kind: "WORKER" as const },
     { providerId: farmProfile.id, sectorSlug: "agriculture-labor", kind: "MACHINERY" as const },
-    { providerId: constructionProfile.id, sectorSlug: "construction", kind: "CONSTRUCTION_MATERIAL" as const },
-    { providerId: constructionProfile.id, sectorSlug: "construction", kind: "CONSTRUCTION_SERVICE" as const },
+    {
+      providerId: constructionProfile.id,
+      sectorSlug: "construction",
+      kind: "CONSTRUCTION_MATERIAL" as const,
+    },
+    {
+      providerId: constructionProfile.id,
+      sectorSlug: "construction",
+      kind: "CONSTRUCTION_SERVICE" as const,
+    },
   ];
   for (const capability of capabilities) {
     await prisma.providerCapability.upsert({
@@ -105,7 +114,8 @@ async function main() {
       titleBn: "সাভারের নতুন আমন চাল",
       titleEn: "Fresh Savar Aman Rice",
       descriptionBn: "পরিষ্কার, সদ্য প্রক্রিয়াজাত আমন চাল। সংগ্রহ বা পরিবহনের ব্যবস্থা ক্রেতা ও বিক্রেতা ঠিক করবেন।",
-      descriptionEn: "Clean, freshly processed Aman rice. Buyer and seller can agree on collection or transport.",
+      descriptionEn:
+        "Clean, freshly processed Aman rice. Buyer and seller can agree on collection or transport.",
       category: "Rice",
       district: "Dhaka",
       unit: "kg",
@@ -141,7 +151,8 @@ async function main() {
       titleBn: "ধান কাটার অভিজ্ঞ শ্রমিক দল",
       titleEn: "Experienced Rice Harvesting Crew",
       descriptionBn: "চারজন অভিজ্ঞ শ্রমিকের দল। কাজের সময়, জমির অবস্থা ও যাতায়াতের শর্ত আগে আলোচনা করুন।",
-      descriptionEn: "A crew of four experienced workers. Agree on schedule, field conditions and travel terms first.",
+      descriptionEn:
+        "A crew of four experienced workers. Agree on schedule, field conditions and travel terms first.",
       category: "Harvesting",
       district: "Dhaka",
       unit: "day",
@@ -175,7 +186,8 @@ async function main() {
       titleBn: "৫০ কেজি পোর্টল্যান্ড সিমেন্ট",
       titleEn: "50 kg Portland Cement",
       descriptionBn: "মানসম্মত সিমেন্টের বস্তা। স্টক, পরিবহন ও সাইটে নামানোর খরচ অর্ডারের আগে নিশ্চিত করুন।",
-      descriptionEn: "Quality cement bags. Confirm stock, transport and site unloading charges before ordering.",
+      descriptionEn:
+        "Quality cement bags. Confirm stock, transport and site unloading charges before ordering.",
       category: "Cement",
       district: "Dhaka",
       unit: "bag",
@@ -208,8 +220,10 @@ async function main() {
       kind: "CONSTRUCTION_SERVICE" as const,
       titleBn: "বাড়ির কাঠামোগত পরামর্শ",
       titleEn: "Residential Structural Consultation",
-      descriptionBn: "প্রাথমিক নকশা পর্যালোচনা, সাইট পরিদর্শন ও কাঠামোগত পরামর্শ। কাজের পরিধি কোটেশনে নির্ধারিত হবে।",
-      descriptionEn: "Initial plan review, site visit and structural advice. Scope is agreed in the quote.",
+      descriptionBn:
+        "প্রাথমিক নকশা পর্যালোচনা, সাইট পরিদর্শন ও কাঠামোগত পরামর্শ। কাজের পরিধি কোটেশনে নির্ধারিত হবে।",
+      descriptionEn:
+        "Initial plan review, site visit and structural advice. Scope is agreed in the quote.",
       category: "Engineering",
       district: "Dhaka",
       unit: "job",
@@ -237,7 +251,8 @@ async function main() {
       title: "ধানমন্ডি দুইতলা পরিবারের বাড়ি",
       projectType: "Residential home",
       district: "Dhaka",
-      description: "A demo project for comparing a structural consultation and material quotes, then tracking the work in milestones.",
+      description:
+        "A demo project for comparing a structural consultation and material quotes, then tracking the work in milestones.",
       approximateArea: "2,400 sq ft",
       budget: decimal("8500000"),
       startsAt: inDays(14),
@@ -512,7 +527,9 @@ async function main() {
     });
   }
 
-  console.log("Loaded local EKsathe demo data: 3 accounts, 7 listings, 5 requests, 2 orders and 1 project.");
+  console.log(
+    "Loaded local EKsathe demo data: 3 accounts, 7 listings, 5 requests, 2 orders and 1 project.",
+  );
   console.log("Demo account password: Demo-only-123!");
 }
 
@@ -539,7 +556,12 @@ async function ensureUser(input: {
 
   await prisma.account.upsert({
     where: { id: `demo-account-${input.id}` },
-    update: { accountId: user.id, providerId: "credential", userId: user.id, password: input.passwordHash },
+    update: {
+      accountId: user.id,
+      providerId: "credential",
+      userId: user.id,
+      password: input.passwordHash,
+    },
     create: {
       id: `demo-account-${input.id}`,
       accountId: user.id,
@@ -554,8 +576,12 @@ async function ensureUser(input: {
 main()
   .catch((error) => {
     const detail = error instanceof Error ? error.message : "Unknown error";
-    const metadata = error && typeof error === "object" && "meta" in error ? JSON.stringify(error.meta) : undefined;
-    const code = error && typeof error === "object" && "code" in error ? String(error.code) : undefined;
+    const metadata =
+      error && typeof error === "object" && "meta" in error
+        ? JSON.stringify(error.meta)
+        : undefined;
+    const code =
+      error && typeof error === "object" && "code" in error ? String(error.code) : undefined;
     console.error("Failed to load local EKsathe demo data.", { code, detail, metadata });
     process.exitCode = 1;
   })

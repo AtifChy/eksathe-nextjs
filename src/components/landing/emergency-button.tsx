@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { PhoneIcon } from "lucide-react";
+import { useState } from "react";
 
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
@@ -19,12 +19,7 @@ export function EmergencyButton() {
 
   return (
     <>
-      <Button
-        type="button"
-        variant="destructive"
-        size="lg"
-        onClick={() => setOpen(true)}
-      >
+      <Button type="button" variant="destructive" size="lg" onClick={() => setOpen(true)}>
         <PhoneIcon />
         {t.emergency.buttonLabel}
       </Button>
@@ -33,13 +28,9 @@ export function EmergencyButton() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t.emergency.modalTitle}</DialogTitle>
-            <DialogDescription>
-              {t.emergency.modalSubtitle}
-            </DialogDescription>
+            <DialogDescription>{t.emergency.modalSubtitle}</DialogDescription>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t.emergency.modalDescription}
-          </p>
+          <p className="text-muted-foreground text-sm">{t.emergency.modalDescription}</p>
         </DialogContent>
       </Dialog>
     </>

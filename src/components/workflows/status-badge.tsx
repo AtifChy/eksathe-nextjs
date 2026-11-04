@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/components/language-provider";
+import { Badge } from "@/components/ui/badge";
 
 const labels: Record<string, { en: string; bn: string }> = {
   PENDING: { en: "Pending review", bn: "পর্যালোচনাধীন" },
@@ -31,5 +31,17 @@ const labels: Record<string, { en: string; bn: string }> = {
 export function StatusBadge({ status }: { status: string }) {
   const { locale } = useLanguage();
   const label = labels[status]?.[locale] ?? status.replaceAll("_", " ").toLowerCase();
-  return <Badge variant={status === "REJECTED" || status === "SUSPENDED" || status === "DISPUTED" ? "destructive" : status === "APPROVED" || status === "COMPLETED" || status === "COLLECTED" ? "default" : "secondary"}>{label}</Badge>;
+  return (
+    <Badge
+      variant={
+        status === "REJECTED" || status === "SUSPENDED" || status === "DISPUTED"
+          ? "destructive"
+          : status === "APPROVED" || status === "COMPLETED" || status === "COLLECTED"
+            ? "default"
+            : "secondary"
+      }
+    >
+      {label}
+    </Badge>
+  );
 }

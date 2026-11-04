@@ -1,5 +1,6 @@
-import type { Dictionary } from "./types";
 import { sectors } from "@/lib/sectors";
+
+import type { Dictionary } from "./types";
 
 export const en: Dictionary = {
   common: {
@@ -11,7 +12,8 @@ export const en: Dictionary = {
   home: {
     eyebrow: "Bangladesh's digital services and marketplace",
     title: "Everyday services, all in one place",
-    description: "Find farm produce, book agricultural workers or machinery, and plan construction with one account.",
+    description:
+      "Find farm produce, book agricultural workers or machinery, and plan construction with one account.",
     browse: "Browse all services",
     agriculture: "Agriculture & Labor",
     construction: "Construction",
@@ -19,7 +21,8 @@ export const en: Dictionary = {
     constructionDescription: "Find materials and professionals, then track project progress.",
     comingSoon: "Coming soon",
     hubTitle: "Explore 13 service sectors",
-    hubDescription: "Discover services across EKsathe Bangladesh and choose the one that meets your needs.",
+    hubDescription:
+      "Discover services across EKsathe Bangladesh and choose the one that meets your needs.",
   },
   auth: {
     signIn: "Sign in",
@@ -33,7 +36,8 @@ export const en: Dictionary = {
     forgotPassword: "Forgot password?",
     resetPassword: "Reset password",
     verifyTitle: "Verify your email",
-    verifyDescription: "Open the verification link sent to your email. If it did not arrive, you can send it again.",
+    verifyDescription:
+      "Open the verification link sent to your email. If it did not arrive, you can send it again.",
     sendVerification: "Resend verification email",
     createAccount: "Create a new account",
     existingAccount: "Already have an account?",
@@ -136,7 +140,8 @@ export const en: Dictionary = {
     paymentMethod: "Payment method",
     paymentReference: "Payment reference",
     paymentReceipt: "Payment receipt (optional)",
-    paymentReceiptHelp: "JPG, PNG, WebP or PDF, up to 10 MB. Only the customer, provider, and finance staff can access it.",
+    paymentReceiptHelp:
+      "JPG, PNG, WebP or PDF, up to 10 MB. Only the customer, provider, and finance staff can access it.",
     viewReceipt: "View receipt",
     submitPayment: "Record payment",
     confirmPayment: "Confirm payment",

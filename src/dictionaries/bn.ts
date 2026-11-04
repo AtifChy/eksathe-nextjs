@@ -1,5 +1,6 @@
-import type { Dictionary } from "./types";
 import { sectors } from "@/lib/sectors";
+
+import type { Dictionary } from "./types";
 
 export const bn: Dictionary = {
   common: {
@@ -136,7 +137,8 @@ export const bn: Dictionary = {
     paymentMethod: "পরিশোধের পদ্ধতি",
     paymentReference: "লেনদেন নম্বর",
     paymentReceipt: "পেমেন্টের রসিদ (ঐচ্ছিক)",
-    paymentReceiptHelp: "১০ এমবির মধ্যে JPG, PNG, WebP বা PDF। শুধু গ্রাহক, সেবাদাতা ও অর্থ বিভাগের কর্মীরা দেখতে পারবেন।",
+    paymentReceiptHelp:
+      "১০ এমবির মধ্যে JPG, PNG, WebP বা PDF। শুধু গ্রাহক, সেবাদাতা ও অর্থ বিভাগের কর্মীরা দেখতে পারবেন।",
     viewReceipt: "রসিদ দেখুন",
     submitPayment: "পেমেন্ট নথিভুক্ত করুন",
     confirmPayment: "পেমেন্ট নিশ্চিত করুন",
@@ -204,13 +206,11 @@ export const bn: Dictionary = {
     badge: "🌱 কৃষি • বাজার • শ্রম",
     titleLine1: "কৃষক থেকে ক্রেতা—",
     titleLine2: "সবাই একসাথে",
-    description:
-      "কৃষিপণ্য, বাজারদর, কৃষিশ্রমিক, পরিবহন ও কৃষি-সেবার অনুরোধ একটি প্ল্যাটফর্মে পরিচালনা করুন।",
+    description: "কৃষিপণ্য, বাজারদর, কৃষিশ্রমিক, পরিবহন ও কৃষি-সেবার অনুরোধ একটি প্ল্যাটফর্মে পরিচালনা করুন।",
     browseServices: "সেবা খুঁজুন",
     howItWorks: "কীভাবে কাজ করে",
     emergencyAssistance: "জরুরি সহায়তা 100",
-    emergencyNotice:
-      "জরুরি 100 বাটনটি এখন তথ্য-বার্তা দেখায়; এটি স্বয়ংক্রিয়ভাবে কল করে না।",
+    emergencyNotice: "জরুরি 100 বাটনটি এখন তথ্য-বার্তা দেখায়; এটি স্বয়ংক্রিয়ভাবে কল করে না।",
     categoriesCountLabel: "সেবা ক্যাটাগরি",
     serviceRequestsLabel: "সার্ভিস রিকোয়েস্ট",
     serviceRequestsValue: "২৪/৭ জমা",
@@ -254,8 +254,7 @@ export const bn: Dictionary = {
     disclaimer: "অনুরোধ জমা দিলেই কোনো পেমেন্ট সম্পন্ন হয় না।",
     successTitle: "অনুরোধ জমা হয়েছে",
     successReference: "আপনার রেফারেন্স নম্বর:",
-    successNotice:
-      "এটি কেবল অনুরোধ গ্রহণের নিশ্চিতকরণ; সেবা বা পেমেন্ট নিশ্চিত হওয়ার অর্থ নয়।",
+    successNotice: "এটি কেবল অনুরোধ গ্রহণের নিশ্চিতকরণ; সেবা বা পেমেন্ট নিশ্চিত হওয়ার অর্থ নয়।",
   },
   howItWorks: {
     tag: "সহজ কার্যপ্রবাহ",
@@ -269,8 +268,7 @@ export const bn: Dictionary = {
       {
         number: "২",
         title: "যাচাই ও সংযোগ",
-        description:
-          "অপারেশন টিম তথ্য যাচাই করে উপযুক্ত সেবাদাতার সঙ্গে সংযোগ করবে।",
+        description: "অপারেশন টিম তথ্য যাচাই করে উপযুক্ত সেবাদাতার সঙ্গে সংযোগ করবে।",
       },
       {
         number: "৩",
@@ -280,16 +278,14 @@ export const bn: Dictionary = {
       {
         number: "৪",
         title: "হিসাব ও কমিশন",
-        description:
-          "অনুমোদিত লেনদেনের ভিত্তিতে কমিশন ও সেবাদাতার পাওনা হিসাব হবে।",
+        description: "অনুমোদিত লেনদেনের ভিত্তিতে কমিশন ও সেবাদাতার পাওনা হিসাব হবে।",
       },
     ],
   },
   commission: {
     tag: "স্বচ্ছ হিসাব",
     title: "১০% কমিশন ক্যালকুলেটর",
-    description:
-      "নিচের হিসাবটি উদাহরণমাত্র। চূড়ান্ত কমিশন নীতিমালা ও অনুমোদিত লেনদেন অনুযায়ী নির্ধারিত হবে।",
+    description: "নিচের হিসাবটি উদাহরণমাত্র। চূড়ান্ত কমিশন নীতিমালা ও অনুমোদিত লেনদেন অনুযায়ী নির্ধারিত হবে।",
     amountLabel: "লেনদেনের মোট পরিমাণ (৳)",
     platformShare: "প্ল্যাটফর্ম কমিশন (১০%)",
     providerShare: "সেবাদাতার অংশ (৯০%)",
@@ -303,8 +299,7 @@ export const bn: Dictionary = {
       "লাইভ বাজারদর বা সংবাদ এখানে স্বয়ংক্রিয়ভাবে যুক্ত নয়। অ্যাডমিন যাচাই ও প্রকাশের মডিউল সংযুক্ত করতে হবে।",
     feedWarningBadge: "সতর্কতা",
     feedWarningTitle: "কৃষি পণ্য কেনাবেচার আগে যাচাই করুন",
-    feedWarningDescription:
-      "পণ্যের মান, ওজন, মূল্য, পরিবহন ও পেমেন্ট শর্ত লিখিতভাবে নিশ্চিত করুন।",
+    feedWarningDescription: "পণ্যের মান, ওজন, মূল্য, পরিবহন ও পেমেন্ট শর্ত লিখিতভাবে নিশ্চিত করুন।",
     policyTag: "নীতি ও নিরাপত্তা",
     policyTitle: "ব্যবহার নীতিমালা",
     policies: [
@@ -319,8 +314,7 @@ export const bn: Dictionary = {
     buttonLabel: "জরুরি সহায়তা 100",
     modalTitle: "জরুরি সহায়তা",
     modalSubtitle: "এই বাটনটি স্বয়ংক্রিয়ভাবে কল করে না।",
-    modalDescription:
-      "জরুরি সহায়তার জন্য আপনার এলাকার যাচাইকৃত সরকারি জরুরি নম্বরে সরাসরি যোগাযোগ করুন।",
+    modalDescription: "জরুরি সহায়তার জন্য আপনার এলাকার যাচাইকৃত সরকারি জরুরি নম্বরে সরাসরি যোগাযোগ করুন।",
   },
   footer: {
     tagline: "কৃষক • বাজার • শ্রম • সেবা",

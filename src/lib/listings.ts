@@ -1,8 +1,7 @@
 import "server-only";
-
 import { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logging";
+import { prisma } from "@/lib/prisma";
 
 export type PublicListing = {
   id: string;
@@ -68,9 +67,19 @@ type PublicListingRow = Prisma.MarketplaceListingGetPayload<{ select: typeof pub
 
 const productKinds = ["PRODUCE", "CONSTRUCTION_MATERIAL"] as const;
 const scheduledKinds = ["WORKER", "MACHINERY", "CONSTRUCTION_SERVICE"] as const;
-const publicAvailabilityWhere = (kind?: PublicListing["kind"]): Prisma.MarketplaceListingWhereInput => kind
-  ? productKinds.includes(kind as (typeof productKinds)[number]) ? { stock: { gt: 0 } } : {}
-  : { OR: [{ kind: { in: [...productKinds] }, stock: { gt: 0 } }, { kind: { in: [...scheduledKinds] } }] };
+const publicAvailabilityWhere = (
+  kind?: PublicListing["kind"],
+): Prisma.MarketplaceListingWhereInput =>
+  kind
+    ? productKinds.includes(kind as (typeof productKinds)[number])
+      ? { stock: { gt: 0 } }
+      : {}
+    : {
+        OR: [
+          { kind: { in: [...productKinds] }, stock: { gt: 0 } },
+          { kind: { in: [...scheduledKinds] } },
+        ],
+      };
 
 function toPublicListing(row: PublicListingRow): PublicListing {
   return {
@@ -97,7 +106,8 @@ function toPublicListing(row: PublicListingRow): PublicListing {
 }
 
 async function listingRatings(listingIds: string[]) {
-  if (!listingIds.length) return new Map<string, { averageRating: number | null; reviewCount: number }>();
+  if (!listingIds.length)
+    return new Map<string, { averageRating: number | null; reviewCount: number }>();
   const reviews = await prisma.review.findMany({
     where: { order: { listingId: { in: listingIds }, status: "COMPLETED" } },
     select: { rating: true, order: { select: { listingId: true } } },
@@ -109,14 +119,28 @@ async function listingRatings(listingIds: string[]) {
     current.count += 1;
     totals.set(review.order.listingId, current);
   }
-  return new Map(Array.from(totals, ([id, value]) => [id, { averageRating: value.sum / value.count, reviewCount: value.count }]));
+  return new Map(
+    Array.from(totals, ([id, value]) => [
+      id,
+      { averageRating: value.sum / value.count, reviewCount: value.count },
+    ]),
+  );
 }
 
-function withListingRatings(rows: PublicListingRow[], ratings: Map<string, { averageRating: number | null; reviewCount: number }>) {
-  return rows.map((row) => ({ ...toPublicListing(row), ...(ratings.get(row.id) ?? { averageRating: null, reviewCount: 0 }) }));
+function withListingRatings(
+  rows: PublicListingRow[],
+  ratings: Map<string, { averageRating: number | null; reviewCount: number }>,
+) {
+  return rows.map((row) => ({
+    ...toPublicListing(row),
+    ...(ratings.get(row.id) ?? { averageRating: null, reviewCount: 0 }),
+  }));
 }
 
-export async function getPublicListings(sectorSlug: string, kind?: PublicListing["kind"]): Promise<PublicListingsResult> {
+export async function getPublicListings(
+  sectorSlug: string,
+  kind?: PublicListing["kind"],
+): Promise<PublicListingsResult> {
   try {
     const rows = await prisma.marketplaceListing.findMany({
       where: {
@@ -144,7 +168,9 @@ export async function getPublicListings(sectorSlug: string, kind?: PublicListing
       orderBy: { createdAt: "desc" },
       take: 60,
     });
-    const validRows = rows.filter((row) => row.provider.capabilities.some((capability) => capability.kind === row.kind));
+    const validRows = rows.filter((row) =>
+      row.provider.capabilities.some((capability) => capability.kind === row.kind),
+    );
     const ratings = await listingRatings(validRows.map((row) => row.id));
     return { items: withListingRatings(validRows, ratings), unavailable: false };
   } catch (error) {
@@ -162,10 +188,25 @@ const categoryWords = {
   spices: ["spice", "মসলা", "মশলা"],
 } as const;
 export type AgricultureProductCategory = keyof typeof categoryWords | "other";
-export type AgricultureMarketFilters = { q?: string; category?: AgricultureProductCategory; district?: string; minPrice?: string; maxPrice?: string; sort?: "newest" | "price-asc" | "price-desc"; page?: number };
-export type AgricultureMarketResult = PublicListingsResult & { total: number; page: number; totalPages: number; districts: string[] };
+export type AgricultureMarketFilters = {
+  q?: string;
+  category?: AgricultureProductCategory;
+  district?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  sort?: "newest" | "price-asc" | "price-desc";
+  page?: number;
+};
+export type AgricultureMarketResult = PublicListingsResult & {
+  total: number;
+  page: number;
+  totalPages: number;
+  districts: string[];
+};
 
-function categoryConditions(category: AgricultureProductCategory): Prisma.MarketplaceListingWhereInput[] {
+function categoryConditions(
+  category: AgricultureProductCategory,
+): Prisma.MarketplaceListingWhereInput[] {
   const words = categoryWords[category as keyof typeof categoryWords];
   return words.flatMap((word) => [
     { category: { contains: word, mode: "insensitive" as const } },
@@ -174,7 +215,9 @@ function categoryConditions(category: AgricultureProductCategory): Prisma.Market
   ]);
 }
 
-export async function getAgricultureMarketListings(filters: AgricultureMarketFilters): Promise<AgricultureMarketResult> {
+export async function getAgricultureMarketListings(
+  filters: AgricultureMarketFilters,
+): Promise<AgricultureMarketResult> {
   const page = Math.max(1, Math.floor(filters.page ?? 1));
   const pageSize = 12;
   const base: Prisma.MarketplaceListingWhereInput = {
@@ -187,27 +230,54 @@ export async function getAgricultureMarketListings(filters: AgricultureMarketFil
     provider: {
       status: "APPROVED",
       user: { status: "active" },
-      capabilities: { some: { sectorSlug: "agriculture-labor", kind: "PRODUCE", status: "APPROVED" } },
+      capabilities: {
+        some: { sectorSlug: "agriculture-labor", kind: "PRODUCE", status: "APPROVED" },
+      },
     },
   };
   const and: Prisma.MarketplaceListingWhereInput[] = [];
   const q = filters.q?.trim().slice(0, 100);
-  if (q) and.push({ OR: [
-    { titleBn: { contains: q, mode: "insensitive" } },
-    { titleEn: { contains: q, mode: "insensitive" } },
-    { descriptionBn: { contains: q, mode: "insensitive" } },
-    { descriptionEn: { contains: q, mode: "insensitive" } },
-    { category: { contains: q, mode: "insensitive" } },
-    { district: { contains: q, mode: "insensitive" } },
-    { provider: { nameBn: { contains: q, mode: "insensitive" } } },
-    { provider: { nameEn: { contains: q, mode: "insensitive" } } },
-  ] });
+  if (q)
+    and.push({
+      OR: [
+        { titleBn: { contains: q, mode: "insensitive" } },
+        { titleEn: { contains: q, mode: "insensitive" } },
+        { descriptionBn: { contains: q, mode: "insensitive" } },
+        { descriptionEn: { contains: q, mode: "insensitive" } },
+        { category: { contains: q, mode: "insensitive" } },
+        { district: { contains: q, mode: "insensitive" } },
+        { provider: { nameBn: { contains: q, mode: "insensitive" } } },
+        { provider: { nameEn: { contains: q, mode: "insensitive" } } },
+      ],
+    });
   if (filters.district) and.push({ district: filters.district.slice(0, 80) });
-  if (filters.minPrice || filters.maxPrice) and.push({ unitPrice: { ...(filters.minPrice ? { gte: new Prisma.Decimal(filters.minPrice) } : {}), ...(filters.maxPrice ? { lte: new Prisma.Decimal(filters.maxPrice) } : {}) } });
-  if (filters.category && filters.category !== "other") and.push({ OR: categoryConditions(filters.category) });
-  if (filters.category === "other") and.push({ NOT: { OR: Object.keys(categoryWords).flatMap((category) => categoryConditions(category as keyof typeof categoryWords)) } });
-  const where: Prisma.MarketplaceListingWhereInput = { ...base, ...(and.length ? { AND: and } : {}) };
-  const orderBy = filters.sort === "price-asc" ? { unitPrice: "asc" as const } : filters.sort === "price-desc" ? { unitPrice: "desc" as const } : { createdAt: "desc" as const };
+  if (filters.minPrice || filters.maxPrice)
+    and.push({
+      unitPrice: {
+        ...(filters.minPrice ? { gte: new Prisma.Decimal(filters.minPrice) } : {}),
+        ...(filters.maxPrice ? { lte: new Prisma.Decimal(filters.maxPrice) } : {}),
+      },
+    });
+  if (filters.category && filters.category !== "other")
+    and.push({ OR: categoryConditions(filters.category) });
+  if (filters.category === "other")
+    and.push({
+      NOT: {
+        OR: Object.keys(categoryWords).flatMap((category) =>
+          categoryConditions(category as keyof typeof categoryWords),
+        ),
+      },
+    });
+  const where: Prisma.MarketplaceListingWhereInput = {
+    ...base,
+    ...(and.length ? { AND: and } : {}),
+  };
+  const orderBy =
+    filters.sort === "price-asc"
+      ? { unitPrice: "asc" as const }
+      : filters.sort === "price-desc"
+        ? { unitPrice: "desc" as const }
+        : { createdAt: "desc" as const };
   try {
     const [rows, total, districtRows] = await Promise.all([
       prisma.marketplaceListing.findMany({
@@ -217,15 +287,35 @@ export async function getAgricultureMarketListings(filters: AgricultureMarketFil
         take: pageSize,
         select: {
           ...publicSelect,
-          provider: { select: { ...publicSelect.provider.select, capabilities: { where: { sectorSlug: "agriculture-labor", kind: "PRODUCE", status: "APPROVED" }, select: { id: true } } } },
+          provider: {
+            select: {
+              ...publicSelect.provider.select,
+              capabilities: {
+                where: { sectorSlug: "agriculture-labor", kind: "PRODUCE", status: "APPROVED" },
+                select: { id: true },
+              },
+            },
+          },
         },
       }),
       prisma.marketplaceListing.count({ where }),
-      prisma.marketplaceListing.findMany({ where: base, select: { district: true }, distinct: ["district"], orderBy: { district: "asc" } }),
+      prisma.marketplaceListing.findMany({
+        where: base,
+        select: { district: true },
+        distinct: ["district"],
+        orderBy: { district: "asc" },
+      }),
     ]);
     const validRows = rows.filter((row) => row.provider.capabilities.length > 0);
     const ratings = await listingRatings(validRows.map((row) => row.id));
-    return { items: withListingRatings(validRows, ratings), total, page, totalPages: Math.max(1, Math.ceil(total / pageSize)), districts: districtRows.map((row) => row.district), unavailable: false };
+    return {
+      items: withListingRatings(validRows, ratings),
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      districts: districtRows.map((row) => row.district),
+      unavailable: false,
+    };
   } catch (error) {
     logError("listing.agriculture_market_failed", error);
     return { items: [], total: 0, page, totalPages: 1, districts: [], unavailable: true };
@@ -251,7 +341,9 @@ export type ConstructionMarketResult = PublicListingsResult & {
   categories: string[];
 };
 
-export async function getConstructionMarketListings(filters: ConstructionMarketFilters): Promise<ConstructionMarketResult> {
+export async function getConstructionMarketListings(
+  filters: ConstructionMarketFilters,
+): Promise<ConstructionMarketResult> {
   const page = Math.max(1, Math.floor(filters.page ?? 1));
   const pageSize = 12;
   const base: Prisma.MarketplaceListingWhereInput = {
@@ -263,30 +355,69 @@ export async function getConstructionMarketListings(filters: ConstructionMarketF
     provider: {
       status: "APPROVED",
       user: { status: "active" },
-      capabilities: { some: { sectorSlug: "construction", status: "APPROVED", ...(filters.kind ? { kind: filters.kind } : {}) } },
+      capabilities: {
+        some: {
+          sectorSlug: "construction",
+          status: "APPROVED",
+          ...(filters.kind ? { kind: filters.kind } : {}),
+        },
+      },
     },
     ...(filters.kind === "CONSTRUCTION_MATERIAL"
       ? { stock: { gt: 0 } }
       : filters.kind === "CONSTRUCTION_SERVICE"
         ? {}
-        : { AND: [
-            { OR: [{ kind: "CONSTRUCTION_MATERIAL", stock: { gt: 0 } }, { kind: "CONSTRUCTION_SERVICE" }] },
-            { OR: [
-              { kind: "CONSTRUCTION_MATERIAL", provider: { capabilities: { some: { sectorSlug: "construction", kind: "CONSTRUCTION_MATERIAL", status: "APPROVED" } } } },
-              { kind: "CONSTRUCTION_SERVICE", provider: { capabilities: { some: { sectorSlug: "construction", kind: "CONSTRUCTION_SERVICE", status: "APPROVED" } } } },
-            ] },
-          ] }),
+        : {
+            AND: [
+              {
+                OR: [
+                  { kind: "CONSTRUCTION_MATERIAL", stock: { gt: 0 } },
+                  { kind: "CONSTRUCTION_SERVICE" },
+                ],
+              },
+              {
+                OR: [
+                  {
+                    kind: "CONSTRUCTION_MATERIAL",
+                    provider: {
+                      capabilities: {
+                        some: {
+                          sectorSlug: "construction",
+                          kind: "CONSTRUCTION_MATERIAL",
+                          status: "APPROVED",
+                        },
+                      },
+                    },
+                  },
+                  {
+                    kind: "CONSTRUCTION_SERVICE",
+                    provider: {
+                      capabilities: {
+                        some: {
+                          sectorSlug: "construction",
+                          kind: "CONSTRUCTION_SERVICE",
+                          status: "APPROVED",
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          }),
   };
   const and: Prisma.MarketplaceListingWhereInput[] = [];
-  const makeSearch = (term: string): Prisma.MarketplaceListingWhereInput => ({ OR: [
-    { titleBn: { contains: term, mode: "insensitive" } },
-    { titleEn: { contains: term, mode: "insensitive" } },
-    { descriptionBn: { contains: term, mode: "insensitive" } },
-    { descriptionEn: { contains: term, mode: "insensitive" } },
-    { category: { contains: term, mode: "insensitive" } },
-    { provider: { nameBn: { contains: term, mode: "insensitive" } } },
-    { provider: { nameEn: { contains: term, mode: "insensitive" } } },
-  ] });
+  const makeSearch = (term: string): Prisma.MarketplaceListingWhereInput => ({
+    OR: [
+      { titleBn: { contains: term, mode: "insensitive" } },
+      { titleEn: { contains: term, mode: "insensitive" } },
+      { descriptionBn: { contains: term, mode: "insensitive" } },
+      { descriptionEn: { contains: term, mode: "insensitive" } },
+      { category: { contains: term, mode: "insensitive" } },
+      { provider: { nameBn: { contains: term, mode: "insensitive" } } },
+      { provider: { nameEn: { contains: term, mode: "insensitive" } } },
+    ],
+  });
   const terms = (filters.searchTerms ?? []).map((term) => term.trim().slice(0, 80)).filter(Boolean);
   if (terms.length) and.push({ OR: terms.map(makeSearch) });
   const q = filters.q?.trim().slice(0, 100);
@@ -294,13 +425,23 @@ export async function getConstructionMarketListings(filters: ConstructionMarketF
   if (filters.category) and.push({ category: filters.category.slice(0, 80) });
   if (filters.district) and.push({ district: filters.district.slice(0, 80) });
   if (filters.minPrice || filters.maxPrice) {
-    and.push({ unitPrice: {
-      ...(filters.minPrice ? { gte: new Prisma.Decimal(filters.minPrice) } : {}),
-      ...(filters.maxPrice ? { lte: new Prisma.Decimal(filters.maxPrice) } : {}),
-    } });
+    and.push({
+      unitPrice: {
+        ...(filters.minPrice ? { gte: new Prisma.Decimal(filters.minPrice) } : {}),
+        ...(filters.maxPrice ? { lte: new Prisma.Decimal(filters.maxPrice) } : {}),
+      },
+    });
   }
-  const where: Prisma.MarketplaceListingWhereInput = { ...base, ...(and.length ? { AND: and } : {}) };
-  const orderBy = filters.sort === "price-asc" ? { unitPrice: "asc" as const } : filters.sort === "price-desc" ? { unitPrice: "desc" as const } : { createdAt: "desc" as const };
+  const where: Prisma.MarketplaceListingWhereInput = {
+    ...base,
+    ...(and.length ? { AND: and } : {}),
+  };
+  const orderBy =
+    filters.sort === "price-asc"
+      ? { unitPrice: "asc" as const }
+      : filters.sort === "price-desc"
+        ? { unitPrice: "desc" as const }
+        : { createdAt: "desc" as const };
   try {
     const [rows, total, districtRows, categoryRows] = await Promise.all([
       prisma.marketplaceListing.findMany({
@@ -310,14 +451,34 @@ export async function getConstructionMarketListings(filters: ConstructionMarketF
         take: pageSize,
         select: {
           ...publicSelect,
-          provider: { select: { ...publicSelect.provider.select, capabilities: { where: { sectorSlug: "construction", status: "APPROVED" }, select: { kind: true } } } },
+          provider: {
+            select: {
+              ...publicSelect.provider.select,
+              capabilities: {
+                where: { sectorSlug: "construction", status: "APPROVED" },
+                select: { kind: true },
+              },
+            },
+          },
         },
       }),
       prisma.marketplaceListing.count({ where }),
-      prisma.marketplaceListing.findMany({ where: base, select: { district: true }, distinct: ["district"], orderBy: { district: "asc" } }),
-      prisma.marketplaceListing.findMany({ where: base, select: { category: true }, distinct: ["category"], orderBy: { category: "asc" } }),
+      prisma.marketplaceListing.findMany({
+        where: base,
+        select: { district: true },
+        distinct: ["district"],
+        orderBy: { district: "asc" },
+      }),
+      prisma.marketplaceListing.findMany({
+        where: base,
+        select: { category: true },
+        distinct: ["category"],
+        orderBy: { category: "asc" },
+      }),
     ]);
-    const validRows = rows.filter((row) => row.provider.capabilities.some((capability) => capability.kind === row.kind));
+    const validRows = rows.filter((row) =>
+      row.provider.capabilities.some((capability) => capability.kind === row.kind),
+    );
     const ratings = await listingRatings(validRows.map((row) => row.id));
     return {
       items: withListingRatings(validRows, ratings),
@@ -330,7 +491,15 @@ export async function getConstructionMarketListings(filters: ConstructionMarketF
     };
   } catch (error) {
     logError("listing.construction_market_failed", error);
-    return { items: [], total: 0, page, totalPages: 1, districts: [], categories: [], unavailable: true };
+    return {
+      items: [],
+      total: 0,
+      page,
+      totalPages: 1,
+      districts: [],
+      categories: [],
+      unavailable: true,
+    };
   }
 }
 
@@ -343,25 +512,51 @@ export async function getPublicListing(id: string): Promise<PublicListingResult>
         archivedAt: null,
         ...publicAvailabilityWhere(),
         moderationStatus: "APPROVED",
-        provider: { status: "APPROVED", user: { status: "active" }, capabilities: { some: { status: "APPROVED" } } },
+        provider: {
+          status: "APPROVED",
+          user: { status: "active" },
+          capabilities: { some: { status: "APPROVED" } },
+        },
       },
       select: {
         ...publicSelect,
-        provider: { select: { ...publicSelect.provider.select, capabilities: { where: { status: "APPROVED" }, select: { sectorSlug: true, kind: true } } } },
+        provider: {
+          select: {
+            ...publicSelect.provider.select,
+            capabilities: {
+              where: { status: "APPROVED" },
+              select: { sectorSlug: true, kind: true },
+            },
+          },
+        },
       },
     });
-    if (!row || !row.provider.capabilities.some((capability) => capability.sectorSlug === row.sectorSlug && capability.kind === row.kind)) {
+    if (
+      !row ||
+      !row.provider.capabilities.some(
+        (capability) => capability.sectorSlug === row.sectorSlug && capability.kind === row.kind,
+      )
+    ) {
       return { listing: null, unavailable: false };
     }
     const [ratings, reviews] = await Promise.all([
       listingRatings([row.id]),
-      prisma.review.findMany({ where: { order: { listingId: row.id, status: "COMPLETED" } }, orderBy: { createdAt: "desc" }, take: 20, select: { rating: true, comment: true, createdAt: true } }),
+      prisma.review.findMany({
+        where: { order: { listingId: row.id, status: "COMPLETED" } },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: { rating: true, comment: true, createdAt: true },
+      }),
     ]);
     return {
       listing: {
         ...toPublicListing(row),
         ...(ratings.get(row.id) ?? { averageRating: null, reviewCount: 0 }),
-        reviews: reviews.map((review) => ({ rating: review.rating, comment: review.comment, createdAt: review.createdAt.toISOString() })),
+        reviews: reviews.map((review) => ({
+          rating: review.rating,
+          comment: review.comment,
+          createdAt: review.createdAt.toISOString(),
+        })),
       },
       unavailable: false,
     };
@@ -371,10 +566,18 @@ export async function getPublicListing(id: string): Promise<PublicListingResult>
   }
 }
 
-export async function getPublicProviderProfile(sectorSlug: string, providerId: string): Promise<PublicProviderResult> {
+export async function getPublicProviderProfile(
+  sectorSlug: string,
+  providerId: string,
+): Promise<PublicProviderResult> {
   try {
     const profile = await prisma.providerProfile.findFirst({
-      where: { id: providerId, status: "APPROVED", user: { status: "active" }, capabilities: { some: { sectorSlug, status: "APPROVED" } } },
+      where: {
+        id: providerId,
+        status: "APPROVED",
+        user: { status: "active" },
+        capabilities: { some: { sectorSlug, status: "APPROVED" } },
+      },
       select: {
         id: true,
         nameBn: true,
@@ -387,32 +590,62 @@ export async function getPublicProviderProfile(sectorSlug: string, providerId: s
         coverImageKey: true,
         capabilities: { where: { sectorSlug, status: "APPROVED" }, select: { kind: true } },
         listings: {
-          where: { sectorSlug, isPublished: true, moderationStatus: "APPROVED", archivedAt: null, ...publicAvailabilityWhere() },
+          where: {
+            sectorSlug,
+            isPublished: true,
+            moderationStatus: "APPROVED",
+            archivedAt: null,
+            ...publicAvailabilityWhere(),
+          },
           orderBy: { createdAt: "desc" },
           take: 60,
           select: {
-            id: true, sectorSlug: true, kind: true, titleBn: true, titleEn: true, descriptionBn: true, descriptionEn: true,
-            category: true, district: true, unit: true, unitPrice: true, stock: true, availableFrom: true, imageKey: true,
+            id: true,
+            sectorSlug: true,
+            kind: true,
+            titleBn: true,
+            titleEn: true,
+            descriptionBn: true,
+            descriptionEn: true,
+            category: true,
+            district: true,
+            unit: true,
+            unitPrice: true,
+            stock: true,
+            availableFrom: true,
+            imageKey: true,
           },
         },
-        reviews: { orderBy: { createdAt: "desc" }, take: 20, select: { rating: true, comment: true, createdAt: true } },
+        reviews: {
+          orderBy: { createdAt: "desc" },
+          take: 20,
+          select: { rating: true, comment: true, createdAt: true },
+        },
       },
     });
     if (!profile) return { provider: null, unavailable: false };
-    const listings: PublicListing[] = profile.listings.filter((listing) => profile.capabilities.some((capability) => capability.kind === listing.kind)).map((listing) => ({
-      ...listing,
-      unitPrice: listing.unitPrice.toString(),
-      stock: listing.stock.toString(),
-      availableFrom: listing.availableFrom?.toISOString() ?? null,
-      hasImage: Boolean(listing.imageKey),
-      providerId: profile.id,
-      providerNameBn: profile.nameBn,
-      providerNameEn: profile.nameEn,
-      averageRating: null,
-      reviewCount: 0,
-    }));
+    const listings: PublicListing[] = profile.listings
+      .filter((listing) =>
+        profile.capabilities.some((capability) => capability.kind === listing.kind),
+      )
+      .map((listing) => ({
+        ...listing,
+        unitPrice: listing.unitPrice.toString(),
+        stock: listing.stock.toString(),
+        availableFrom: listing.availableFrom?.toISOString() ?? null,
+        hasImage: Boolean(listing.imageKey),
+        providerId: profile.id,
+        providerNameBn: profile.nameBn,
+        providerNameEn: profile.nameEn,
+        averageRating: null,
+        reviewCount: 0,
+      }));
     const [ratingAggregate, ratingMap] = await Promise.all([
-      prisma.review.aggregate({ where: { providerId: profile.id }, _avg: { rating: true }, _count: { rating: true } }),
+      prisma.review.aggregate({
+        where: { providerId: profile.id },
+        _avg: { rating: true },
+        _count: { rating: true },
+      }),
       listingRatings(listings.map((listing) => listing.id)),
     ]);
     return {
@@ -429,8 +662,15 @@ export async function getPublicProviderProfile(sectorSlug: string, providerId: s
         hasCoverImage: Boolean(profile.coverImageKey),
         averageRating: ratingAggregate._avg.rating,
         reviewCount: ratingAggregate._count.rating,
-        listings: listings.map((listing) => ({ ...listing, ...(ratingMap.get(listing.id) ?? { averageRating: null, reviewCount: 0 }) })),
-        reviews: profile.reviews.map((review) => ({ rating: review.rating, comment: review.comment, createdAt: review.createdAt.toISOString() })),
+        listings: listings.map((listing) => ({
+          ...listing,
+          ...(ratingMap.get(listing.id) ?? { averageRating: null, reviewCount: 0 }),
+        })),
+        reviews: profile.reviews.map((review) => ({
+          rating: review.rating,
+          comment: review.comment,
+          createdAt: review.createdAt.toISOString(),
+        })),
       },
       unavailable: false,
     };

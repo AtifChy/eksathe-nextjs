@@ -1,6 +1,6 @@
-import type { Dictionary } from "./types";
-import { en } from "./en";
 import { bn } from "./bn";
+import { en } from "./en";
+import type { Dictionary } from "./types";
 export * from "./types";
 
 export const dictionaries: Record<import("./types").Locale, Dictionary> = { en, bn };

@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
+
+import { logError } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { createDownloadUrl } from "@/lib/storage/s3";
-import { logError } from "@/lib/logging";
 
-export async function GET(request: Request, { params }: { params: Promise<{ providerId: string }> }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ providerId: string }> },
+) {
   const { providerId } = await params;
   const imageType = new URL(request.url).searchParams.get("type");
-  if (imageType !== "profile" && imageType !== "cover") return new NextResponse(null, { status: 404 });
+  if (imageType !== "profile" && imageType !== "cover")
+    return new NextResponse(null, { status: 404 });
   const profile = await prisma.providerProfile.findFirst({
     where: { id: providerId, status: "APPROVED", user: { status: "active" } },
     select: { profileImageKey: true, coverImageKey: true },
@@ -16,7 +21,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
   try {
     const url = await createDownloadUrl(key);
     if (!url) return new NextResponse(null, { status: 404 });
-    return NextResponse.redirect(url, { status: 302, headers: { "Cache-Control": "public, max-age=30" } });
+    return NextResponse.redirect(url, {
+      status: 302,
+      headers: { "Cache-Control": "public, max-age=30" },
+    });
   } catch (error) {
     logError("provider.image_signing_failed", error);
     return new NextResponse(null, { status: 503 });

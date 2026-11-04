@@ -48,11 +48,11 @@ logins.
 
 ## Useful commands
 
-| Command | Purpose |
-| --- | --- |
-| `bun run lint` | Check code style |
-| `bun run typecheck` | Check TypeScript |
-| `bun run build` | Create a production build |
+| Command             | Purpose                       |
+| ------------------- | ----------------------------- |
+| `bun run lint`      | Check code style              |
+| `bun run typecheck` | Check TypeScript              |
+| `bun run build`     | Create a production build     |
 | `bun run db:studio` | Browse local database records |
 
 For R2 or other S3 compatible file uploads, see [object storage setup](docs/object-storage.md).

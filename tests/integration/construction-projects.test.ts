@@ -1,8 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it, mock } from "bun:test";
+
 import { Prisma } from "@/generated/prisma/client";
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
-if (!testDatabaseUrl) throw new Error("Set TEST_DATABASE_URL to a dedicated, migrated PostgreSQL test database before running integration tests.");
+if (!testDatabaseUrl)
+  throw new Error(
+    "Set TEST_DATABASE_URL to a dedicated, migrated PostgreSQL test database before running integration tests.",
+  );
 process.env.DATABASE_URL = testDatabaseUrl;
 mock.module("server-only", () => ({}));
 
@@ -35,7 +39,11 @@ const futureDate = () => {
   return date.toISOString().slice(0, 10);
 };
 
-async function createListing(providerId: string, kind: "CONSTRUCTION_SERVICE" | "CONSTRUCTION_MATERIAL", title: string) {
+async function createListing(
+  providerId: string,
+  kind: "CONSTRUCTION_SERVICE" | "CONSTRUCTION_MATERIAL",
+  title: string,
+) {
   const listing = await prisma.marketplaceListing.create({
     data: {
       providerId,
@@ -59,7 +67,12 @@ async function createListing(providerId: string, kind: "CONSTRUCTION_SERVICE" | 
   return listing.id;
 }
 
-async function invite(listingId: string, packageId: string, providerUserId: string, scheduled: boolean) {
+async function invite(
+  listingId: string,
+  packageId: string,
+  providerUserId: string,
+  scheduled: boolean,
+) {
   const date = scheduled ? futureDate() : undefined;
   const request = await marketplace.createMarketplaceRequest(ownerId, {
     listingId,
@@ -92,15 +105,58 @@ describe("PostgreSQL construction project workflows", () => {
     await prisma.sector.upsert({
       where: { slug: "construction" },
       update: { status: "LIVE", commissionRate: new Prisma.Decimal("10.00") },
-      create: { slug: "construction", position: 5, titleBn: "নির্মাণ", titleEn: "Construction", icon: "🏗️", status: "LIVE", commissionRate: new Prisma.Decimal("10.00") },
+      create: {
+        slug: "construction",
+        position: 5,
+        titleBn: "নির্মাণ",
+        titleEn: "Construction",
+        icon: "🏗️",
+        status: "LIVE",
+        commissionRate: new Prisma.Decimal("10.00"),
+      },
     });
     for (const id of userIds) {
-      await prisma.user.create({ data: { id, name: id, email: `${id}@integration.example`, emailVerified: true, phone: "+8801700000000" } });
+      await prisma.user.create({
+        data: {
+          id,
+          name: id,
+          email: `${id}@integration.example`,
+          emailVerified: true,
+          phone: "+8801700000000",
+        },
+      });
     }
     const [serviceOne, serviceTwo, material] = await Promise.all([
-      prisma.providerProfile.create({ data: { userId: serviceOneUserId, nameBn: "সেবা এক", nameEn: "Service One", district: "Dhaka", status: "APPROVED" }, select: { id: true } }),
-      prisma.providerProfile.create({ data: { userId: serviceTwoUserId, nameBn: "সেবা দুই", nameEn: "Service Two", district: "Dhaka", status: "APPROVED" }, select: { id: true } }),
-      prisma.providerProfile.create({ data: { userId: materialUserId, nameBn: "সামগ্রী", nameEn: "Materials", district: "Dhaka", status: "APPROVED" }, select: { id: true } }),
+      prisma.providerProfile.create({
+        data: {
+          userId: serviceOneUserId,
+          nameBn: "সেবা এক",
+          nameEn: "Service One",
+          district: "Dhaka",
+          status: "APPROVED",
+        },
+        select: { id: true },
+      }),
+      prisma.providerProfile.create({
+        data: {
+          userId: serviceTwoUserId,
+          nameBn: "সেবা দুই",
+          nameEn: "Service Two",
+          district: "Dhaka",
+          status: "APPROVED",
+        },
+        select: { id: true },
+      }),
+      prisma.providerProfile.create({
+        data: {
+          userId: materialUserId,
+          nameBn: "সামগ্রী",
+          nameEn: "Materials",
+          district: "Dhaka",
+          status: "APPROVED",
+        },
+        select: { id: true },
+      }),
     ]);
     serviceOneProviderId = serviceOne.id;
     serviceTwoProviderId = serviceTwo.id;
@@ -108,9 +164,24 @@ describe("PostgreSQL construction project workflows", () => {
     providerIds.push(serviceOne.id, serviceTwo.id, material.id);
     await prisma.providerCapability.createMany({
       data: [
-        { providerId: serviceOne.id, sectorSlug: "construction", kind: "CONSTRUCTION_SERVICE", status: "APPROVED" },
-        { providerId: serviceTwo.id, sectorSlug: "construction", kind: "CONSTRUCTION_SERVICE", status: "APPROVED" },
-        { providerId: material.id, sectorSlug: "construction", kind: "CONSTRUCTION_MATERIAL", status: "APPROVED" },
+        {
+          providerId: serviceOne.id,
+          sectorSlug: "construction",
+          kind: "CONSTRUCTION_SERVICE",
+          status: "APPROVED",
+        },
+        {
+          providerId: serviceTwo.id,
+          sectorSlug: "construction",
+          kind: "CONSTRUCTION_SERVICE",
+          status: "APPROVED",
+        },
+        {
+          providerId: material.id,
+          sectorSlug: "construction",
+          kind: "CONSTRUCTION_MATERIAL",
+          status: "APPROVED",
+        },
       ],
     });
     const project = await projects.createConstructionProject(ownerId, {
@@ -125,55 +196,100 @@ describe("PostgreSQL construction project workflows", () => {
   });
 
   it("accepts only one competing quote per work package and tracks separate material packages", async () => {
-    const servicePackage = await prisma.projectPackage.findFirstOrThrow({ where: { projectId, serviceSlug: "contractors" }, select: { id: true } });
+    const servicePackage = await prisma.projectPackage.findFirstOrThrow({
+      where: { projectId, serviceSlug: "contractors" },
+      select: { id: true },
+    });
     const materialPackage = await projects.createProjectPackage(ownerId, {
       projectId,
       label: "Cement supply",
       description: "Supply the requested cement.",
       kind: "CONSTRUCTION_MATERIAL",
     });
-    await prisma.constructionProject.update({ where: { id: projectId }, data: { status: "ACTIVE" } });
+    await prisma.constructionProject.update({
+      where: { id: projectId },
+      data: { status: "ACTIVE" },
+    });
 
-    const serviceListingOne = await createListing(serviceOneProviderId, "CONSTRUCTION_SERVICE", "Service One builders");
-    const serviceListingTwo = await createListing(serviceTwoProviderId, "CONSTRUCTION_SERVICE", "Service Two builders");
-    const materialListing = await createListing(materialProviderId, "CONSTRUCTION_MATERIAL", "Cement supply");
+    const serviceListingOne = await createListing(
+      serviceOneProviderId,
+      "CONSTRUCTION_SERVICE",
+      "Service One builders",
+    );
+    const serviceListingTwo = await createListing(
+      serviceTwoProviderId,
+      "CONSTRUCTION_SERVICE",
+      "Service Two builders",
+    );
+    const materialListing = await createListing(
+      materialProviderId,
+      "CONSTRUCTION_MATERIAL",
+      "Cement supply",
+    );
     const [serviceRequestOne, serviceRequestTwo, materialRequest] = await Promise.all([
       invite(serviceListingOne, servicePackage.id, serviceOneUserId, true),
       invite(serviceListingTwo, servicePackage.id, serviceTwoUserId, true),
       invite(materialListing, materialPackage.id, materialUserId, false),
     ]);
 
-    await expect(marketplace.createMarketplaceRequest(ownerId, {
-      listingId: materialListing,
-      quantity: "1",
-      district: "Dhaka",
-      details: "Wrong package kind",
-      projectId,
-      packageId: servicePackage.id,
-    })).rejects.toMatchObject({ code: "invalidState" });
+    await expect(
+      marketplace.createMarketplaceRequest(ownerId, {
+        listingId: materialListing,
+        quantity: "1",
+        district: "Dhaka",
+        details: "Wrong package kind",
+        projectId,
+        packageId: servicePackage.id,
+      }),
+    ).rejects.toMatchObject({ code: "invalidState" });
 
     const competingAcceptances = await Promise.allSettled([
       marketplace.acceptQuote(ownerId, serviceRequestOne),
       marketplace.acceptQuote(ownerId, serviceRequestTwo),
     ]);
-    for (const result of competingAcceptances) if (result.status === "fulfilled") orderIds.push(result.value.id);
+    for (const result of competingAcceptances)
+      if (result.status === "fulfilled") orderIds.push(result.value.id);
     expect(competingAcceptances.filter((result) => result.status === "fulfilled")).toHaveLength(1);
 
-    const firstServiceOrder = await prisma.order.findFirstOrThrow({ where: { packageId: servicePackage.id }, select: { id: true, providerId: true } });
-    const firstProviderUserId = firstServiceOrder.providerId === serviceOneProviderId ? serviceOneUserId : serviceTwoUserId;
-    const replacementRequestId = firstServiceOrder.providerId === serviceOneProviderId ? serviceRequestTwo : serviceRequestOne;
-    await marketplace.requestOrderCancellation(ownerId, firstServiceOrder.id, "Customer and provider agreed to restart this package.");
-    await marketplace.requestOrderCancellation(firstProviderUserId, firstServiceOrder.id, "Customer and provider agreed to restart this package.");
-    expect((await prisma.order.findUniqueOrThrow({ where: { id: firstServiceOrder.id }, select: { status: true } })).status).toBe("CANCELLED");
+    const firstServiceOrder = await prisma.order.findFirstOrThrow({
+      where: { packageId: servicePackage.id },
+      select: { id: true, providerId: true },
+    });
+    const firstProviderUserId =
+      firstServiceOrder.providerId === serviceOneProviderId ? serviceOneUserId : serviceTwoUserId;
+    const replacementRequestId =
+      firstServiceOrder.providerId === serviceOneProviderId ? serviceRequestTwo : serviceRequestOne;
+    await marketplace.requestOrderCancellation(
+      ownerId,
+      firstServiceOrder.id,
+      "Customer and provider agreed to restart this package.",
+    );
+    await marketplace.requestOrderCancellation(
+      firstProviderUserId,
+      firstServiceOrder.id,
+      "Customer and provider agreed to restart this package.",
+    );
+    expect(
+      (
+        await prisma.order.findUniqueOrThrow({
+          where: { id: firstServiceOrder.id },
+          select: { status: true },
+        })
+      ).status,
+    ).toBe("CANCELLED");
 
     const replacementOrder = await marketplace.acceptQuote(ownerId, replacementRequestId);
     orderIds.push(replacementOrder.id);
-    const serviceOrder = await prisma.order.findFirstOrThrow({ where: { packageId: servicePackage.id, status: { not: "CANCELLED" } }, select: { id: true, providerId: true } });
+    const serviceOrder = await prisma.order.findFirstOrThrow({
+      where: { packageId: servicePackage.id, status: { not: "CANCELLED" } },
+      select: { id: true, providerId: true },
+    });
     const materialOrder = await marketplace.acceptQuote(ownerId, materialRequest);
     orderIds.push(materialOrder.id);
     expect(await prisma.order.count({ where: { projectId } })).toBe(3);
     expect(await getProjectWorkspace(outsiderId, projectId)).toBeNull();
-    const serviceProviderUserId = serviceOrder.providerId === serviceOneProviderId ? serviceOneUserId : serviceTwoUserId;
+    const serviceProviderUserId =
+      serviceOrder.providerId === serviceOneProviderId ? serviceOneUserId : serviceTwoUserId;
     const providerWorkspace = await getProjectWorkspace(serviceProviderUserId, projectId);
     expect(providerWorkspace?.orders.map((order) => order.id)).toEqual([serviceOrder.id]);
 
@@ -184,20 +300,32 @@ describe("PostgreSQL construction project workflows", () => {
       assignedProviderId: serviceOrder.providerId,
     });
     const assignedProviderUserId = serviceProviderUserId;
-    const unassignedProviderUserId = assignedProviderUserId === serviceOneUserId ? serviceTwoUserId : serviceOneUserId;
+    const unassignedProviderUserId =
+      assignedProviderUserId === serviceOneUserId ? serviceTwoUserId : serviceOneUserId;
 
-    await expect(projects.updateProjectMilestone(unassignedProviderUserId, milestone.id, "submit")).rejects.toMatchObject({ code: "notAllowed" });
-    await expect(projects.confirmProjectHandover(ownerId, projectId)).rejects.toMatchObject({ code: "invalidState" });
+    await expect(
+      projects.updateProjectMilestone(unassignedProviderUserId, milestone.id, "submit"),
+    ).rejects.toMatchObject({ code: "notAllowed" });
+    await expect(projects.confirmProjectHandover(ownerId, projectId)).rejects.toMatchObject({
+      code: "invalidState",
+    });
     await projects.updateProjectMilestone(assignedProviderUserId, milestone.id, "submit");
     await projects.updateProjectMilestone(ownerId, milestone.id, "approve");
     await completeOrder(serviceOrder.id, assignedProviderUserId);
     await completeOrder(materialOrder.id, materialUserId);
     await projects.confirmProjectHandover(ownerId, projectId);
 
-    const completedProject = await prisma.constructionProject.findUniqueOrThrow({ where: { id: projectId }, select: { status: true, handedOverAt: true } });
+    const completedProject = await prisma.constructionProject.findUniqueOrThrow({
+      where: { id: projectId },
+      select: { status: true, handedOverAt: true },
+    });
     expect(completedProject.status).toBe("COMPLETED");
     expect(completedProject.handedOverAt).toBeInstanceOf(Date);
-    expect(await prisma.activityLog.count({ where: { entityType: "project", entityId: projectId, action: "project.handover_confirmed" } })).toBe(1);
+    expect(
+      await prisma.activityLog.count({
+        where: { entityType: "project", entityId: projectId, action: "project.handover_confirmed" },
+      }),
+    ).toBe(1);
   });
 
   afterAll(async () => {

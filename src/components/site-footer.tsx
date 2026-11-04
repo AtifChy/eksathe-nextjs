@@ -1,4 +1,5 @@
 import { cacheLife } from "next/cache";
+
 import { FooterContent } from "@/components/footer-content";
 
 async function getCurrentYear() {

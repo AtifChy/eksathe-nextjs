@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "cn";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "cn";
 
 import { useLanguage } from "@/components/language-provider";
 
@@ -12,13 +12,14 @@ export function DashboardTabs() {
 
   const tabs = [
     { label: t.dashboard.tabDashboard, href: "/dashboard" },
-    { label: t.dashboard.tabAdmin,     href: "/dashboard/admin" },
+    { label: t.dashboard.tabAdmin, href: "/dashboard/admin" },
   ];
 
   return (
-    <div className="flex items-center gap-2 mb-3">
+    <div className="mb-3 flex items-center gap-2">
       {tabs.map((tab) => {
-        const isActive = pathname === tab.href || (tab.href !== "/dashboard" && pathname.startsWith(tab.href));
+        const isActive =
+          pathname === tab.href || (tab.href !== "/dashboard" && pathname.startsWith(tab.href));
         return (
           <Link
             key={tab.href}

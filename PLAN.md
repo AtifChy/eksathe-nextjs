@@ -6,15 +6,15 @@ Build one responsive Next.js application with a public 13-sector directory, a sh
 
 ## Entry points
 
-| Route | Purpose | Access |
-| --- | --- | --- |
-| `/` | Platform homepage, launch sectors, and directory entry | Public |
-| `/dashboard` | The 13-sector service directory | Public |
-| `/dashboard/agriculture-labor` | Produce, farm-worker, and machinery services | Public browsing |
-| `/dashboard/construction` | Provider/material discovery and construction projects | Public browsing |
-| `/account` | Orders, bookings, projects, payments, and profile | Signed-in customer |
-| `/provider` | Listings, applications, quotes, jobs, and commission | Applicant or approved provider |
-| `/admin` | Provider approvals and scoped operations/finance | Authorized staff |
+| Route                          | Purpose                                                | Access                         |
+| ------------------------------ | ------------------------------------------------------ | ------------------------------ |
+| `/`                            | Platform homepage, launch sectors, and directory entry | Public                         |
+| `/dashboard`                   | The 13-sector service directory                        | Public                         |
+| `/dashboard/agriculture-labor` | Produce, farm-worker, and machinery services           | Public browsing                |
+| `/dashboard/construction`      | Provider/material discovery and construction projects  | Public browsing                |
+| `/account`                     | Orders, bookings, projects, payments, and profile      | Signed-in customer             |
+| `/provider`                    | Listings, applications, quotes, jobs, and commission   | Applicant or approved provider |
+| `/admin`                       | Provider approvals and scoped operations/finance       | Authorized staff               |
 
 Ordering, quote requests, bookings, and projects require a verified email account and return the customer to the requested action after sign-in. Listing and provider pages have shareable sector URLs. Planned sectors show a consistent coming-soon page; unknown sector slugs return 404. Provider and admin links appear only when the signed-in user has access. The old `/dashboard/admin` route redirects to `/admin`.
 
@@ -83,16 +83,16 @@ Restore the agriculture prototype as a dedicated experience while keeping the cu
 
 ### Agriculture routes
 
-| Route | Purpose |
-| --- | --- |
-| `/agriculture` | Canonical agriculture homepage, without a dashboard back link |
-| `/dashboard/agriculture` | Same homepage with a back link to `/dashboard` |
-| Both prefixes + `/services/[slug]` | Shareable service details and request form |
-| Both prefixes + `/market` | Searchable produce and service marketplace |
-| Both prefixes + `/listings/[id]` | Listing details |
-| Both prefixes + `/providers/[id]` | Farmer/provider storefront |
-| Both prefixes + `/market-prices` | Staff-published, sourced market prices |
-| Both prefixes + `/updates` | Staff-published news, advice, and weather alerts |
+| Route                              | Purpose                                                       |
+| ---------------------------------- | ------------------------------------------------------------- |
+| `/agriculture`                     | Canonical agriculture homepage, without a dashboard back link |
+| `/dashboard/agriculture`           | Same homepage with a back link to `/dashboard`                |
+| Both prefixes + `/services/[slug]` | Shareable service details and request form                    |
+| Both prefixes + `/market`          | Searchable produce and service marketplace                    |
+| Both prefixes + `/listings/[id]`   | Listing details                                               |
+| Both prefixes + `/providers/[id]`  | Farmer/provider storefront                                    |
+| Both prefixes + `/market-prices`   | Staff-published, sourced market prices                        |
+| Both prefixes + `/updates`         | Staff-published news, advice, and weather alerts              |
 
 Use one shared agriculture module with an explicit route base. Keep that base in detail links, filters, breadcrumbs, and login return URLs. The header and homepage CTA use `/agriculture`; the agriculture sector card opens `/dashboard/agriculture`. Permanently redirect `/dashboard/agriculture-labor` and its listing/provider descendants to matching `/dashboard/agriculture` routes, preserving query parameters. Direct agriculture URLs are canonical for public pages.
 
@@ -156,14 +156,14 @@ Complete the construction sector as a dedicated experience, reusing the accounts
 
 ### Routes and discovery
 
-| Route | Purpose |
-| --- | --- |
-| `/construction` | Canonical construction homepage without a dashboard back link |
-| `/dashboard/construction` | Same shared homepage with a back link to `/dashboard` |
-| Both prefixes + `/services/[slug]` | Construction service details and matching listings |
-| Both prefixes + `/market` | Searchable professional and material directory |
-| Both prefixes + `/listings/[id]` | Listing detail and customer actions |
-| Both prefixes + `/providers/[id]` | Provider storefront and related listings |
+| Route                              | Purpose                                                       |
+| ---------------------------------- | ------------------------------------------------------------- |
+| `/construction`                    | Canonical construction homepage without a dashboard back link |
+| `/dashboard/construction`          | Same shared homepage with a back link to `/dashboard`         |
+| Both prefixes + `/services/[slug]` | Construction service details and matching listings            |
+| Both prefixes + `/market`          | Searchable professional and material directory                |
+| Both prefixes + `/listings/[id]`   | Listing detail and customer actions                           |
+| Both prefixes + `/providers/[id]`  | Provider storefront and related listings                      |
 
 The header and platform homepage link to `/construction`; the sector card opens `/dashboard/construction`. Preserve dashboard construction listing/provider URLs. Keep route context in navigation, filters, and login return paths; direct construction pages are canonical. The homepage should match the agriculture experience's green identity, layout rhythm, cards, typography, bilingual behavior, theme, Lucide controls, and image/emoji fallbacks. Include a construction introduction, directory, professional/material previews, project actions, how-it-works, and a configured commission estimate that excludes transport charges.
 

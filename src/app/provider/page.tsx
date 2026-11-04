@@ -1,9 +1,9 @@
 import { ProviderApplicationEntry } from "@/components/provider/provider-application-entry";
 import { ProviderWorkspace } from "@/components/provider/provider-workspace";
 import { WorkspaceError } from "@/components/workflows/workspace-error";
-import { getProviderWorkspace } from "@/lib/workspaces";
 import { requireUser } from "@/lib/dal";
 import { logError } from "@/lib/logging";
+import { getProviderWorkspace } from "@/lib/workspaces";
 
 export const instant = false;
 

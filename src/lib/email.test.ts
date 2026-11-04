@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+
 import { sendAuthEmail } from "@/lib/email";
 
 describe("authentication email delivery", () => {
@@ -14,7 +15,11 @@ describe("authentication email delivery", () => {
 
     try {
       await expect(
-        sendAuthEmail("customer@example.com", "Verify your account", "http://localhost/verify?token=sample"),
+        sendAuthEmail(
+          "customer@example.com",
+          "Verify your account",
+          "http://localhost/verify?token=sample",
+        ),
       ).resolves.toBeUndefined();
       expect(output.join(" ")).toContain("http://localhost/verify?token=sample");
     } finally {

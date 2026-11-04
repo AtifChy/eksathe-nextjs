@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRightIcon } from "lucide-react";
 import { cn } from "cn";
+import { ArrowRightIcon } from "lucide-react";
+import Link from "next/link";
 
 import { EmergencyButton } from "@/components/landing/emergency-button";
 import { useLanguage } from "@/components/language-provider";
@@ -13,9 +13,7 @@ export function HeroSection({ totalPanels }: { totalPanels: number }) {
   const { locale, t } = useLanguage();
 
   const formattedCount =
-    locale === "bn"
-      ? totalPanels.toLocaleString("bn-BD")
-      : totalPanels.toString();
+    locale === "bn" ? totalPanels.toLocaleString("bn-BD") : totalPanels.toString();
 
   return (
     <section className="hero-surface">
@@ -29,45 +27,34 @@ export function HeroSection({ totalPanels }: { totalPanels: number }) {
             <br />
             <span className="text-primary">{t.hero.titleLine2}</span>
           </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-            {t.hero.description}
-          </p>
+          <p className="text-muted-foreground mt-5 max-w-2xl text-lg">{t.hero.description}</p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="#panels" className={cn(buttonVariants({ size: "lg" }))}>
               {t.hero.browseServices}
               <ArrowRightIcon />
             </Link>
-            <Link
-              href="#how"
-              className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
-            >
+            <Link href="#how" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
               {t.hero.howItWorks}
             </Link>
             <EmergencyButton />
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            {t.hero.emergencyNotice}
-          </p>
+          <p className="text-muted-foreground mt-3 text-xs">{t.hero.emergencyNotice}</p>
         </div>
 
-        <div className="rounded-3xl border bg-card p-8 shadow-xl">
+        <div className="bg-card rounded-3xl border p-8 shadow-xl">
           <div className="text-4xl" aria-hidden>
             🌾
           </div>
           <div className="mt-2 text-5xl font-extrabold">{formattedCount}</div>
           <p className="text-muted-foreground">{t.hero.categoriesCountLabel}</p>
-          <div className="my-5 h-px bg-border" />
+          <div className="bg-border my-5 h-px" />
           <div className="flex justify-between gap-4 text-sm">
-            <span className="text-muted-foreground">
-              {t.hero.serviceRequestsLabel}
-            </span>
+            <span className="text-muted-foreground">{t.hero.serviceRequestsLabel}</span>
             <strong>{t.hero.serviceRequestsValue}</strong>
           </div>
           <div className="mt-2 flex justify-between gap-4 text-sm">
-            <span className="text-muted-foreground">
-              {t.hero.commissionLabel}
-            </span>
+            <span className="text-muted-foreground">{t.hero.commissionLabel}</span>
             <strong>{t.hero.commissionValue}</strong>
           </div>
         </div>

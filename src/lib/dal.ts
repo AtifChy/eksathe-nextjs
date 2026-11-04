@@ -1,7 +1,7 @@
 import "server-only";
-
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sectors } from "@/lib/sectors";
@@ -79,9 +79,16 @@ export type StaffAccess = {
 
 export async function getStaffAccess(user: CurrentUser): Promise<StaffAccess> {
   const isSuperAdmin = user.role === "super_admin";
-  const liveSectorSlugs = sectors.filter((sector) => sector.status === "live").map((sector) => sector.slug);
+  const liveSectorSlugs = sectors
+    .filter((sector) => sector.status === "live")
+    .map((sector) => sector.slug);
   if (isSuperAdmin) {
-    return { isSuperAdmin, operationSectors: liveSectorSlugs, financeSectors: liveSectorSlugs, canManageStaff: true };
+    return {
+      isSuperAdmin,
+      operationSectors: liveSectorSlugs,
+      financeSectors: liveSectorSlugs,
+      canManageStaff: true,
+    };
   }
 
   const grants = await prisma.staffGrant.findMany({
@@ -91,7 +98,9 @@ export async function getStaffAccess(user: CurrentUser): Promise<StaffAccess> {
   const scopesFor = (permission: "OPERATIONS" | "FINANCE") => {
     const matching = grants.filter((grant) => grant.permission === permission);
     if (matching.some((grant) => grant.scopeKey === "global")) return liveSectorSlugs;
-    return matching.map((grant) => grant.sectorSlug).filter((slug): slug is string => Boolean(slug));
+    return matching
+      .map((grant) => grant.sectorSlug)
+      .filter((slug): slug is string => Boolean(slug));
   };
 
   return {
@@ -105,7 +114,12 @@ export async function getStaffAccess(user: CurrentUser): Promise<StaffAccess> {
 export async function requireAdmin() {
   const user = await requireUser("/admin");
   const access = await getStaffAccess(user);
-  if (!access.isSuperAdmin && access.operationSectors.length === 0 && access.financeSectors.length === 0) notFound();
+  if (
+    !access.isSuperAdmin &&
+    access.operationSectors.length === 0 &&
+    access.financeSectors.length === 0
+  )
+    notFound();
   return { user, access };
 }
 
@@ -115,10 +129,7 @@ export async function requireSuperAdmin() {
   return user;
 }
 
-export async function requireStaff(
-  permission: "OPERATIONS" | "FINANCE",
-  sectorSlug?: string,
-) {
+export async function requireStaff(permission: "OPERATIONS" | "FINANCE", sectorSlug?: string) {
   const user = await requireUser("/admin");
   if (!(await hasStaffPermission(user, permission, sectorSlug))) notFound();
   return user;

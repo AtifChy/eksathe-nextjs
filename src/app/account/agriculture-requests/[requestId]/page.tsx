@@ -1,11 +1,16 @@
 import { notFound } from "next/navigation";
+
 import { AgricultureRequestDetail } from "@/components/account/agriculture-request-detail";
 import { requireUser } from "@/lib/dal";
 import { getCustomerAgricultureRequest } from "@/lib/workspaces";
 
 export const instant = false;
 
-export default async function CustomerAgricultureRequestPage({ params }: { params: Promise<{ requestId: string }> }) {
+export default async function CustomerAgricultureRequestPage({
+  params,
+}: {
+  params: Promise<{ requestId: string }>;
+}) {
   const { requestId: rawId } = await params;
   if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(Number(rawId))) notFound();
   const user = await requireUser(`/account/agriculture-requests/${rawId}`);

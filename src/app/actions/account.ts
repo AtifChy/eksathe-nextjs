@@ -2,22 +2,34 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+
 import { requireUser } from "@/lib/dal";
 import { updateOwnProfile } from "@/lib/domain/account";
+import { logError } from "@/lib/logging";
+import { prisma } from "@/lib/prisma";
 import { profileSchema } from "@/lib/validations/workflows";
 import type { WorkflowState } from "@/lib/workflow-state";
-import { prisma } from "@/lib/prisma";
-import { logError } from "@/lib/logging";
 
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
   return typeof entry === "string" ? entry.trim() : "";
 }
 
-export async function updateProfileAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function updateProfileAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const user = await requireUser("/account#profile");
-  const parsed = profileSchema.safeParse({ name: value(formData, "name"), phone: value(formData, "phone") });
-  if (!parsed.success) return { status: "error", messageKey: "validationError", errors: z.flattenError(parsed.error).fieldErrors };
+  const parsed = profileSchema.safeParse({
+    name: value(formData, "name"),
+    phone: value(formData, "phone"),
+  });
+  if (!parsed.success)
+    return {
+      status: "error",
+      messageKey: "validationError",
+      errors: z.flattenError(parsed.error).fieldErrors,
+    };
   try {
     await updateOwnProfile(user.id, parsed.data.name, parsed.data.phone);
     revalidatePath("/account");
@@ -28,12 +40,18 @@ export async function updateProfileAction(_state: WorkflowState, formData: FormD
   }
 }
 
-export async function markNotificationReadAction(_state: WorkflowState, formData: FormData): Promise<WorkflowState> {
+export async function markNotificationReadAction(
+  _state: WorkflowState,
+  formData: FormData,
+): Promise<WorkflowState> {
   const user = await requireUser("/account");
   const id = value(formData, "notificationId");
   if (!id || id.length > 64) return { status: "error", messageKey: "validationError" };
   try {
-    const result = await prisma.notification.updateMany({ where: { id, userId: user.id, readAt: null }, data: { readAt: new Date() } });
+    const result = await prisma.notification.updateMany({
+      where: { id, userId: user.id, readAt: null },
+      data: { readAt: new Date() },
+    });
     if (result.count !== 1) return { status: "error", messageKey: "listingMissing" };
     revalidatePath("/account");
     revalidatePath("/provider");

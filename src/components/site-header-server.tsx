@@ -7,7 +7,9 @@ export async function SiteHeaderServer() {
   const activeUser = user?.status === "active" ? user : null;
   const [canProvider, canAdmin] = activeUser
     ? await Promise.all([
-        prisma.providerProfile.findUnique({ where: { userId: activeUser.id }, select: { id: true } }).then(Boolean),
+        prisma.providerProfile
+          .findUnique({ where: { userId: activeUser.id }, select: { id: true } })
+          .then(Boolean),
         hasAnyStaffPermission(activeUser),
       ])
     : [false, false];

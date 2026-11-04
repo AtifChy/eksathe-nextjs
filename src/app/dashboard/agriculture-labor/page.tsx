@@ -1,6 +1,10 @@
 import { permanentRedirect } from "next/navigation";
 
-export default async function LegacyAgriculturePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function LegacyAgriculturePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const values = await searchParams;
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(values)) {

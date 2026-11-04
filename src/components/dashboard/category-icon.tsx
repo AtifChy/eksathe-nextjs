@@ -84,11 +84,51 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
             strokeLinejoin="round"
           />
           {/* Basket grid lines */}
-          <line x1="28" y1="21" x2="26" y2="38" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
-          <line x1="36" y1="21" x2="35" y2="38" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
-          <line x1="44" y1="21" x2="43" y2="38" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
-          <line x1="22" y1="27" x2="49" y2="27" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
-          <line x1="23" y1="33" x2="46" y2="33" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
+          <line
+            x1="28"
+            y1="21"
+            x2="26"
+            y2="38"
+            stroke="#64748b"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="36"
+            y1="21"
+            x2="35"
+            y2="38"
+            stroke="#64748b"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="44"
+            y1="21"
+            x2="43"
+            y2="38"
+            stroke="#64748b"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="22"
+            y1="27"
+            x2="49"
+            y2="27"
+            stroke="#64748b"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="23"
+            y1="33"
+            x2="46"
+            y2="33"
+            stroke="#64748b"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
           {/* Wheels */}
           <circle cx="27" cy="46" r="4.5" fill="#1e293b" />
           <circle cx="27" cy="46" r="2" fill="#f8fafc" />
@@ -115,12 +155,7 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
               strokeWidth="2.5"
               strokeLinejoin="round"
             />
-            <path
-              d="M32 16v18"
-              stroke="#94a3b8"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+            <path d="M32 16v18" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" />
             <circle cx="32" cy="48" r="2.5" fill="#1e293b" />
           </g>
         </svg>
@@ -159,9 +194,36 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
             strokeLinejoin="round"
           />
           {/* Golden wheat grains */}
-          <ellipse cx="40" cy="18" rx="4" ry="6" fill="#eab308" stroke="#ca8a04" strokeWidth="1.5" transform="rotate(25 40 18)" />
-          <ellipse cx="44" cy="12" rx="3.5" ry="5.5" fill="#facc15" stroke="#ca8a04" strokeWidth="1.5" transform="rotate(35 44 12)" />
-          <ellipse cx="36" cy="22" rx="3.5" ry="5.5" fill="#facc15" stroke="#ca8a04" strokeWidth="1.5" transform="rotate(15 36 22)" />
+          <ellipse
+            cx="40"
+            cy="18"
+            rx="4"
+            ry="6"
+            fill="#eab308"
+            stroke="#ca8a04"
+            strokeWidth="1.5"
+            transform="rotate(25 40 18)"
+          />
+          <ellipse
+            cx="44"
+            cy="12"
+            rx="3.5"
+            ry="5.5"
+            fill="#facc15"
+            stroke="#ca8a04"
+            strokeWidth="1.5"
+            transform="rotate(35 44 12)"
+          />
+          <ellipse
+            cx="36"
+            cy="22"
+            rx="3.5"
+            ry="5.5"
+            fill="#facc15"
+            stroke="#ca8a04"
+            strokeWidth="1.5"
+            transform="rotate(15 36 22)"
+          />
         </svg>
       );
 
@@ -187,10 +249,34 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
             strokeLinejoin="round"
           />
           {/* Scaffolding/windows */}
-          <rect x="29" y="31" width="6" height="6" fill="#fef08a" stroke="#1e293b" strokeWidth="1.5" />
-          <rect x="41" y="31" width="6" height="6" fill="#fef08a" stroke="#1e293b" strokeWidth="1.5" />
+          <rect
+            x="29"
+            y="31"
+            width="6"
+            height="6"
+            fill="#fef08a"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
+          <rect
+            x="41"
+            y="31"
+            width="6"
+            height="6"
+            fill="#fef08a"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
           <rect x="29" y="42" width="6" height="8" fill="#1e293b" />
-          <rect x="41" y="42" width="6" height="6" fill="#fef08a" stroke="#1e293b" strokeWidth="1.5" />
+          <rect
+            x="41"
+            y="42"
+            width="6"
+            height="6"
+            fill="#fef08a"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
           {/* Crane mast */}
           <path d="M16 54V12h20" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
           <path d="M12 16l8-4" stroke="#eab308" strokeWidth="2.5" strokeLinecap="round" />
@@ -235,7 +321,16 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
           {/* Center divider */}
           <line x1="32" y1="21" x2="32" y2="34" stroke="#1e293b" strokeWidth="1.5" />
           {/* Grille */}
-          <rect x="24" y="38" width="16" height="4" rx="1" fill="#facc15" stroke="#1e293b" strokeWidth="1.5" />
+          <rect
+            x="24"
+            y="38"
+            width="16"
+            height="4"
+            rx="1"
+            fill="#facc15"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
           {/* Headlights */}
           <circle cx="19" cy="40" r="2.5" fill="#fef08a" stroke="#1e293b" strokeWidth="1.5" />
           <circle cx="45" cy="40" r="2.5" fill="#fef08a" stroke="#1e293b" strokeWidth="1.5" />
@@ -275,9 +370,33 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
             strokeWidth="2.5"
           />
           {/* Front ridges */}
-          <line x1="24" y1="24" x2="24" y2="46" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-          <line x1="32" y1="24" x2="32" y2="46" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-          <line x1="40" y1="24" x2="40" y2="46" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+          <line
+            x1="24"
+            y1="24"
+            x2="24"
+            y2="46"
+            stroke="#475569"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="32"
+            y1="24"
+            x2="32"
+            y2="46"
+            stroke="#475569"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="40"
+            y1="24"
+            x2="40"
+            y2="46"
+            stroke="#475569"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
           {/* Wheels */}
           <circle cx="23" cy="53" r="2.5" fill="#1e293b" />
           <circle cx="41" cy="53" r="2.5" fill="#1e293b" />
@@ -309,10 +428,34 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
           <rect x="26" y="24" width="12" height="4" fill="#ef4444" rx="1" />
           <rect x="30" y="20" width="4" height="12" fill="#ef4444" rx="1" />
           {/* Windows */}
-          <rect x="20" y="36" width="6" height="6" fill="#bae6fd" stroke="#1e293b" strokeWidth="1.5" />
-          <rect x="38" y="36" width="6" height="6" fill="#bae6fd" stroke="#1e293b" strokeWidth="1.5" />
+          <rect
+            x="20"
+            y="36"
+            width="6"
+            height="6"
+            fill="#bae6fd"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
+          <rect
+            x="38"
+            y="36"
+            width="6"
+            height="6"
+            fill="#bae6fd"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
           {/* Door */}
-          <rect x="28" y="44" width="8" height="10" fill="#22c55e" stroke="#1e293b" strokeWidth="1.5" />
+          <rect
+            x="28"
+            y="44"
+            width="8"
+            height="10"
+            fill="#22c55e"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
         </svg>
       );
 
@@ -402,7 +545,16 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
           />
           {/* Corner patches & lock */}
           <path d="M14 32h36" stroke="#1e293b" strokeWidth="2" />
-          <rect x="29" y="30" width="6" height="5" rx="1" fill="#facc15" stroke="#1e293b" strokeWidth="1.5" />
+          <rect
+            x="29"
+            y="30"
+            width="6"
+            height="5"
+            rx="1"
+            fill="#facc15"
+            stroke="#1e293b"
+            strokeWidth="1.5"
+          />
         </svg>
       );
 
@@ -455,7 +607,16 @@ export function CategoryIcon({ id, className = "size-12" }: CategoryIconProps) {
           {/* Magnetic stripe */}
           <rect x="12" y="25" width="40" height="6" fill="#1e293b" />
           {/* Chip */}
-          <rect x="17" y="34" width="7" height="6" rx="1" fill="#fef08a" stroke="#ca8a04" strokeWidth="1" />
+          <rect
+            x="17"
+            y="34"
+            width="7"
+            height="6"
+            rx="1"
+            fill="#fef08a"
+            stroke="#ca8a04"
+            strokeWidth="1"
+          />
         </svg>
       );
 

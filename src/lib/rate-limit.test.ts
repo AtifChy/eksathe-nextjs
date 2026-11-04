@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 describe("rate limits", () => {

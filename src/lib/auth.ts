@@ -1,15 +1,16 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { prisma } from "@/lib/prisma";
+
 import { sendAuthEmail } from "@/lib/email";
+import { prisma } from "@/lib/prisma";
 import { authSecondaryStorage } from "@/lib/rate-limit";
 
 const authRateLimit = {
   enabled: true,
   window: 60,
   max: 100,
-  storage: authSecondaryStorage ? "secondary-storage" as const : "memory" as const,
+  storage: authSecondaryStorage ? ("secondary-storage" as const) : ("memory" as const),
   customRules: {
     "/sign-in/email": { window: 60, max: 5 },
     "/sign-up/email": { window: 60, max: 3 },

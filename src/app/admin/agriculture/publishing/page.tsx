@@ -1,6 +1,6 @@
 import { AgriculturePublishingWorkspace } from "@/components/admin/agriculture-publishing-workspace";
-import { requireStaff } from "@/lib/dal";
 import { getAgriculturePublishingWorkspace } from "@/lib/agriculture/publishing";
+import { requireStaff } from "@/lib/dal";
 
 export const instant = false;
 
