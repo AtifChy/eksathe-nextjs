@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
+import { cacheTags } from "@/lib/cache-tags";
 import { requireUser, safeNextPath } from "@/lib/dal";
 import {
   acceptQuote,
@@ -86,6 +87,8 @@ async function run(
   try {
     const result = await operation();
     for (const path of refresh) revalidatePath(path);
+    revalidateTag(cacheTags.listings, "max");
+    revalidateTag(cacheTags.providers, "max");
     return { status: "success", messageKey, entityId: result?.id };
   } catch (error) {
     return failure(error);

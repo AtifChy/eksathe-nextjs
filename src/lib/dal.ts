@@ -1,4 +1,5 @@
 import "server-only";
+import { cacheLife } from "next/cache";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
@@ -17,6 +18,9 @@ export type CurrentUser = {
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
+  "use cache: private";
+  cacheLife({ stale: 0, revalidate: 30, expire: 60 });
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) return null;
 

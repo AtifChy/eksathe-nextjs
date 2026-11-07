@@ -1,5 +1,3 @@
-import { connection } from "next/server";
-
 import { ConstructionHome } from "@/components/construction/construction-home";
 import { getPageMetadata } from "@/i18n/metadata";
 import { getConstructionCommissionRate } from "@/lib/construction/public-data";
@@ -11,7 +9,6 @@ export function generateMetadata() {
 export const instant = false;
 
 export default async function ConstructionPage() {
-  await connection();
   const [result, commissionRate] = await Promise.all([
     getPublicListings("construction"),
     getConstructionCommissionRate(),

@@ -1,5 +1,3 @@
-import { connection } from "next/server";
-
 import { AgricultureHome } from "@/components/agriculture/agriculture-home";
 import { getPageMetadata } from "@/i18n/metadata";
 import { getAgriculturePublicInfo } from "@/lib/agriculture/publishing";
@@ -11,7 +9,6 @@ export function generateMetadata() {
 export const instant = false;
 
 export default async function AgriculturePage() {
-  await connection();
   const [result, publicInfo] = await Promise.all([
     getPublicListings("agriculture-labor"),
     getAgriculturePublicInfo(),

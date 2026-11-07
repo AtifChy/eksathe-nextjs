@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
+import { cacheTags } from "@/lib/cache-tags";
 import { requireUser } from "@/lib/dal";
 import { updateOwnProfile } from "@/lib/domain/account";
 import { logError } from "@/lib/logging";
@@ -33,6 +34,7 @@ export async function updateProfileAction(
   try {
     await updateOwnProfile(user.id, parsed.data.name, parsed.data.phone);
     revalidatePath("/account");
+    revalidateTag(cacheTags.providers, "max");
     return { status: "success", messageKey: "profileUpdated" };
   } catch (error) {
     logError("account.profile_update_failed", error);

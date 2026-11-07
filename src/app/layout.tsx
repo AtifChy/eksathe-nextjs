@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeaderServer } from "@/components/site-header-server";
+import { SiteHeaderFallback, SiteHeaderServer } from "@/components/site-header-server";
 import { ThemeProvider } from "@/components/theme-provider";
 import { getPageMetadata } from "@/i18n/metadata";
 
@@ -36,7 +36,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           disableTransitionOnChange
         >
           <NextIntlClientProvider>
-            <SiteHeaderServer />
+            <Suspense fallback={<SiteHeaderFallback />}>
+              <SiteHeaderServer />
+            </Suspense>
             <main className="flex-1">{children}</main>
             <SiteFooter />
           </NextIntlClientProvider>

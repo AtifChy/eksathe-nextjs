@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
+import { cacheTags } from "@/lib/cache-tags";
 import { requireStaff, requireSuperAdmin } from "@/lib/dal";
 import {
   grantStaffAccess,
@@ -67,6 +68,10 @@ async function run(
     revalidatePath("/account");
     revalidatePath("/dashboard/agriculture-labor");
     revalidatePath("/dashboard/construction");
+    revalidateTag(cacheTags.listings, "max");
+    revalidateTag(cacheTags.providers, "max");
+    revalidateTag(cacheTags.agriculturePublic, "max");
+    revalidateTag(cacheTags.constructionPublic, "max");
     return { status: "success", messageKey };
   } catch (error) {
     return failure(error);
