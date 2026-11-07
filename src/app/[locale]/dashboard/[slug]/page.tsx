@@ -4,9 +4,11 @@ import { notFound } from "next/navigation";
 
 import { SectorLanding } from "@/components/dashboard/sector-landing";
 import { getPublicListings } from "@/lib/listings";
-import { getSector, agricultureListings, constructionListings } from "@/lib/sectors";
+import { getSector, agricultureListings, constructionListings, sectors } from "@/lib/sectors";
 
-export const instant = false;
+export function generateStaticParams() {
+  return sectors.map((s) => ({ slug: s.slug }));
+}
 
 type SectorPageProps = { params: Promise<{ slug: string }> };
 

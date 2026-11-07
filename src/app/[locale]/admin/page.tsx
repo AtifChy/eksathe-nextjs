@@ -6,6 +6,7 @@ import { logError } from "@/lib/logging";
 import { getAdminWorkspace } from "@/lib/workspaces";
 import type { AgricultureAdminFilters } from "@/lib/workspaces";
 
+// Deliberate block: Admin workspace performs a request-time auth gate (requireAdmin) and reads searchParams for filtering.
 export const instant = false;
 
 export default async function AdminPage({

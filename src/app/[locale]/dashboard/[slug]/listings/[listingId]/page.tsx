@@ -1,16 +1,16 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import { locale as rootLocale } from "next/root-params";
+import { Suspense } from "react";
 
 import { ListingDetail } from "@/components/dashboard/listing-detail";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/paths";
 import { getCurrentUser } from "@/lib/dal";
 import { getPublicListing, getPublicProviderProfile } from "@/lib/listings";
 import { getSector } from "@/lib/sectors";
 
-export const instant = false;
-
-export default async function ListingPage({
+async function ListingContent({
   params,
   searchParams,
 }: {
@@ -64,5 +64,19 @@ export default async function ListingPage({
           : undefined
       }
     />
+  );
+}
+
+export default function ListingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string; listingId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <ListingContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

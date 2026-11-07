@@ -1,13 +1,13 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { ListingDetail } from "@/components/dashboard/listing-detail";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { getCurrentUser } from "@/lib/dal";
 import { getPublicListing, getPublicProviderProfile } from "@/lib/listings";
 import { getSector } from "@/lib/sectors";
 
-export const instant = false;
-
-export default async function DashboardAgricultureListingPage({
+async function DashboardAgricultureListingContent({
   params,
   searchParams,
 }: {
@@ -42,5 +42,19 @@ export default async function DashboardAgricultureListingPage({
           : undefined
       }
     />
+  );
+}
+
+export default function DashboardAgricultureListingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ listingId: string }>;
+  searchParams: Promise<{ projectId?: string | string[]; packageLabel?: string | string[] }>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <DashboardAgricultureListingContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

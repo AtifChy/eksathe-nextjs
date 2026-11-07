@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 
 import { AgricultureServiceDetail } from "@/components/agriculture/agriculture-service-detail";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { localizedCanonical } from "@/i18n/metadata";
 import { getActiveAgricultureService } from "@/lib/agriculture/admin";
 import { agricultureServiceRegistry } from "@/lib/agriculture/service-registry";
@@ -11,8 +13,6 @@ import { getCurrentUser } from "@/lib/dal";
 export function generateStaticParams() {
   return agricultureServiceRegistry.map((item) => ({ slug: item.slug }));
 }
-
-export const instant = false;
 
 export async function generateMetadata({
   params,
@@ -39,11 +39,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function AgricultureServicePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+async function AgricultureServiceContent({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const registryService = agricultureServiceRegistry.find((item) => item.slug === slug);
   const serviceDefinition = await getActiveAgricultureService(slug);
@@ -65,5 +61,17 @@ export default async function AgricultureServicePage({
       customer={customer}
       emailVerified={Boolean(user?.emailVerified)}
     />
+  );
+}
+
+export default function AgricultureServicePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <AgricultureServiceContent params={params} />
+    </Suspense>
   );
 }

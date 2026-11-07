@@ -1,15 +1,21 @@
+import { Suspense } from "react";
+
 import { AgricultureMarketPage } from "@/components/agriculture/agriculture-market-page";
+import { GridPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { getPageMetadata } from "@/i18n/metadata";
 
 export function generateMetadata() {
   return getPageMetadata("agricultureMarket", "/agriculture/market");
 }
-export const instant = false;
 
-export default async function DashboardAgricultureMarketPage({
+export default function DashboardAgricultureMarketPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  return <AgricultureMarketPage routeBase="/dashboard/agriculture" searchParams={searchParams} />;
+  return (
+    <Suspense fallback={<GridPageSkeleton />}>
+      <AgricultureMarketPage routeBase="/dashboard/agriculture" searchParams={searchParams} />
+    </Suspense>
+  );
 }

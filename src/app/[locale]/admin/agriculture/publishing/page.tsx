@@ -2,6 +2,7 @@ import { AgriculturePublishingWorkspace } from "@/components/admin/agriculture-p
 import { getAgriculturePublishingWorkspace } from "@/lib/agriculture/publishing";
 import { requireStaff } from "@/lib/dal";
 
+// Deliberate block: Admin publishing workspace performs a request-time staff gate (requireStaff).
 export const instant = false;
 
 export default async function AgriculturePublishingPage() {

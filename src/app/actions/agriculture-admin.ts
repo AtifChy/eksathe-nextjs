@@ -2,8 +2,11 @@
 
 import { randomBytes } from "node:crypto";
 import { headers } from "next/headers";
-import { revalidateLocalizedPath } from "@/i18n/revalidate";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
+
+import { cacheTags } from "@/lib/cache-tags";
+import { revalidateLocalizedPath } from "@/i18n/revalidate";
 
 import { auth } from "@/lib/auth";
 import {
@@ -58,6 +61,7 @@ async function run(operation: () => Promise<unknown>, messageKey: WorkflowMessag
     revalidateLocalizedPath("/admin/agriculture/management");
     revalidateLocalizedPath("/agriculture");
     revalidateLocalizedPath("/dashboard/agriculture");
+    revalidateTag(cacheTags.agriculturePublic, "max");
     return { status: "success", messageKey } satisfies WorkflowState;
   } catch (error) {
     return failure(error);

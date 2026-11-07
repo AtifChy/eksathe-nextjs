@@ -1,12 +1,12 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { ProviderProfile } from "@/components/dashboard/provider-profile";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { getPublicProviderProfile } from "@/lib/listings";
 import { getSector } from "@/lib/sectors";
 
-export const instant = false;
-
-export default async function DashboardAgricultureProviderPage({
+async function DashboardAgricultureProviderContent({
   params,
 }: {
   params: Promise<{ providerId: string }>;
@@ -23,5 +23,17 @@ export default async function DashboardAgricultureProviderPage({
       unavailable={result.unavailable}
       routeBase="/dashboard/agriculture"
     />
+  );
+}
+
+export default function DashboardAgricultureProviderPage({
+  params,
+}: {
+  params: Promise<{ providerId: string }>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <DashboardAgricultureProviderContent params={params} />
+    </Suspense>
   );
 }

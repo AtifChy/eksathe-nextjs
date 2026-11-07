@@ -16,7 +16,15 @@ import { authClient } from "@/lib/auth-client";
 
 export type AuthMode = "login" | "register" | "forgot" | "reset" | "verify";
 
-export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string; token?: string }) {
+export function AuthPanel({
+  mode,
+  next = "/account",
+  token,
+}: {
+  mode: AuthMode;
+  next?: string;
+  token?: string;
+}) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
@@ -29,6 +37,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+
   const title =
     mode === "login"
       ? t("auth.signIn")
@@ -229,10 +238,11 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           {(mode === "login" || mode === "register") && (
             <Link
               className="text-primary hover:underline"
+              prefetch={true}
               href={
                 mode === "login"
-                  ? `/register?next=${encodeURIComponent(next)}`
-                  : `/login?next=${encodeURIComponent(next)}`
+                  ? (next && next !== "/account" ? `/register?next=${encodeURIComponent(next)}` : "/register")
+                  : (next && next !== "/account" ? `/login?next=${encodeURIComponent(next)}` : "/login")
               }
             >
               {mode === "login" ? t("auth.createAccount") : t("auth.existingAccount")}

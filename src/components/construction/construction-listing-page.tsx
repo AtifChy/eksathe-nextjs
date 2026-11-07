@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 
 import { ListingDetail } from "@/components/dashboard/listing-detail";
 import { ProviderProfile } from "@/components/dashboard/provider-profile";
@@ -19,7 +18,6 @@ export async function ConstructionListingPage({
   routeBase: string;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await connection();
   const locale = (await cookies()).get("NEXT_LOCALE")?.value === "en" ? "en" : "bn";
   const query = await searchParams;
   const sector = getSector("construction");
@@ -78,7 +76,6 @@ export async function ConstructionProviderPage({
   providerId: string;
   routeBase: string;
 }) {
-  await connection();
   const sector = getSector("construction");
   if (!sector || sector.status !== "live") notFound();
   const result = await getPublicProviderProfile("construction", providerId);

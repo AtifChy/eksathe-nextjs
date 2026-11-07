@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { localizedCanonical } from "@/i18n/metadata";
-
 import { ConstructionListingPage } from "@/components/construction/construction-listing-page";
-
-export const instant = false;
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 
 export async function generateMetadata({
   params,
@@ -18,7 +17,19 @@ export async function generateMetadata({
   };
 }
 
-export default async function DirectListingPage({
+function ConstructionListingContent({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ listingId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <ConstructionListingInner params={params} searchParams={searchParams} />
+  );
+}
+
+async function ConstructionListingInner({
   params,
   searchParams,
 }: {
@@ -32,5 +43,19 @@ export default async function DirectListingPage({
       routeBase="/construction"
       searchParams={searchParams}
     />
+  );
+}
+
+export default function DirectListingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ listingId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <ConstructionListingContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

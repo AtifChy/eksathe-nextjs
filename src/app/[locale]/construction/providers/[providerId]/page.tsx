@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { localizedCanonical } from "@/i18n/metadata";
-
 import { ConstructionProviderPage } from "@/components/construction/construction-listing-page";
-
-export const instant = false;
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 
 export async function generateMetadata({
   params,
@@ -18,11 +17,23 @@ export async function generateMetadata({
   };
 }
 
-export default async function DirectProviderPage({
+async function ConstructionProviderContent({
   params,
 }: {
   params: Promise<{ providerId: string }>;
 }) {
   const { providerId } = await params;
   return <ConstructionProviderPage providerId={providerId} routeBase="/construction" />;
+}
+
+export default function DirectProviderPage({
+  params,
+}: {
+  params: Promise<{ providerId: string }>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <ConstructionProviderContent params={params} />
+    </Suspense>
+  );
 }

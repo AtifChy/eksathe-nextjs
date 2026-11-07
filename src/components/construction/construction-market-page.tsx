@@ -1,5 +1,3 @@
-import { connection } from "next/server";
-
 import { ConstructionMarket } from "@/components/construction/construction-market";
 import { getConstructionMarketListings, type ConstructionMarketFilters } from "@/lib/listings";
 
@@ -22,7 +20,6 @@ export async function ConstructionMarketPage({
   routeBase: string;
   searchParams: Promise<SearchParams>;
 }) {
-  await connection();
   const query = await searchParams;
   const rawKind = first(query.type);
   const rawSort = first(query.sort);

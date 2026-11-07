@@ -1,11 +1,12 @@
+import { Suspense } from "react";
+
 import { CreateProjectEntry } from "@/components/projects/create-project-entry";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { getConstructionService } from "@/lib/construction/service-registry";
 import { requireUser } from "@/lib/dal";
 import { getPublicListing } from "@/lib/listings";
 
-export const instant = false;
-
-export default async function CreateProjectPage({
+async function CreateProjectContent({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -37,5 +38,17 @@ export default async function CreateProjectPage({
           : {}),
       }}
     />
+  );
+}
+
+export default function CreateProjectPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <CreateProjectContent searchParams={searchParams} />
+    </Suspense>
   );
 }

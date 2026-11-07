@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { localizedCanonical } from "@/i18n/metadata";
-
 import { ConstructionListingPage } from "@/components/construction/construction-listing-page";
-
-export const instant = false;
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 
 export async function generateMetadata({
   params,
@@ -19,7 +18,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function DashboardListingPage({
+async function DashboardListingContent({
   params,
   searchParams,
 }: {
@@ -33,5 +32,19 @@ export default async function DashboardListingPage({
       routeBase="/dashboard/construction"
       searchParams={searchParams}
     />
+  );
+}
+
+export default function DashboardListingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ listingId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <DashboardListingContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

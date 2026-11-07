@@ -4,6 +4,7 @@ import { AgroAdminWorkspace } from "@/components/admin/agro-admin-workspace";
 import { getAgricultureAdminWorkspace } from "@/lib/agriculture/admin";
 import { requireAdmin } from "@/lib/dal";
 
+// Deliberate block: Admin management workspace performs a request-time auth gate (requireAdmin) and reads permissions.
 export const instant = false;
 
 export default async function AgricultureAdminManagementPage() {

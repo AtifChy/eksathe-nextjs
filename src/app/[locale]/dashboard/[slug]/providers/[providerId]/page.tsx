@@ -1,15 +1,15 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import { locale as rootLocale } from "next/root-params";
+import { Suspense } from "react";
 
 import { ProviderProfile } from "@/components/dashboard/provider-profile";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/locales";
 import { localizedPath } from "@/i18n/paths";
 import { getPublicProviderProfile } from "@/lib/listings";
 import { getSector } from "@/lib/sectors";
 
-export const instant = false;
-
-export default async function PublicProviderPage({
+async function PublicProviderContent({
   params,
   searchParams,
 }: {
@@ -40,5 +40,19 @@ export default async function PublicProviderPage({
   if (!result.provider && !result.unavailable) notFound();
   return (
     <ProviderProfile provider={result.provider} sector={sector} unavailable={result.unavailable} />
+  );
+}
+
+export default function PublicProviderPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string; providerId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <PublicProviderContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

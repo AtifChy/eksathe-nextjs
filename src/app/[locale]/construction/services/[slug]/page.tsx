@@ -14,8 +14,6 @@ export function generateStaticParams() {
   return constructionServiceRegistry.map((item) => ({ slug: item.slug }));
 }
 
-export const instant = false;
-
 export async function generateMetadata({
   params,
 }: {

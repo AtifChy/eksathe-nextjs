@@ -4,9 +4,14 @@ import { localizedCanonical } from "@/i18n/metadata";
 import { notFound } from "next/navigation";
 
 import { ConstructionServicePage } from "@/components/construction/construction-service-page";
-import { getConstructionService } from "@/lib/construction/service-registry";
+import {
+  constructionServiceRegistry,
+  getConstructionService,
+} from "@/lib/construction/service-registry";
 
-export const instant = false;
+export function generateStaticParams() {
+  return constructionServiceRegistry.map((item) => ({ slug: item.slug }));
+}
 
 export async function generateMetadata({
   params,

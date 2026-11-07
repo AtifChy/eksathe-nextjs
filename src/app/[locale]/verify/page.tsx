@@ -1,13 +1,26 @@
+import { Suspense } from "react";
+
 import { AuthPage } from "@/components/auth/auth-page";
-import { safeNextPath } from "@/lib/dal";
+import { CardCenteredSkeleton } from "@/components/skeletons/page-skeletons";
+import { safeNextPath } from "@/i18n/paths";
 
-export const instant = false;
-
-export default async function VerifyPage({
+async function VerifyContent({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams?: Promise<{ next?: string | string[] }>;
 }) {
-  const params = await searchParams;
-  return <AuthPage mode="verify" next={safeNextPath(params.next, "/account")} />;
+  const params = searchParams ? await searchParams : undefined;
+  return <AuthPage mode="verify" next={safeNextPath(params?.next, "/account")} />;
+}
+
+export default function VerifyPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ next?: string | string[] }>;
+}) {
+  return (
+    <Suspense fallback={<CardCenteredSkeleton />}>
+      <VerifyContent searchParams={searchParams} />
+    </Suspense>
+  );
 }

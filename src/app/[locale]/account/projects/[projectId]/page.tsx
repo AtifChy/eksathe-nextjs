@@ -1,15 +1,15 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { ProjectDetail } from "@/components/projects/project-detail";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { WorkspaceError } from "@/components/workflows/workspace-error";
 import { requireUser } from "@/lib/dal";
 import { getPublicListings } from "@/lib/listings";
 import { logError } from "@/lib/logging";
 import { getProjectWorkspace } from "@/lib/workspaces";
 
-export const instant = false;
-
-export default async function ProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
+async function ProjectContent({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
   const user = await requireUser(`/account/projects/${projectId}`);
   const project = await getProjectWorkspace(user.id, projectId).catch((error) => {
@@ -27,5 +27,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ projec
       listings={listingResult.items}
       listingsUnavailable={listingResult.unavailable}
     />
+  );
+}
+
+export default function ProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <ProjectContent params={params} />
+    </Suspense>
   );
 }

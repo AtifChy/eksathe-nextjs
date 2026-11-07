@@ -1,5 +1,3 @@
-import { connection } from "next/server";
-
 import { AgricultureMarket } from "@/components/agriculture/agriculture-market";
 import {
   getAgricultureMarketListings,
@@ -34,7 +32,6 @@ export async function AgricultureMarketPage({
   routeBase: string;
   searchParams: Promise<SearchParams>;
 }) {
-  await connection();
   const query = await searchParams;
   const rawCategory = first(query.category);
   const rawSort = first(query.sort);

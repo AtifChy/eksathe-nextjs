@@ -1,12 +1,12 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { AgricultureRequestDetail } from "@/components/account/agriculture-request-detail";
+import { DetailPageSkeleton } from "@/components/skeletons/page-skeletons";
 import { requireUser } from "@/lib/dal";
 import { getCustomerAgricultureRequest } from "@/lib/workspaces";
 
-export const instant = false;
-
-export default async function CustomerAgricultureRequestPage({
+async function CustomerAgricultureRequestContent({
   params,
 }: {
   params: Promise<{ requestId: string }>;
@@ -17,4 +17,16 @@ export default async function CustomerAgricultureRequestPage({
   const request = await getCustomerAgricultureRequest(user.id, Number(rawId));
   if (!request) notFound();
   return <AgricultureRequestDetail request={request} />;
+}
+
+export default function CustomerAgricultureRequestPage({
+  params,
+}: {
+  params: Promise<{ requestId: string }>;
+}) {
+  return (
+    <Suspense fallback={<DetailPageSkeleton />}>
+      <CustomerAgricultureRequestContent params={params} />
+    </Suspense>
+  );
 }
