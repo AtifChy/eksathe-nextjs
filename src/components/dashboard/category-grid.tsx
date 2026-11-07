@@ -2,7 +2,7 @@
 
 import { SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";

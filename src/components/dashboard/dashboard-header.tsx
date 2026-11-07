@@ -2,7 +2,7 @@
 
 import { BellIcon, ChevronDownIcon, NewspaperIcon, PhoneCallIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { LanguageToggle } from "@/components/language-toggle";

@@ -2,7 +2,7 @@
 
 import { cn } from "cn";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState, useActionState } from "react";
 
 import { createAgricultureServiceRequestAction } from "@/app/actions/agriculture";

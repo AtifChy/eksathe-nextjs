@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useActionState } from "react";
 
 import { saveAgriculturePublicationAction } from "@/app/actions/agriculture-publishing";

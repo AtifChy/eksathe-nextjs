@@ -2,7 +2,7 @@
 
 import { ArrowLeftIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 import { CreateProjectForm } from "@/components/projects/project-forms";
 

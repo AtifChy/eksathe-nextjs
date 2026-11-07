@@ -2,7 +2,7 @@
 
 import { ArrowLeftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 import { ServiceRequestForm } from "@/components/agriculture/service-request-form";
 import { buttonVariants } from "@/components/ui/button";

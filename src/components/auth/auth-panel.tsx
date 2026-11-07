@@ -1,9 +1,7 @@
 "use client";
 
 import { ArrowLeftIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { cloneElement, useId, useState, type FormEvent, type ReactElement } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
@@ -11,13 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link, useRouter } from "@/i18n/navigation";
+import { localizedPath } from "@/i18n/paths";
 import { authClient } from "@/lib/auth-client";
 
 export type AuthMode = "login" | "register" | "forgot" | "reset" | "verify";
 
 export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string; token?: string }) {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
+  const callbackURL = localizedPath(locale, next);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -52,7 +54,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           email: email.trim().toLowerCase(),
           password,
           phone: phone.trim(),
-          callbackURL: next,
+          callbackURL,
         });
         if (authError) throw new Error(authError.message);
         setNotice(t("auth.checkEmail"));
@@ -60,7 +62,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
         const { error: authError } = await authClient.signIn.email({
           email: email.trim().toLowerCase(),
           password,
-          callbackURL: next,
+          callbackURL,
         });
         if (authError) throw new Error(authError.message);
         router.replace(next);
@@ -68,7 +70,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
       } else if (mode === "forgot") {
         const { error: authError } = await authClient.requestPasswordReset({
           email: email.trim().toLowerCase(),
-          redirectTo: "/reset-password",
+          redirectTo: localizedPath(locale, "/reset-password"),
         });
         if (authError) throw new Error(authError.message);
         setNotice(t("auth.checkEmail"));
@@ -85,7 +87,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
       } else {
         const { error: authError } = await authClient.sendVerificationEmail({
           email: email.trim().toLowerCase(),
-          callbackURL: next,
+          callbackURL,
         });
         if (authError) throw new Error(authError.message);
         setNotice(t("auth.checkEmail"));

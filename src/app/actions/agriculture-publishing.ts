@@ -1,6 +1,7 @@
 "use server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
+import { revalidateLocalizedPath } from "@/i18n/revalidate";
 import { saveAgriculturePublication } from "@/lib/agriculture/publishing";
 import { cacheTags } from "@/lib/cache-tags";
 import { requireStaff } from "@/lib/dal";
@@ -27,7 +28,7 @@ export async function saveAgriculturePublicationAction(
       "/dashboard/agriculture/market-prices",
       "/admin/agriculture/publishing",
     ])
-      revalidatePath(path);
+      revalidateLocalizedPath(path);
     revalidateTag(cacheTags.agriculturePublic, "max");
     return { status: "success" };
   } catch (error) {

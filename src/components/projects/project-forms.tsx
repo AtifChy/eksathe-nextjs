@@ -1,7 +1,6 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { type FormEvent, useActionState, useEffect, useRef, useState } from "react";
 
 import {
@@ -17,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ActionFeedback } from "@/components/workflows/action-feedback";
+import { useRouter } from "@/i18n/navigation";
 import { uploadPrivateFile } from "@/lib/client-upload";
 import { initialWorkflowState } from "@/lib/workflow-state";
 
