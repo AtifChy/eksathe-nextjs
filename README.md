@@ -1,7 +1,8 @@
 # EKsathe Bangladesh
 
-Next.js app for the EKsathe Bangladesh service platform. Agriculture and
-construction are available for browsing and demo workflows.
+Next.js app for the EKsathe Bangladesh service platform. Agriculture,
+construction, and the native E-Commerce & B2B marketplace are available for
+browsing and workflows.
 
 ## Get started
 
@@ -57,3 +58,5 @@ logins.
 
 For R2 or other S3 compatible file uploads, see [object storage setup](docs/object-storage.md).
 For database backups and deployment checks, see [operations](docs/operations.md).
+For seller onboarding, checkout, wholesale RFQs, and marketplace administration,
+see [E-Commerce & B2B](docs/commerce.md).

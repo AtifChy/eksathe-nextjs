@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AdminWorkspace } from "@/components/admin/admin-workspace";
 import { WorkspaceError } from "@/components/workflows/workspace-error";
 import { agricultureServiceRegistry } from "@/lib/agriculture/service-registry";
@@ -52,5 +54,17 @@ export default async function AdminPage({
     return null;
   });
   if (!data) return <WorkspaceError />;
-  return <AdminWorkspace data={data} />;
+  return (
+    <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6">
+      {access.isSuperAdmin && (
+        <Link
+          className="text-primary w-fit rounded-md border px-3 py-2 text-sm"
+          href="/admin/ecommerce-b2b"
+        >
+          E-Commerce & B2B moderation
+        </Link>
+      )}
+      <AdminWorkspace data={data} />
+    </div>
+  );
 }

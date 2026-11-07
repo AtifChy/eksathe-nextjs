@@ -18,7 +18,7 @@ export const sectors = [
     id: 2,
     slug: "ecommerce-b2b",
     icon: "🛒",
-    status: "coming-soon",
+    status: "live",
   },
   {
     id: 3,

@@ -43,6 +43,16 @@ model User {
   projectPhotos             ProjectPhoto[]
   projectExpenses           ProjectExpense[]
   activityLogs              ActivityLog[]
+  commerceSeller            CommerceSeller?
+  commerceAddresses         CommerceAddress[]
+  commerceCartItems         CommerceCartItem[]
+  commerceWishlistItems     CommerceWishlistItem[]
+  commerceOrders            CommerceOrder[]            @relation("CommerceOrderBuyer")
+  commerceWholesaleRequests CommerceWholesaleRequest[]
+  commerceMessages          CommerceMessage[]
+  commerceReviews           CommerceReview[]
+  commerceCouponUses        CommerceCouponUse[]
+  commerceConversations     CommerceConversation[]
 
   @@unique([email])
   @@map("user")
@@ -312,6 +322,7 @@ model AuditLog {
   action     String
   entityType String?  @map("entity_type")
   entityId   BigInt?  @map("entity_id")
+  entityKey  String?  @map("entity_key")
   ipAddress  String?  @map("ip_address")
   createdAt  DateTime @default(now()) @map("created_at")
 
@@ -793,4 +804,279 @@ model PlatformSetting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("platform_settings")
+}
+
+model CommerceSeller {
+  id            String                   @id @default(cuid())
+  userId        String                   @unique @map("user_id")
+  displayName   String                   @map("display_name")
+  status        String                   @default("PENDING")
+  createdAt     DateTime                 @default(now()) @map("created_at")
+  updatedAt     DateTime                 @updatedAt @map("updated_at")
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products      CommerceProduct[]
+  orders        CommerceOrder[]
+  quotes        CommerceWholesaleQuote[]
+  conversations CommerceConversation[]
+  reviews       CommerceReview[]
+
+  @@index([status, createdAt])
+  @@map("commerce_sellers")
+}
+
+model CommerceCategory {
+  id        String            @id @default(cuid())
+  slug      String            @unique
+  titleBn   String            @map("title_bn")
+  titleEn   String            @map("title_en")
+  isActive  Boolean           @default(true) @map("is_active")
+  createdAt DateTime          @default(now()) @map("created_at")
+  products  CommerceProduct[]
+
+  @@map("commerce_categories")
+}
+
+model CommerceProduct {
+  id                String                     @id @default(cuid())
+  sellerId          String                     @map("seller_id")
+  categoryId        String                     @map("category_id")
+  titleBn           String                     @map("title_bn")
+  titleEn           String                     @map("title_en")
+  descriptionBn     String                     @default("") @map("description_bn")
+  descriptionEn     String                     @default("") @map("description_en")
+  unit              String
+  price             Decimal                    @db.Decimal(12, 2)
+  stock             Int                        @default(0)
+  minimumWholesale  Int                        @default(1) @map("minimum_wholesale")
+  status            String                     @default("PENDING")
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  updatedAt         DateTime                   @updatedAt @map("updated_at")
+  seller            CommerceSeller             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category          CommerceCategory           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  tierPrices        CommerceTierPrice[]
+  cartItems         CommerceCartItem[]
+  wishlistItems     CommerceWishlistItem[]
+  orderItems        CommerceOrderItem[]
+  wholesaleRequests CommerceWholesaleRequest[]
+  conversations     CommerceConversation[]
+  reviews           CommerceReview[]
+
+  @@index([status, categoryId, createdAt])
+  @@index([sellerId, status])
+  @@map("commerce_products")
+}
+
+model CommerceTierPrice {
+  id        String          @id @default(cuid())
+  productId String          @map("product_id")
+  minQty    Int             @map("min_qty")
+  unitPrice Decimal         @map("unit_price") @db.Decimal(12, 2)
+  product   CommerceProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, minQty])
+  @@map("commerce_tier_prices")
+}
+
+model CommerceAddress {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  fullName    String   @map("full_name")
+  phone       String
+  district    String
+  city        String
+  addressLine String   @map("address_line")
+  postalCode  String?  @map("postal_code")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isDefault])
+  @@map("commerce_addresses")
+}
+
+model CommerceCartItem {
+  id        String          @id @default(cuid())
+  userId    String          @map("user_id")
+  productId String          @map("product_id")
+  quantity  Int             @default(1)
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   CommerceProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("commerce_cart_items")
+}
+
+model CommerceWishlistItem {
+  id        String          @id @default(cuid())
+  userId    String          @map("user_id")
+  productId String          @map("product_id")
+  createdAt DateTime        @default(now()) @map("created_at")
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   CommerceProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("commerce_wishlist_items")
+}
+
+model CommerceCoupon {
+  id              String              @id @default(cuid())
+  code            String              @unique
+  discountType    String              @map("discount_type")
+  discountValue   Decimal             @map("discount_value") @db.Decimal(12, 2)
+  minimumSpend    Decimal             @default(0) @map("minimum_spend") @db.Decimal(12, 2)
+  maximumDiscount Decimal?            @map("maximum_discount") @db.Decimal(12, 2)
+  maxUses         Int?                @map("max_uses")
+  usedCount       Int                 @default(0) @map("used_count")
+  startsAt        DateTime?           @map("starts_at")
+  expiresAt       DateTime?           @map("expires_at")
+  isActive        Boolean             @default(true) @map("is_active")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  uses            CommerceCouponUse[]
+
+  @@index([isActive, expiresAt])
+  @@map("commerce_coupons")
+}
+
+model CommerceCouponUse {
+  id            String         @id @default(cuid())
+  couponId      String         @map("coupon_id")
+  userId        String         @map("user_id")
+  checkoutGroup String         @unique @map("checkout_group")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  coupon        CommerceCoupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([couponId, userId])
+  @@map("commerce_coupon_uses")
+}
+
+model CommerceOrder {
+  id              String              @id @default(cuid())
+  checkoutGroup   String              @map("checkout_group")
+  buyerId         String              @map("buyer_id")
+  sellerId        String              @map("seller_id")
+  addressSnapshot Json                @map("address_snapshot")
+  paymentMethod   String              @map("payment_method")
+  status          String              @default("CONFIRMED")
+  subtotal        Decimal             @db.Decimal(12, 2)
+  discount        Decimal             @default(0) @db.Decimal(12, 2)
+  total           Decimal             @db.Decimal(12, 2)
+  couponCode      String?             @map("coupon_code")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  buyer           User                @relation("CommerceOrderBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
+  seller          CommerceSeller      @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  items           CommerceOrderItem[]
+  reviews         CommerceReview[]
+
+  @@index([buyerId, createdAt])
+  @@index([sellerId, status, createdAt])
+  @@index([checkoutGroup])
+  @@map("commerce_orders")
+}
+
+model CommerceOrderItem {
+  id        String          @id @default(cuid())
+  orderId   String          @map("order_id")
+  productId String          @map("product_id")
+  title     String
+  unit      String
+  quantity  Int
+  unitPrice Decimal         @map("unit_price") @db.Decimal(12, 2)
+  subtotal  Decimal         @db.Decimal(12, 2)
+  order     CommerceOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   CommerceProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId])
+  @@map("commerce_order_items")
+}
+
+model CommerceWholesaleRequest {
+  id        String                   @id @default(cuid())
+  buyerId   String                   @map("buyer_id")
+  productId String                   @map("product_id")
+  quantity  Int
+  district  String
+  note      String                   @default("")
+  status    String                   @default("OPEN")
+  createdAt DateTime                 @default(now()) @map("created_at")
+  updatedAt DateTime                 @updatedAt @map("updated_at")
+  buyer     User                     @relation(fields: [buyerId], references: [id], onDelete: Restrict)
+  product   CommerceProduct          @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quotes    CommerceWholesaleQuote[]
+
+  @@index([status, createdAt])
+  @@index([buyerId, status])
+  @@map("commerce_wholesale_requests")
+}
+
+model CommerceWholesaleQuote {
+  id        String                   @id @default(cuid())
+  requestId String                   @map("request_id")
+  sellerId  String                   @map("seller_id")
+  unitPrice Decimal                  @map("unit_price") @db.Decimal(12, 2)
+  note      String                   @default("")
+  expiresAt DateTime?                @map("expires_at")
+  status    String                   @default("PENDING")
+  createdAt DateTime                 @default(now()) @map("created_at")
+  request   CommerceWholesaleRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  seller    CommerceSeller           @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+
+  @@unique([requestId, sellerId])
+  @@index([requestId, status])
+  @@map("commerce_wholesale_quotes")
+}
+
+model CommerceConversation {
+  id        String            @id @default(cuid())
+  buyerId   String            @map("buyer_id")
+  sellerId  String            @map("seller_id")
+  productId String            @map("product_id")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+  buyer     User              @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  seller    CommerceSeller    @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  product   CommerceProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  messages  CommerceMessage[]
+
+  @@unique([buyerId, sellerId, productId])
+  @@index([buyerId, updatedAt])
+  @@index([sellerId, updatedAt])
+  @@map("commerce_conversations")
+}
+
+model CommerceMessage {
+  id             String               @id @default(cuid())
+  conversationId String               @map("conversation_id")
+  authorId       String               @map("author_id")
+  body           String
+  createdAt      DateTime             @default(now()) @map("created_at")
+  conversation   CommerceConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author         User                 @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([conversationId, createdAt])
+  @@map("commerce_messages")
+}
+
+model CommerceReview {
+  id         String          @id @default(cuid())
+  reviewerId String          @map("reviewer_id")
+  productId  String          @map("product_id")
+  sellerId   String          @map("seller_id")
+  orderId    String          @map("order_id")
+  rating     Int
+  body       String          @default("")
+  reply      String?
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+  reviewer   User            @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+  product    CommerceProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+  seller     CommerceSeller  @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  order      CommerceOrder   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([reviewerId, productId, orderId])
+  @@index([productId, createdAt])
+  @@index([sellerId, createdAt])
+  @@map("commerce_reviews")
 }

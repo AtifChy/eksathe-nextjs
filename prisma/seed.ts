@@ -50,8 +50,23 @@ async function main() {
     });
   }
 
+  const commerceCategories = [
+    { slug: "food-grocery", titleBn: "খাদ্য ও মুদি", titleEn: "Food & grocery" },
+    { slug: "agriculture-supplies", titleBn: "কৃষি উপকরণ", titleEn: "Agriculture supplies" },
+    { slug: "apparel", titleBn: "পোশাক", titleEn: "Apparel" },
+    { slug: "home-household", titleBn: "গৃহস্থালি", titleEn: "Home & household" },
+    { slug: "construction-materials", titleBn: "নির্মাণসামগ্রী", titleEn: "Construction materials" },
+  ];
+  for (const category of commerceCategories) {
+    await prisma.commerceCategory.upsert({
+      where: { slug: category.slug },
+      update: { titleBn: category.titleBn, titleEn: category.titleEn },
+      create: category,
+    });
+  }
+
   console.log(
-    `Seeded ${sectors.length} sectors and ${agricultureServiceRegistry.length} service definitions.`,
+    `Seeded ${sectors.length} sectors, ${agricultureServiceRegistry.length} service definitions and ${commerceCategories.length} commerce categories.`,
   );
 }
 
