@@ -1,7 +1,6 @@
 "use client";
 
 import { useLocale, useTranslations, useFormatter } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { useActionState } from "react";
 
 import {
@@ -22,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { ActionFeedback } from "@/components/workflows/action-feedback";
 import { StatusBadge } from "@/components/workflows/status-badge";
 import { WorkspaceNavigation } from "@/components/workspaces/workspace-navigation";
+import { Link } from "@/i18n/navigation";
 import { initialWorkflowState } from "@/lib/workflow-state";
 import type { AdminWorkspace as AdminWorkspaceData } from "@/lib/workspaces";
 

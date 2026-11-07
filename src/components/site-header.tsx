@@ -11,13 +11,13 @@ import {
   XIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { signOutAction } from "@/app/actions/session";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Link } from "@/i18n/navigation";
 
 type SiteHeaderProps = {
   userName?: string;

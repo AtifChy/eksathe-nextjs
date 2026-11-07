@@ -2,7 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidateLocalizedPath } from "@/i18n/revalidate";
 import { z } from "zod";
 
 import { auth } from "@/lib/auth";
@@ -54,10 +54,10 @@ function failure(error: unknown): WorkflowState {
 async function run(operation: () => Promise<unknown>, messageKey: WorkflowMessageKey) {
   try {
     await operation();
-    revalidatePath("/admin");
-    revalidatePath("/admin/agriculture/management");
-    revalidatePath("/agriculture");
-    revalidatePath("/dashboard/agriculture");
+    revalidateLocalizedPath("/admin");
+    revalidateLocalizedPath("/admin/agriculture/management");
+    revalidateLocalizedPath("/agriculture");
+    revalidateLocalizedPath("/dashboard/agriculture");
     return { status: "success", messageKey } satisfies WorkflowState;
   } catch (error) {
     return failure(error);
@@ -130,7 +130,7 @@ export async function createAgricultureUserAction(
         },
       });
     });
-    revalidatePath("/admin/agriculture/management");
+    revalidateLocalizedPath("/admin/agriculture/management");
     return { status: "success", messageKey: "agricultureAccountCreated" };
   } catch (error) {
     logError("admin.agriculture_user_create_failed", error);

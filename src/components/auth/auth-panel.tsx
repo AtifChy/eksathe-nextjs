@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useRouter } from "@/i18n/navigation";
 import { localizedPath } from "@/i18n/paths";
-import { authClient } from "@/lib/auth-client";
 import { agricultureAccountTypes } from "@/lib/agriculture/account-types";
+import { authClient } from "@/lib/auth-client";
 
 export type AuthMode = "login" | "register" | "forgot" | "reset" | "verify";
 

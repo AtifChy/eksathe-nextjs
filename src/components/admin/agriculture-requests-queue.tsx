@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ActionFeedback } from "@/components/workflows/action-feedback";
 import { StatusBadge } from "@/components/workflows/status-badge";
+import { Link } from "@/i18n/navigation";
 import { agricultureServiceRegistry } from "@/lib/agriculture/service-registry";
 import { initialWorkflowState } from "@/lib/workflow-state";
 import type { AdminWorkspace } from "@/lib/workspaces";
@@ -106,12 +107,12 @@ export function AgricultureRequestsQueue({
           <Button type="submit" variant="outline">
             {t("inline.filter_requests_12do0dv")}
           </Button>
-          <a
+          <Link
             href="/admin#agriculture-requests"
             className="text-muted-foreground hover:bg-muted inline-flex h-9 items-center rounded-lg px-3 text-sm"
           >
             {t("inline.clear_193qb1d")}
-          </a>
+          </Link>
         </div>
       </form>
       {requests.length === 0 ? (
