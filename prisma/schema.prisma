@@ -23,6 +23,7 @@ model User {
   phone                     String
   role                      String                     @default("customer")
   status                    String                     @default("active")
+  accountType               String                     @default("customer") @map("account_type")
   sessions                  Session[]
   accounts                  Account[]
   requests                  ServiceRequest[]
@@ -200,6 +201,9 @@ enum MilestoneStatus {
 enum StaffPermission {
   OPERATIONS
   FINANCE
+  USERS
+  PANELS
+  REPORTS
 }
 
 model ServiceDefinition {

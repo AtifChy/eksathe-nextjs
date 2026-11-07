@@ -11,22 +11,29 @@ import {
   XIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { signOutAction } from "@/app/actions/session";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Link } from "@/i18n/navigation";
 
 type SiteHeaderProps = {
   userName?: string;
   signedIn: boolean;
   canProvider: boolean;
   canAdmin: boolean;
+  isAgroAdmin: boolean;
 };
 
-export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHeaderProps) {
+export function SiteHeader({
+  userName,
+  signedIn,
+  canProvider,
+  canAdmin,
+  isAgroAdmin,
+}: SiteHeaderProps) {
   const locale = useLocale();
   const t = useTranslations();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -147,7 +154,7 @@ export function SiteHeader({ userName, signedIn, canProvider, canAdmin }: SiteHe
                         className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
                       >
                         <ShieldCheckIcon aria-hidden="true" className="size-4" />
-                        {t("nav.admin")}
+                        {isAgroAdmin ? t("workflow.agroAdmin") : t("nav.admin")}
                       </Link>
                     )}
                     <form action={signOutAction}>

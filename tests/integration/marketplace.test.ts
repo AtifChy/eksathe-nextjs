@@ -388,6 +388,9 @@ describe("PostgreSQL marketplace transactions", () => {
       isSuperAdmin: false,
       operationSectors: ["agriculture-labor"],
       financeSectors: [],
+      userManagementSectors: [],
+      panelManagementSectors: [],
+      reportSectors: [],
       canManageStaff: false,
     });
     const requestIdsInQueue = workspace.requests.map(({ id }) => id);

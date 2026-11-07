@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useRouter } from "@/i18n/navigation";
 import { localizedPath } from "@/i18n/paths";
+import { agricultureAccountTypes } from "@/lib/agriculture/account-types";
 import { authClient } from "@/lib/auth-client";
 
 export type AuthMode = "login" | "register" | "forgot" | "reset" | "verify";
@@ -22,6 +23,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
   const callbackURL = localizedPath(locale, next);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [accountType, setAccountType] = useState<(typeof agricultureAccountTypes)[number]>("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -54,6 +56,7 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
           email: email.trim().toLowerCase(),
           password,
           phone: phone.trim(),
+          accountType,
           callbackURL,
         });
         if (authError) throw new Error(authError.message);
@@ -147,6 +150,32 @@ export function AuthPanel({ mode, next, token }: { mode: AuthMode; next: string;
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
               />
+            </Field>
+          )}
+          {mode === "register" && (
+            <Field label={t("workflow.accountType")}>
+              <select
+                autoComplete="off"
+                required
+                value={accountType}
+                onChange={(event) =>
+                  setAccountType(
+                    agricultureAccountTypes.find((value) => value === event.target.value) ??
+                      "customer",
+                  )
+                }
+                className="border-input bg-background h-9 rounded-lg border px-3 text-sm"
+              >
+                <option value="customer">{t("workflow.customerAccount")}</option>
+                <option value="farmer">{t("workflow.farmerAccount")}</option>
+                <option value="agro_laborer">{t("workflow.agroLaborerAccount")}</option>
+                <option value="agronomist">{t("workflow.agronomistAccount")}</option>
+                <option value="veterinarian">{t("workflow.veterinarianAccount")}</option>
+                <option value="agro_seller">{t("workflow.agroSellerAccount")}</option>
+                <option value="agriculture_professional">
+                  {t("workflow.agricultureProfessionalAccount")}
+                </option>
+              </select>
             </Field>
           )}
           {(mode === "register" || mode === "login" || mode === "reset") && (

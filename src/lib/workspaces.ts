@@ -403,7 +403,15 @@ export async function getAdminWorkspace(
   access: StaffAccess,
   agricultureFilters: AgricultureAdminFilters = {},
 ) {
-  const sectorSlugs = Array.from(new Set([...access.operationSectors, ...access.financeSectors]));
+  const sectorSlugs = Array.from(
+    new Set([
+      ...access.operationSectors,
+      ...access.financeSectors,
+      ...access.userManagementSectors,
+      ...access.panelManagementSectors,
+      ...access.reportSectors,
+    ]),
+  );
   const dateToExclusive = agricultureFilters.dateTo
     ? new Date(`${agricultureFilters.dateTo}T00:00:00.000Z`)
     : undefined;

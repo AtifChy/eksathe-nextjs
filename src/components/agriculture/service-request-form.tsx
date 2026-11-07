@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ActionFeedback } from "@/components/workflows/action-feedback";
-import type { AgricultureService } from "@/lib/agriculture/service-registry";
+import type { AgricultureServiceWithContent } from "@/lib/agriculture/service-registry";
 import { uploadPrivateFile } from "@/lib/client-upload";
 import { initialWorkflowState } from "@/lib/workflow-state";
 
@@ -21,7 +21,7 @@ export function ServiceRequestForm({
   emailVerified,
   routeBase,
 }: {
-  service: AgricultureService;
+  service: AgricultureServiceWithContent;
   customer: { name: string; phone: string } | null;
   emailVerified: boolean;
   routeBase: string;

@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 
 import { AgricultureHome } from "@/components/agriculture/agriculture-home";
+import { getActiveAgricultureServiceCatalog } from "@/lib/agriculture/admin";
 import { getPageMetadata } from "@/i18n/metadata";
 import { getAgriculturePublicInfo } from "@/lib/agriculture/publishing";
 import { getPublicListings } from "@/lib/listings";
@@ -12,9 +13,10 @@ export const instant = false;
 
 export default async function DashboardAgriculturePage() {
   await connection();
-  const [result, publicInfo] = await Promise.all([
+  const [result, publicInfo, serviceCatalog] = await Promise.all([
     getPublicListings("agriculture-labor"),
     getAgriculturePublicInfo(),
+    getActiveAgricultureServiceCatalog(),
   ]);
   return (
     <AgricultureHome
@@ -23,6 +25,7 @@ export default async function DashboardAgriculturePage() {
       listings={result.items}
       unavailable={result.unavailable}
       publicInfo={publicInfo}
+      serviceCatalog={serviceCatalog}
     />
   );
 }
