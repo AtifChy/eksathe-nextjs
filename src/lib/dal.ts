@@ -1,7 +1,10 @@
 import "server-only";
-import { headers } from "next/headers";
+import { cacheLife } from "next/cache";
+import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
+import { defaultLocale, isLocale, type Locale } from "@/i18n/locales";
+import { localizedPath } from "@/i18n/paths";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sectors } from "@/lib/sectors";
@@ -17,6 +20,9 @@ export type CurrentUser = {
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
+  "use cache: private";
+  cacheLife({ stale: 0, revalidate: 30, expire: 60 });
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) return null;
 
@@ -36,9 +42,21 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
 export async function requireUser(returnTo = "/account", verified = true) {
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(returnTo)}`);
+  if (!user) {
+    const cookieStore = await cookies();
+    const cookieVal = cookieStore.get("NEXT_LOCALE")?.value;
+    const locale: Locale = isLocale(cookieVal) ? cookieVal : defaultLocale;
+    const dest = localizedPath(locale, returnTo);
+    redirect(localizedPath(locale, `/login?next=${encodeURIComponent(dest)}`));
+  }
   if (user.status !== "active") notFound();
-  if (verified && !user.emailVerified) redirect(`/verify?next=${encodeURIComponent(returnTo)}`);
+  if (verified && !user.emailVerified) {
+    const cookieStore = await cookies();
+    const cookieVal = cookieStore.get("NEXT_LOCALE")?.value;
+    const locale: Locale = isLocale(cookieVal) ? cookieVal : defaultLocale;
+    const dest = localizedPath(locale, returnTo);
+    redirect(localizedPath(locale, `/verify?next=${encodeURIComponent(dest)}`));
+  }
   return user;
 }
 

@@ -1,7 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
+
+import { revalidateLocalizedPath } from "@/i18n/revalidate";
 
 import { agricultureServiceRegistry } from "@/lib/agriculture/service-registry";
 import { requireStaff, requireUser } from "@/lib/dal";
@@ -108,9 +109,9 @@ export async function createAgricultureServiceRequestAction(
           }
         : {}),
     });
-    revalidatePath("/account");
-    revalidatePath("/admin");
-    revalidatePath(returnTo);
+    revalidateLocalizedPath("/account");
+    revalidateLocalizedPath("/admin");
+    revalidateLocalizedPath(returnTo);
     return {
       status: "success",
       messageKey: "requestSent",
@@ -162,8 +163,8 @@ export async function updateAgricultureServiceRequestAction(
       privateNote,
       privateLocale: locale,
     });
-    revalidatePath("/admin");
-    revalidatePath("/account");
+    revalidateLocalizedPath("/admin");
+    revalidateLocalizedPath("/account");
     return { status: "success", messageKey: "requestSent" };
   } catch (error) {
     return failure(error);
@@ -180,9 +181,9 @@ export async function withdrawAgricultureServiceRequestAction(
     return { status: "error", messageKey: "validationError" };
   try {
     await withdrawAgricultureServiceRequest(user.id, Number(id));
-    revalidatePath("/account");
-    revalidatePath(`/account/agriculture-requests/${id}`);
-    revalidatePath("/admin");
+    revalidateLocalizedPath("/account");
+    revalidateLocalizedPath(`/account/agriculture-requests/${id}`);
+    revalidateLocalizedPath("/admin");
     return { status: "success", messageKey: "requestCancelled" };
   } catch (error) {
     return failure(error);

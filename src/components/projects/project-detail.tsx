@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useActionState } from "react";
 
 import { acceptQuoteAction } from "@/app/actions/marketplace";

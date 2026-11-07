@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from "lucide-react";
 import { useLocale, useTranslations, useFormatter } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 
 import { ListingImage } from "@/components/dashboard/listing-image";

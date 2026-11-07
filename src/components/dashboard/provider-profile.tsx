@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { ArrowLeftIcon, MapPinIcon, StarIcon } from "lucide-react";
 import { useLocale, useTranslations, useFormatter } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { ListingImage } from "@/components/dashboard/listing-image";

@@ -10,7 +10,7 @@ import {
   UserRoundIcon,
 } from "lucide-react";
 import { useLocale, useTranslations, useFormatter } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useActionState } from "react";
 
 import { markNotificationReadAction, updateProfileAction } from "@/app/actions/account";

@@ -1,9 +1,11 @@
 import "server-only";
+import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
 
 import { Prisma } from "@/generated/prisma/client";
 import { AGRICULTURE_MARKET_PRICE_FRESHNESS_DAYS } from "@/lib/agriculture/publishing-constants";
 import type { AgriculturePublishingWorkspaceData } from "@/lib/agriculture/publishing-types";
+import { cacheTags } from "@/lib/cache-tags";
 import { hasStaffPermission, type CurrentUser } from "@/lib/dal";
 import { logError } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
@@ -159,67 +161,76 @@ export async function saveAgriculturePublication(
   });
 }
 
+async function queryAgriculturePublicInfo() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(cacheTags.agriculturePublic);
+
+  const now = new Date();
+  const freshSince = new Date(now);
+  freshSince.setUTCDate(freshSince.getUTCDate() - AGRICULTURE_MARKET_PRICE_FRESHNESS_DAYS);
+  const [prices, updates, sector, setting] = await Promise.all([
+    prisma.agricultureMarketPrice.findMany({
+      where: { status: "PUBLISHED", observedAt: { gte: freshSince, lte: now } },
+      orderBy: { observedAt: "desc" },
+    }),
+    prisma.agricultureUpdate.findMany({
+      where: {
+        status: "PUBLISHED",
+        publishedAt: { lte: now },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        NOT: { kind: "WEATHER_ALERT", expiresAt: null },
+      },
+      orderBy: { publishedAt: "desc" },
+    }),
+    prisma.sector.findUnique({
+      where: { slug: "agriculture-labor" },
+      select: { commissionRate: true },
+    }),
+    prisma.platformSetting.findUnique({
+      where: { key: "agriculture-support" },
+      select: { value: true },
+    }),
+  ]);
+  const support = supportSchema.safeParse(setting?.value);
+  return {
+    unavailable: false,
+    prices: prices.map((p) => ({
+      id: p.id,
+      productBn: p.productBn,
+      productEn: p.productEn,
+      market: p.market,
+      district: p.district,
+      unit: p.unit,
+      price: p.price.toString(),
+      observedAt: p.observedAt.toISOString(),
+      source: p.source,
+    })),
+    updates: updates.map((u) => ({
+      id: u.id,
+      kind: u.kind,
+      titleBn: u.titleBn,
+      titleEn: u.titleEn,
+      bodyBn: u.bodyBn,
+      bodyEn: u.bodyEn,
+      source: u.source,
+      publishedAt: u.publishedAt.toISOString(),
+      expiresAt: u.expiresAt?.toISOString() ?? null,
+    })),
+    commissionRate: sector?.commissionRate.toString() ?? null,
+    support: support.success ? support.data : null,
+  };
+}
+
 export async function getAgriculturePublicInfo() {
   try {
-    const now = new Date();
-    const freshSince = new Date(now);
-    freshSince.setUTCDate(freshSince.getUTCDate() - AGRICULTURE_MARKET_PRICE_FRESHNESS_DAYS);
-    const [prices, updates, sector, setting] = await Promise.all([
-      prisma.agricultureMarketPrice.findMany({
-        where: { status: "PUBLISHED", observedAt: { gte: freshSince, lte: now } },
-        orderBy: { observedAt: "desc" },
-      }),
-      prisma.agricultureUpdate.findMany({
-        where: {
-          status: "PUBLISHED",
-          publishedAt: { lte: now },
-          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
-          NOT: { kind: "WEATHER_ALERT", expiresAt: null },
-        },
-        orderBy: { publishedAt: "desc" },
-      }),
-      prisma.sector.findUnique({
-        where: { slug: "agriculture-labor" },
-        select: { commissionRate: true },
-      }),
-      prisma.platformSetting.findUnique({
-        where: { key: "agriculture-support" },
-        select: { value: true },
-      }),
-    ]);
-    const support = supportSchema.safeParse(setting?.value);
-    return {
-      unavailable: false,
-      prices: prices.map((p) => ({
-        id: p.id,
-        productBn: p.productBn,
-        productEn: p.productEn,
-        market: p.market,
-        district: p.district,
-        unit: p.unit,
-        price: p.price.toString(),
-        observedAt: p.observedAt.toISOString(),
-        source: p.source,
-      })),
-      updates: updates.map((u) => ({
-        id: u.id,
-        kind: u.kind,
-        titleBn: u.titleBn,
-        titleEn: u.titleEn,
-        bodyBn: u.bodyBn,
-        bodyEn: u.bodyEn,
-        source: u.source,
-        publishedAt: u.publishedAt.toISOString(),
-        expiresAt: u.expiresAt?.toISOString() ?? null,
-      })),
-      commissionRate: sector?.commissionRate.toString() ?? null,
-      support: support.success ? support.data : null,
-    };
+    return await queryAgriculturePublicInfo();
   } catch (error) {
     logError("agriculture.public_information_failed", error);
     return { unavailable: true, prices: [], updates: [], commissionRate: null, support: null };
   }
 }
+
 export type AgriculturePublicInfo = Awaited<ReturnType<typeof getAgriculturePublicInfo>>;
 
 export async function getAgriculturePublishingWorkspace(
