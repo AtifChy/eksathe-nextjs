@@ -1,5 +1,5 @@
 import "server-only";
-import { cacheLife } from "next/cache";
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
@@ -19,10 +19,7 @@ export type CurrentUser = {
   status: string;
 };
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
-  "use cache: private";
-  cacheLife({ stale: 0, revalidate: 30, expire: 60 });
-
+export const getCurrentUser = cache(async function getCurrentUser(): Promise<CurrentUser | null> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) return null;
 
@@ -38,7 +35,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       status: true,
     },
   });
-}
+});
 
 export async function requireUser(returnTo = "/account", verified = true) {
   const user = await getCurrentUser();
@@ -98,7 +95,7 @@ export type StaffAccess = {
   canManageStaff: boolean;
 };
 
-export async function getStaffAccess(user: CurrentUser): Promise<StaffAccess> {
+export const getStaffAccess = cache(async function getStaffAccess(user: CurrentUser): Promise<StaffAccess> {
   const isSuperAdmin = user.role === "super_admin";
   const liveSectorSlugs = sectors
     .filter((sector) => sector.status === "live")
@@ -136,7 +133,7 @@ export async function getStaffAccess(user: CurrentUser): Promise<StaffAccess> {
     reportSectors: scopesFor("REPORTS"),
     canManageStaff: false,
   };
-}
+});
 
 export async function requireAdmin() {
   const user = await requireUser("/admin");

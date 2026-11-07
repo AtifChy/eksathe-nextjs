@@ -2,10 +2,10 @@
 
 import { cn } from "cn";
 import { useLocale, useTranslations } from "next-intl";
-import { useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { locales } from "@/i18n/locales";
+import { useRouter } from "@/i18n/navigation";
 
 interface LanguageToggleProps {
   /** "header" = white text on dark bg (landing header)
@@ -13,11 +13,19 @@ interface LanguageToggleProps {
   variant?: "header" | "muted";
 }
 
+function getCleanPathname(): string {
+  if (typeof window === "undefined") return "/";
+  const path = window.location.pathname;
+  for (const loc of locales) {
+    if (path === `/${loc}`) return "/";
+    if (path.startsWith(`/${loc}/`)) return path.slice(loc.length + 1);
+  }
+  return path || "/";
+}
+
 export function LanguageToggle({ variant = "header" }: LanguageToggleProps) {
   const locale = useLocale();
   const t = useTranslations();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const isHeader = variant === "header";
@@ -28,8 +36,9 @@ export function LanguageToggle({ variant = "header" }: LanguageToggleProps) {
       document.documentElement.lang = value;
       document.cookie = `NEXT_LOCALE=${value}; path=/; max-age=31536000; SameSite=Lax`;
     }
-    const queryStr = searchParams.toString();
-    const href = queryStr ? `${pathname}?${queryStr}` : pathname;
+    const pathname = getCleanPathname();
+    const queryStr = typeof window !== "undefined" ? window.location.search : "";
+    const href = queryStr ? `${pathname}${queryStr}` : pathname;
     startTransition(() => {
       router.replace(href, { locale: value });
     });

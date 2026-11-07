@@ -11,32 +11,136 @@ import {
   XIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { Link } from "@/i18n/navigation";
+import { useState, type ReactNode } from "react";
 
 import { signOutAction } from "@/app/actions/session";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageToggle } from "@/components/language-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Link } from "@/i18n/navigation";
 
-type SiteHeaderProps = {
+export type SiteHeaderUserProps = {
   userName?: string;
-  signedIn: boolean;
-  canProvider: boolean;
-  canAdmin: boolean;
-  isAgroAdmin: boolean;
+  signedIn?: boolean;
+  canProvider?: boolean;
+  canAdmin?: boolean;
+  isAgroAdmin?: boolean;
+};
+
+export function SiteHeaderUserMenu({
+  userName,
+  signedIn = false,
+  canProvider = false,
+  canAdmin = false,
+  isAgroAdmin = false,
+}: SiteHeaderUserProps) {
+  const t = useTranslations();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  if (!signedIn) {
+    return (
+      <div className="flex shrink-0 items-center gap-1">
+        <Link
+          href="/login"
+          className="inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold hover:bg-white/10"
+        >
+          {t("header.login")}
+        </Link>
+        <Link
+          href="/register"
+          className="inline-flex h-9 items-center gap-1 rounded-lg bg-white px-3 text-sm font-semibold text-[#0b5036] hover:bg-white/90"
+        >
+          <UserRoundPlusIcon aria-hidden="true" className="size-4" />
+          {t("header.register")}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
+        onClick={() => setMenuOpen((open) => !open)}
+        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/10"
+      >
+        <UserRoundIcon aria-hidden="true" className="size-4" />
+        <span className="max-w-32 truncate">{userName ?? t("auth.signIn")}</span>
+        <ChevronDownIcon aria-hidden="true" className="size-4" />
+      </button>
+      {menuOpen && (
+        <div
+          role="menu"
+          className="border-border bg-card text-foreground mt-2 flex min-w-48 flex-col gap-1 rounded-xl border p-2 shadow-lg xl:absolute xl:top-full xl:right-0"
+        >
+          <Link
+            role="menuitem"
+            href="/account#profile"
+            onClick={() => setMenuOpen(false)}
+            className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
+          >
+            <UserRoundIcon aria-hidden="true" className="size-4" />
+            {t("dashboard.profile")}
+          </Link>
+          {canProvider && (
+            <Link
+              role="menuitem"
+              href="/provider"
+              onClick={() => setMenuOpen(false)}
+              className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
+            >
+              <BriefcaseBusinessIcon aria-hidden="true" className="size-4" />
+              {t("nav.provider")}
+            </Link>
+          )}
+          {canAdmin && (
+            <Link
+              role="menuitem"
+              href="/admin"
+              onClick={() => setMenuOpen(false)}
+              className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
+            >
+              <ShieldCheckIcon aria-hidden="true" className="size-4" />
+              {isAgroAdmin ? t("workflow.agroAdmin" as never) : t("nav.admin")}
+            </Link>
+          )}
+          <form action={signOutAction}>
+            <button
+              role="menuitem"
+              type="submit"
+              className="hover:bg-muted inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
+            >
+              <LogOutIcon aria-hidden="true" className="size-4" />
+              {t("nav.signOut")}
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export type SiteHeaderProps = {
+  userSlot?: ReactNode;
+  userName?: string;
+  signedIn?: boolean;
+  canProvider?: boolean;
+  canAdmin?: boolean;
+  isAgroAdmin?: boolean;
 };
 
 export function SiteHeader({
+  userSlot,
   userName,
-  signedIn,
-  canProvider,
-  canAdmin,
-  isAgroAdmin,
+  signedIn = false,
+  canProvider = false,
+  canAdmin = false,
+  isAgroAdmin = false,
 }: SiteHeaderProps) {
   const locale = useLocale();
   const t = useTranslations();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [navigationOpen, setNavigationOpen] = useState(false);
 
   return (
@@ -49,7 +153,6 @@ export function SiteHeader({
               .querySelector<HTMLButtonElement>("[aria-controls=site-navigation]")
               ?.focus();
           setNavigationOpen(false);
-          setMenuOpen(false);
         }
       }}
     >
@@ -76,7 +179,6 @@ export function SiteHeader({
           onClick={(event) => {
             if ((event.target as HTMLElement).closest("a")) {
               setNavigationOpen(false);
-              setMenuOpen(false);
             }
           }}
         >
@@ -108,84 +210,14 @@ export function SiteHeader({
               <LanguageToggle />
             </div>
 
-            {signedIn ? (
-              <div className="relative shrink-0">
-                <button
-                  type="button"
-                  aria-expanded={menuOpen}
-                  aria-haspopup="menu"
-                  onClick={() => setMenuOpen((open) => !open)}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/10"
-                >
-                  <UserRoundIcon aria-hidden="true" className="size-4" />
-                  <span className="max-w-32 truncate">{userName ?? t("auth.signIn")}</span>
-                  <ChevronDownIcon aria-hidden="true" className="size-4" />
-                </button>
-                {menuOpen && (
-                  <div
-                    role="menu"
-                    className="border-border bg-card text-foreground mt-2 flex min-w-48 flex-col gap-1 rounded-xl border p-2 shadow-lg xl:absolute xl:top-full xl:right-0"
-                  >
-                    <Link
-                      role="menuitem"
-                      href="/account#profile"
-                      onClick={() => setMenuOpen(false)}
-                      className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
-                    >
-                      <UserRoundIcon aria-hidden="true" className="size-4" />
-                      {t("dashboard.profile")}
-                    </Link>
-                    {canProvider && (
-                      <Link
-                        role="menuitem"
-                        href="/provider"
-                        onClick={() => setMenuOpen(false)}
-                        className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
-                      >
-                        <BriefcaseBusinessIcon aria-hidden="true" className="size-4" />
-                        {t("nav.provider")}
-                      </Link>
-                    )}
-                    {canAdmin && (
-                      <Link
-                        role="menuitem"
-                        href="/admin"
-                        onClick={() => setMenuOpen(false)}
-                        className="hover:bg-muted inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
-                      >
-                        <ShieldCheckIcon aria-hidden="true" className="size-4" />
-                        {isAgroAdmin ? t("workflow.agroAdmin") : t("nav.admin")}
-                      </Link>
-                    )}
-                    <form action={signOutAction}>
-                      <button
-                        role="menuitem"
-                        type="submit"
-                        className="hover:bg-muted inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
-                      >
-                        <LogOutIcon aria-hidden="true" className="size-4" />
-                        {t("nav.signOut")}
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex shrink-0 items-center gap-1">
-                <Link
-                  href="/login"
-                  className="inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold hover:bg-white/10"
-                >
-                  {t("header.login")}
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex h-9 items-center gap-1 rounded-lg bg-white px-3 text-sm font-semibold text-[#0b5036] hover:bg-white/90"
-                >
-                  <UserRoundPlusIcon aria-hidden="true" className="size-4" />
-                  {t("header.register")}
-                </Link>
-              </div>
+            {userSlot ?? (
+              <SiteHeaderUserMenu
+                userName={userName}
+                signedIn={signedIn}
+                canProvider={canProvider}
+                canAdmin={canAdmin}
+                isAgroAdmin={isAgroAdmin}
+              />
             )}
           </div>
         </nav>
@@ -211,7 +243,6 @@ export function SiteHeader({
             }
             onClick={() => {
               setNavigationOpen((open) => !open);
-              setMenuOpen(false);
             }}
             className="inline-flex size-11 items-center justify-center rounded-lg border border-white/20 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white xl:hidden"
           >

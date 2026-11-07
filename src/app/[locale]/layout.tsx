@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeaderFallback, SiteHeaderServer } from "@/components/site-header-server";
+import { SiteHeader } from "@/components/site-header";
+import { SiteHeaderUserFallback, SiteHeaderUserServer } from "@/components/site-header-server";
 import { ThemeProvider } from "@/components/theme-provider";
 import { getPageMetadata } from "@/i18n/metadata";
 import { locales } from "@/i18n/locales";
@@ -43,9 +44,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           disableTransitionOnChange
         >
           <NextIntlClientProvider>
-            <Suspense fallback={<SiteHeaderFallback />}>
-              <SiteHeaderServer />
-            </Suspense>
+            <SiteHeader
+              userSlot={
+                <Suspense fallback={<SiteHeaderUserFallback />}>
+                  <SiteHeaderUserServer />
+                </Suspense>
+              }
+            />
             <main className="flex-1">{children}</main>
             <SiteFooter />
           </NextIntlClientProvider>
