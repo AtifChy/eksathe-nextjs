@@ -1386,7 +1386,7 @@ export async function resolveDispute(
 export async function grantStaffAccess(
   actorId: string,
   email: string,
-  permission: "OPERATIONS" | "FINANCE",
+  permission: "OPERATIONS" | "FINANCE" | "USERS" | "PANELS" | "REPORTS",
   scope: string,
 ) {
   return prisma.$transaction(async (tx) => {

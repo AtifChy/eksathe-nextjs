@@ -1,13 +1,13 @@
 "use client";
 
 import { ArrowLeftIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
 import { ServiceRequestForm } from "@/components/agriculture/service-request-form";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { AgricultureService } from "@/lib/agriculture/service-registry";
+import type { AgricultureServiceWithContent } from "@/lib/agriculture/service-registry";
 
 export function AgricultureServiceDetail({
   service,
@@ -15,12 +15,13 @@ export function AgricultureServiceDetail({
   customer,
   emailVerified,
 }: {
-  service: AgricultureService;
+  service: AgricultureServiceWithContent;
   routeBase: string;
   customer: { name: string; phone: string } | null;
   emailVerified: boolean;
 }) {
   const t = useTranslations();
+  const locale = useLocale();
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
@@ -38,13 +39,13 @@ export function AgricultureServiceDetail({
           </span>
           <div>
             <p className="text-primary text-sm font-semibold">
-              {t(`agricultureServices.${service.slug}.title` as never)}
+              {locale === "bn" ? service.titleBn : service.titleEn}
             </p>
             <CardTitle className="mt-1 text-3xl">
-              {t(`agricultureServices.${service.slug}.title` as never)}
+              {locale === "bn" ? service.titleBn : service.titleEn}
             </CardTitle>
             <CardDescription className="mt-3 max-w-3xl text-base leading-7">
-              {t(`agricultureServices.${service.slug}.description` as never)}
+              {locale === "bn" ? service.descriptionBn : service.descriptionEn}
             </CardDescription>
           </div>
         </CardHeader>

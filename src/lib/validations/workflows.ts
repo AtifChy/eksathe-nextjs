@@ -383,7 +383,7 @@ export const staffGrantSchema = z.strictObject({
     .trim()
     .pipe(z.email())
     .transform((email) => email.toLowerCase()),
-  permission: z.enum(["OPERATIONS", "FINANCE"]),
+  permission: z.enum(["OPERATIONS", "FINANCE", "USERS", "PANELS", "REPORTS"]),
   scope: z
     .string()
     .refine(

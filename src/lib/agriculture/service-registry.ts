@@ -1986,6 +1986,16 @@ export const agricultureServiceRegistry = [
 ] as const;
 
 export type AgricultureService = (typeof agricultureServiceRegistry)[number];
+export type AgricultureServiceWithContent = Omit<
+  AgricultureService,
+  "titleBn" | "titleEn" | "descriptionBn" | "descriptionEn" | "icon"
+> & {
+  titleBn: string;
+  titleEn: string;
+  descriptionBn: string;
+  descriptionEn: string;
+  icon: string;
+};
 export type AgricultureServiceField = AgricultureService["fields"][number];
 
 export const agricultureServiceCategories = [

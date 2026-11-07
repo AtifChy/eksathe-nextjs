@@ -38,6 +38,11 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
   const operationsEnabled = data.access.operationSectors.length > 0;
   const agricultureOperationsEnabled = data.access.operationSectors.includes("agriculture-labor");
   const financeEnabled = data.access.financeSectors.length > 0;
+  const agricultureManagementEnabled = [
+    ...data.access.userManagementSectors,
+    ...data.access.panelManagementSectors,
+    ...data.access.reportSectors,
+  ].includes("agriculture-labor");
 
   return (
     <WorkspaceNavigation
@@ -75,12 +80,24 @@ export function AdminWorkspace({ data }: { data: AdminWorkspaceData }) {
     >
       <div>
         <p className="text-primary text-sm">{t("inline.platform_operations_ddluvn")}</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">{t("nav.admin")}</h1>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight">
+          {agricultureManagementEnabled && !operationsEnabled && !financeEnabled
+            ? t("workflow.agroAdmin")
+            : t("nav.admin")}
+        </h1>
         <p className="text-muted-foreground mt-2 text-sm">
           {locale === "bn"
-            ? `আপনার বিভাগ: ${[...new Set([...data.access.operationSectors, ...data.access.financeSectors])].join(", ") || "সমগ্র প্ল্যাটফর্ম"}`
-            : `Your sectors: ${[...new Set([...data.access.operationSectors, ...data.access.financeSectors])].join(", ") || "platform-wide"}`}
+            ? `আপনার বিভাগ: ${[...new Set([...data.access.operationSectors, ...data.access.financeSectors, ...data.access.userManagementSectors, ...data.access.panelManagementSectors, ...data.access.reportSectors])].join(", ") || "সমগ্র প্ল্যাটফর্ম"}`
+            : `Your sectors: ${[...new Set([...data.access.operationSectors, ...data.access.financeSectors, ...data.access.userManagementSectors, ...data.access.panelManagementSectors, ...data.access.reportSectors])].join(", ") || "platform-wide"}`}
         </p>
+        {agricultureManagementEnabled && (
+          <Link
+            href="/admin/agriculture/management"
+            className="border-primary/30 text-primary hover:bg-primary/5 mt-3 inline-flex w-fit items-center rounded-lg border px-3 py-2 text-sm font-medium"
+          >
+            {t("workflow.agricultureManagement")}
+          </Link>
+        )}
         {agricultureOperationsEnabled && (
           <Link
             href="/admin/agriculture/publishing"
@@ -564,6 +581,9 @@ function StaffGrantForm() {
         >
           <option value="OPERATIONS">{t("inline.operations_1t8z18")}</option>
           <option value="FINANCE">{t("inline.finance_1rfbk3d")}</option>
+          <option value="USERS">{t("workflow.permissionUsers")}</option>
+          <option value="PANELS">{t("workflow.permissionPanels")}</option>
+          <option value="REPORTS">{t("workflow.permissionReports")}</option>
         </select>
       </Field>
       <Field id="staff-scope" label={t("workflow.staffScope")}>

@@ -14,6 +14,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { AgriculturePublicInfo } from "@/lib/agriculture/publishing";
+import type { AgriculturePublicService } from "@/lib/agriculture/admin";
 import {
   agricultureServiceCategories,
   agricultureServiceRegistry,
@@ -26,12 +27,14 @@ export function AgricultureHome({
   listings,
   unavailable,
   publicInfo,
+  serviceCatalog,
 }: {
   routeBase: string;
   showDashboardBackLink: boolean;
   listings: PublicListing[];
   unavailable: boolean;
   publicInfo: AgriculturePublicInfo;
+  serviceCatalog: AgriculturePublicService[];
 }) {
   const formatter = useFormatter();
   const t = useTranslations();
@@ -43,14 +46,15 @@ export function AgricultureHome({
   const services = useMemo(
     () =>
       agricultureServiceRegistry.filter((service) => {
-        const content =
-          `${service.titleEn} ${service.titleBn} ${service.descriptionEn} ${service.descriptionBn} ${service.slug}`.toLocaleLowerCase();
+        const override = serviceCatalog.find((item) => item.slug === service.slug);
+        const content = `${override?.titleEn ?? service.titleEn} ${override?.titleBn ?? service.titleBn} ${override?.descriptionEn ?? service.descriptionEn} ${override?.descriptionBn ?? service.descriptionBn} ${service.slug}`.toLocaleLowerCase();
         return (
+          serviceCatalog.some((item) => item.slug === service.slug) &&
           (!normalizedQuery || content.includes(normalizedQuery)) &&
           (category === "all" || service.categoryId === category)
         );
       }),
-    [normalizedQuery, category],
+    [serviceCatalog, normalizedQuery, category],
   );
   const formatMoney = (amount: string) =>
     formatter.number(Number(amount), {
@@ -90,13 +94,17 @@ export function AgricultureHome({
               <ArrowRightIcon data-icon="inline-end" />
             </Link>
             <Link href="#services" className={buttonVariants({ variant: "outline", size: "lg" })}>
-              {t("inline.browse_all_30_services_1bctdan")}
+              {t("home.browse")}
             </Link>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {[
-            { icon: "🌾", title: t("inline.farm_services_1x1k32o"), count: 30 },
+            {
+              icon: "🌾",
+              title: t("inline.farm_services_1x1k32o"),
+              count: serviceCatalog.length,
+            },
             { icon: "🛒", title: t("inline.marketplace_rtfmqm"), count: listings.length },
           ].map((item) => (
             <Card key={item.title} className="min-h-36">
@@ -186,7 +194,7 @@ export function AgricultureHome({
       <section id="services" className="flex scroll-mt-24 flex-col gap-5">
         <div>
           <p className="text-primary text-sm font-semibold">
-            {t("inline.30_agriculture_services_dczxdz")}
+            {formatter.number(services.length)} {t("home.agricultureServicesCount")}
           </p>
           <h2 className="mt-1 text-2xl font-bold">
             {t("inline.what_do_you_need_help_with_1h91swe")}
@@ -229,7 +237,9 @@ export function AgricultureHome({
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
+            {services.map((service) => {
+              const override = serviceCatalog.find((item) => item.slug === service.slug);
+              return (
               <Link
                 key={service.slug}
                 href={`${routeBase}/services/${service.slug}`}
@@ -238,14 +248,22 @@ export function AgricultureHome({
                 <Card className="hover:border-primary/40 h-full transition-colors">
                   <CardHeader className="flex-row items-start gap-3">
                     <span aria-hidden="true" className="text-3xl">
-                      {service.icon}
+                      {override?.icon ?? service.icon}
                     </span>
                     <div>
                       <CardTitle className="text-base">
-                        {t(`agricultureServices.${service.slug}.title` as never)}
+                        {english
+                          ? override?.titleEn ??
+                            t(`agricultureServices.${service.slug}.title` as never)
+                          : override?.titleBn ??
+                            t(`agricultureServices.${service.slug}.title` as never)}
                       </CardTitle>
                       <CardDescription className="mt-2 line-clamp-2">
-                        {t(`agricultureServices.${service.slug}.description` as never)}
+                        {english
+                          ? override?.descriptionEn ??
+                            t(`agricultureServices.${service.slug}.description` as never)
+                          : override?.descriptionBn ??
+                            t(`agricultureServices.${service.slug}.description` as never)}
                       </CardDescription>
                     </div>
                   </CardHeader>
@@ -258,7 +276,8 @@ export function AgricultureHome({
                   </CardContent>
                 </Card>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
